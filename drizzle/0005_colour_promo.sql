@@ -1,0 +1,2 @@
+ALTER TABLE "product_variants" ADD COLUMN "sale_price_override" integer;--> statement-breakpoint
+ALTER TABLE "product_variants" ADD CONSTRAINT "variants_sale_price_override_non_negative" CHECK ("product_variants"."sale_price_override" is null or "product_variants"."sale_price_override" >= 0);

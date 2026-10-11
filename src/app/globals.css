@@ -1,26 +1,304 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@import "lenis/dist/lenis.css";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@custom-variant dark (&:is(.dark *));
+
+/* ---------------------------------------------------------------------------
+   KING 253 design tokens
+   Black dominates. Red is light, not paint.
+--------------------------------------------------------------------------- */
+@theme {
+  --color-king-black: #050505;
+  --color-king-near-black: #0a0a0a;
+  --color-king-card: #0b0b0b;
+  --color-king-surface: #101010;
+  --color-king-surface-light: #151515;
+  --color-king-deep-red: #5c0707;
+  --color-king-red: #a30d0d;
+  --color-king-bright-red: #d41414;
+  --color-king-glow: #ff1a1a;
+  --color-king-white: #f5f5f5;
+  --color-king-muted: #cfcfcf;
+  --color-king-gray: #858585;
+  --color-king-line: rgba(255, 255, 255, 0.1);
+  --color-king-red-line: rgba(210, 20, 20, 0.45);
+
+  --ease-king: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-inter);
+  --font-display: var(--font-instrument-serif);
+  --font-heading: var(--font-inter);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* shadcn semantic tokens mapped onto the KING 253 palette (dark only). */
+:root {
+  color-scheme: dark;
+  --background: #050505;
+  --foreground: #f5f5f5;
+  --card: #0b0b0b;
+  --card-foreground: #f5f5f5;
+  --popover: #0a0a0a;
+  --popover-foreground: #f5f5f5;
+  --primary: #a30d0d;
+  --primary-foreground: #f5f5f5;
+  --secondary: #151515;
+  --secondary-foreground: #f5f5f5;
+  --muted: #101010;
+  --muted-foreground: #858585;
+  --accent: #151515;
+  --accent-foreground: #f5f5f5;
+  --destructive: #d41414;
+  --border: rgba(255, 255, 255, 0.1);
+  --input: rgba(255, 255, 255, 0.14);
+  --ring: #d41414;
+  --radius: 0.125rem;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html {
+    @apply bg-king-black font-sans;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  body {
+    @apply bg-king-black text-king-white overflow-x-clip;
+  }
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+  ::selection {
+    background: var(--color-king-red);
+    color: var(--color-king-white);
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-king-bright-red);
+    outline-offset: 3px;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer components {
+  /* Uppercase micro-label used for eyebrows, nav and metadata. */
+  .king-label {
+    @apply text-[0.6875rem] font-medium tracking-[0.28em] uppercase;
+  }
+
+  /* Massive editorial headline: tight, heavy, uppercase. */
+  .king-display {
+    @apply font-semibold tracking-[-0.045em] uppercase leading-[0.85];
+  }
+
+  /* Serif accent line set in Instrument Serif italic. */
+  .king-serif {
+    @apply font-display font-normal italic normal-case tracking-[-0.02em];
+  }
+
+  /* Cut top-left and bottom-right corners — KING 253 card silhouette. */
+  .king-chamfer {
+    --cut: 14px;
+    clip-path: polygon(var(--cut) 0, 100% 0, 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, 0 100%, 0 var(--cut));
+  }
+
+  /* Film grain overlay — adds analog texture to flat black areas. */
+  .king-grain::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    /* Plain low-opacity noise: no blend mode, so moving content underneath
+       is not re-blended on every scroll frame. */
+    opacity: 0.035;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+}
+
+/* Card fan carousel — heights match getHeightMultiplier() in card-fan-carousel.tsx.
+   Cards are centred with inset/margin (not transforms) so GSAP owns the transform. */
+.fan-layout {
+  height: 22rem;
+}
+.fan-card {
+  --fan-w: 9rem;
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: var(--fan-w);
+  height: calc(var(--fan-w) * 1.25);
+  will-change: transform;
+}
+@media (min-width: 480px) {
+  .fan-layout { height: 26rem; }
+  .fan-card { --fan-w: 11rem; }
+}
+@media (min-width: 640px) {
+  .fan-layout { height: 28rem; }
+  .fan-card { --fan-w: 12.5rem; }
+}
+@media (min-width: 768px) {
+  .fan-layout { height: 34rem; }
+  .fan-card { --fan-w: 15rem; }
+}
+@media (min-width: 1024px) {
+  .fan-layout { height: 38rem; }
+  .fan-card { --fan-w: 17rem; }
+}
+/* No-JS: show the stack; with JS, wait for GSAP to deal the cards. */
+.js .fan-card {
+  opacity: 0;
+}
+
+/* Elements animated in by GSAP start hidden — only when JS is running and
+   the visitor has not asked for reduced motion. Without JS, everything shows. */
+@media (prefers-reduced-motion: no-preference) {
+  .js [data-reveal],
+  .js [data-hero-reveal],
+  .js [data-nav-reveal],
+  .js [data-fall],
+  .js [data-spray] {
+    visibility: hidden;
+  }
+}
+
+@keyframes king-progress {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes king-scroll {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(200%);
+  }
+}
+
+/* Anchored sections (#experience, #look…) land below the fixed header. */
+section[id] {
+  scroll-margin-top: 4.5rem;
+}
+
+/* Soft red light. Same look as a heavily blurred disc, but drawn as a
+   gradient — filter: blur() on large elements is costly to repaint while
+   scrolling. The gradient is spread wider to match the blur's halo. */
+.king-glow {
+  border-radius: 9999px;
+  scale: 1.45;
+  background: radial-gradient(
+    closest-side,
+    var(--glow) 0%,
+    color-mix(in srgb, var(--glow) 60%, transparent) 40%,
+    color-mix(in srgb, var(--glow) 20%, transparent) 70%,
+    transparent 100%
+  );
+}
+
+/* Parallax layers get their own GPU layer up front instead of being
+   repainted every frame. */
+[data-speed],
+[data-parallax-layer] {
+  will-change: transform;
+}
+
+/* ------------------------------------------------------------------ */
+/* Admin — iOS / iPadOS look (scoped to .ios-admin; the shop is unaffected) */
+/* ------------------------------------------------------------------ */
+.ios-admin {
+  --ios-bg: #000000;
+  --ios-cell: #1c1c1e;
+  --ios-cell-2: #2c2c2e;
+  --ios-fill: rgba(118, 118, 128, 0.24);
+  --ios-sep: rgba(84, 84, 88, 0.6);
+  --ios-label-2: rgba(235, 235, 245, 0.6);
+  --ios-label-3: rgba(235, 235, 245, 0.3);
+  --ios-tint: #e8282e;
+  --ios-green: #30d158;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", var(--font-inter), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  letter-spacing: -0.012em;
+}
+
+/* Checkboxes become iOS switches. */
+.ios-admin input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  position: relative;
+  flex-shrink: 0;
+  width: 2.65rem !important;
+  height: 1.6rem !important;
+  margin: 0;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(120, 120, 128, 0.36);
+  cursor: pointer;
+  vertical-align: middle;
+  transition: background-color 0.25s ease;
+}
+.ios-admin input[type="checkbox"]::before {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: calc(1.6rem - 4px);
+  height: calc(1.6rem - 4px);
+  border-radius: 999px;
+  background: #fff;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.18), 0 3px 1px rgba(0, 0, 0, 0.06);
+  transition: transform 0.32s cubic-bezier(0.3, 1.35, 0.5, 1);
+}
+.ios-admin input[type="checkbox"]:checked {
+  background: var(--ios-green);
+}
+.ios-admin input[type="checkbox"]:checked::before {
+  transform: translateX(calc(2.65rem - 1.6rem));
+}
+.ios-admin input[type="checkbox"]:focus-visible {
+  outline: 2px solid var(--ios-tint);
+  outline-offset: 2px;
+}
+.ios-admin input[type="checkbox"]:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ios-admin input[type="checkbox"],
+  .ios-admin input[type="checkbox"]::before {
+    transition: none;
+  }
 }

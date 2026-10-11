@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="fr" dir="ltr">
+<head>
+<meta charset="utf-8" />
+<title>Guide du tableau de bord — KING 253</title>
+<link rel="stylesheet" href="doc.css" />
+</head>
+<body>
+
+<section class="cover">
+  <div class="top"><div class="mark">♛</div><div class="brand">KING <span>253</span></div></div>
+  <div>
+    <div class="band"></div>
+    <h1>Guide du<br />tableau de bord</h1>
+    <p class="lead">Tout ce qu'il faut savoir pour gérer la boutique : commandes, produits, stock, contenu et réglages — page par page, champ par champ.</p>
+  </div>
+  <div class="meta">
+    <div><b>Pour</b>Le gérant de la boutique KING 253</div>
+    <div><b>Préparé par</b>Zack Saidani — Développeur web · 0774 84 04 92</div>
+    <div><b>Version</b>Octobre 2026</div>
+    <div><b>Adresse du tableau de bord</b>votre-site/admin</div>
+  </div>
+</section>
+
+<h2 style="margin-top:0"><span class="n">1</span>Accès et navigation</h2>
+<ul>
+  <li>Ouvrez <b>votre-site/admin</b> et connectez-vous avec l'e-mail et le mot de passe administrateur.</li>
+  <li><b>Sur ordinateur</b>, le menu est à gauche, rangé en 4 groupes : <span class="ui">Sales</span> (ventes), <span class="ui">Catalog</span> (catalogue), <span class="ui">People</span> (personnes), <span class="ui">Site</span>. Le chiffre rouge à côté d'un menu indique ce qui attend une action (nouvelles commandes, retours, avis, stock bas).</li>
+  <li><b>Sur téléphone</b>, une barre en bas donne accès à <span class="ui">Home</span>, <span class="ui">Orders</span>, <span class="ui">Products</span>, <span class="ui">Stock</span>. Le bouton <span class="ui">More</span> ouvre la liste de toutes les autres sections.</li>
+  <li>Le bouton <span class="ui">‹ Back</span> en haut de chaque page revient à la page précédente.</li>
+  <li>En bas du menu : <span class="ui">View site</span> ouvre la boutique, <span class="ui">Sign out</span> vous déconnecte.</li>
+</ul>
+<div class="box grey"><b>Les actions importantes demandent une confirmation.</b>Supprimer, annuler ou valider affiche d'abord une question « Êtes-vous sûr ? » directement dans la page. Rien n'est supprimé par un simple clic.</div>
+
+<h2><span class="n">2</span>Tableau de bord (Dashboard)</h2>
+<p>La première page résume l'activité. Choisissez la période en haut : <span class="ui">Today</span>, <span class="ui">7 days</span>, <span class="ui">30 days</span>, <span class="ui">90 days</span>, ou deux dates puis <span class="ui">Apply</span>.</p>
+<table>
+  <tr><th>Case</th><th>Ce que cela veut dire</th></tr>
+  <tr><td>Net revenue</td><td>Ce que la boutique garde vraiment : ventes de vêtements − remboursements des retours − livraisons payées par la boutique (livraison gratuite). Le détail est écrit sous le chiffre. Il peut être négatif si des commandes en livraison gratuite ont été retournées.</td></tr>
+  <tr><td>Delivered revenue</td><td>Le même calcul, seulement pour les commandes livrées (argent réellement encaissé).</td></tr>
+  <tr><td>Orders</td><td>Nombre de commandes sur la période, dont celles encore en cours (open) et annulées.</td></tr>
+  <tr><td>Avg order value</td><td>Montant moyen d'une commande (avant retours) et nombre moyen d'articles par commande.</td></tr>
+  <tr><td>Conversion</td><td>Part des visiteurs qui ont regardé un produit et qui ont commandé.</td></tr>
+  <tr><td>Units sold</td><td>Pièces gardées par les clients (les pièces retournées sont déduites).</td></tr>
+  <tr><td>Abandoned carts</td><td>Paniers remplis mais jamais commandés, et leur valeur estimée.</td></tr>
+  <tr><td>Low stock</td><td>Nombre de tailles arrivées au seuil d'alerte de stock.</td></tr>
+</table>
+<p>Plus bas : le graphique du revenu par jour (barre grise = journée en perte), les dernières commandes, le stock bas, et les classements (produits les plus vus, les plus ajoutés au panier, les plus achetés, wilayas principales).</p>
+
+<h2><span class="n">3</span>Commandes (Orders)</h2>
+<p>La liste se filtre par recherche (numéro, nom ou téléphone), par statut et par ordre. Cliquez sur un numéro pour ouvrir la commande.</p>
+<h3>Les statuts — et ce qu'il faut faire</h3>
+<table>
+  <tr><th>Statut</th><th>Signification</th><th>Votre action</th></tr>
+  <tr><td>Pending</td><td>Nouvelle commande reçue.</td><td>Appeler le client.</td></tr>
+  <tr><td>Contacting</td><td>Vous essayez de joindre le client.</td><td>Rappeler s'il ne répond pas.</td></tr>
+  <tr><td>Confirmed</td><td>Le client a confirmé au téléphone.</td><td>Préparer le colis.</td></tr>
+  <tr><td>Preparing</td><td>Colis en préparation.</td><td>Emballer, vérifier les tailles.</td></tr>
+  <tr><td>Ready for delivery</td><td>Colis prêt / remis au livreur.</td><td>Suivre la livraison.</td></tr>
+  <tr><td>Delivered</td><td>Le client a reçu et payé.</td><td>Rien : la commande est terminée.</td></tr>
+  <tr><td>Cancelled</td><td>Commande annulée.</td><td>Rien : les pièces redeviennent disponibles.</td></tr>
+</table>
+<p class="muted">Le client peut lui-même annuler sa commande tant qu'elle est en Pending, Contacting ou Confirmed. « Delivered » et « Cancelled » sont définitifs.</p>
+<h3>La page d'une commande</h3>
+<ul>
+  <li><b>Status</b> : changer le statut, avec une note facultative qui apparaît dans l'historique.</li>
+  <li><b>Items</b> : les articles, et le calcul de l'argent : vêtements, remise, livraison, <b>montant à encaisser à la livraison</b>, et ce que la boutique garde. Vous pouvez appliquer une remise (en DA ou en %).</li>
+  <li><b>Returns &amp; exchanges</b> : retours et échanges de cette commande (voir section 4).</li>
+  <li><b>Delivery</b> : adresse, wilaya, commune, frais de livraison, livraison gratuite. Si le même client a commandé deux fois avant d'être livré, les deux commandes partent dans <b>un seul colis</b> et la livraison n'est comptée qu'une fois.</li>
+  <li><b>Customer</b> : boutons <span class="ui">Call</span>, <span class="ui">WhatsApp</span> (message déjà préparé, rien n'est envoyé avant que vous appuyiez sur Envoyer) et <span class="ui">Email</span>.</li>
+  <li><b>Timeline</b> : chaque changement de statut, avec l'heure et qui l'a fait.</li>
+  <li><b>Admin notes</b> : notes internes, jamais visibles par le client.</li>
+  <li><b>Emails</b> et <b>Audit log</b> : e-mails envoyés et historique de toutes les modifications.</li>
+</ul>
+
+<h2><span class="n">4</span>Retours et échanges (Returns)</h2>
+<p>Un client peut demander un retour ou un échange depuis la page de suivi, ou vous pouvez l'enregistrer vous-même dans la commande (client venu à la boutique ou au téléphone).</p>
+<div class="flow"><span>Requested — demande reçue</span><i>→</i><span>Approved — accepté</span><i>→</i><span>Received — pièce revenue</span><i>→</i><span>Completed — terminé</span></div>
+<ul>
+  <li><b>Approve</b> : vous acceptez. Pour un échange, la nouvelle taille/couleur est <b>réservée</b> tout de suite pour qu'elle ne soit pas vendue à quelqu'un d'autre.</li>
+  <li><b>Received</b> : la pièce est revenue. Choisissez <b>resellable</b> (revendable → elle retourne dans le stock) ou <b>damaged</b> (abîmée → elle ne retourne pas dans le stock).</li>
+  <li><b>Completed</b> : terminé. Pour un retour, le <b>remboursement</b> est déduit du revenu. Pour un échange, la nouvelle pièce sort du stock.</li>
+  <li><b>Reject</b> : refuser la demande (la pièce réservée pour un échange redevient disponible).</li>
+</ul>
+
+<h2><span class="n">5</span>Paniers abandonnés (Abandoned carts)</h2>
+<p>Clients qui ont rempli un panier sans commander (après le nombre d'heures choisi dans les réglages). Utile pour relancer un client par téléphone ou WhatsApp.</p>
+
+<h2><span class="n">6</span>Produits (Products)</h2>
+<p><span class="ui">New product</span> crée un produit. Voici quoi écrire dans chaque champ :</p>
+<table>
+  <tr><th>Champ</th><th>Quoi écrire</th></tr>
+  <tr><td>Product name</td><td>Nom court et clair, ex. « Graphic Print Tee ».</td></tr>
+  <tr><td>URL slug</td><td>L'adresse du produit, rempli automatiquement. À ne changer que si nécessaire.</td></tr>
+  <tr><td>Category / Gender</td><td>La catégorie (ou sous-catégorie) et Men / Women / Unisex.</td></tr>
+  <tr><td>Status</td><td><b>Draft</b> = caché (en préparation) · <b>Published</b> = visible dans la boutique · <b>Archived</b> = caché mais gardé pour l'historique.</td></tr>
+  <tr><td>Featured</td><td>Coché = mis en avant (dernière collection et grande image de la page Vêtements).</td></tr>
+  <tr><td>Regular price / Promo price</td><td>Le prix affiché sur la carte du produit, et le prix promo (facultatif). Voir section 7.</td></tr>
+  <tr><td>Short description</td><td>1 à 2 phrases (300 caractères max), affichées en haut de la page produit.</td></tr>
+  <tr><td>Full description</td><td>La description détaillée.</td></tr>
+  <tr><td>Material, Fit, Care, Quality</td><td>Tissu, coupe (ex. oversize), conseils de lavage, informations de qualité.</td></tr>
+  <tr><td>Style, Collection, Tags</td><td>Mots qui aident la recherche dans la boutique (tags séparés par des virgules).</td></tr>
+  <tr><td>Story, Inspiration, Brand note</td><td>L'histoire du produit et ce qu'il dit de KING 253 (facultatif).</td></tr>
+  <tr><td>Video URL</td><td>Lien d'une vidéo du produit (facultatif).</td></tr>
+  <tr><td>SEO title / description</td><td>Titre et description pour Google (facultatif, sinon générés automatiquement).</td></tr>
+</table>
+
+<h2><span class="n">7</span>Couleurs, photos, prix et promotions</h2>
+<p>Chaque produit a une ou plusieurs <b>couleurs</b> ; chaque couleur a ses <b>photos</b> et ses <b>tailles</b>.</p>
+<ul>
+  <li><b>Ajouter une couleur</b> : nom (ex. Blue), pastille de couleur (Swatch), tailles séparées par des virgules (ex. S, M, L, XL), prix, promo et stock de départ par taille.</li>
+  <li><b>Photos de la couleur</b> : glissez les photos dans la zone de la couleur. Sur la page produit, quand le client clique sur une couleur, <b>seules les photos de cette couleur</b> s'affichent.</li>
+  <li><b>Photo principale (Card photo)</b> : c'est la photo de la <b>carte</b> du produit dans la boutique. Format conseillé : vertical 4:5. Remplissez « Alt text » (une courte description de la photo).</li>
+  <li><b>Tailles</b> : pour chaque taille — SKU / code-barres, seuil d'alerte (Low alert), interrupteur <b>On sale</b> (taille en vente ou non), stock.</li>
+</ul>
+<h3>Les 3 règles de prix</h3>
+<table>
+  <tr><th>Règle</th><th>Où on le règle</th><th>Où le client le voit</th></tr>
+  <tr><td>1. Prix et promo du produit</td><td>Panneau « Pricing (DA) »</td><td>Toujours sur la <b>carte</b> du produit, avec la bande rouge PROMO.</td></tr>
+  <tr><td>2. Prix et promo d'une couleur</td><td>Dans la couleur (Regular / Promo price)</td><td>Sur la page produit, quand le client choisit cette couleur.</td></tr>
+  <tr><td>3. Couleur sans prix propre</td><td>Laisser le prix de la couleur <b>vide</b></td><td>Elle prend le prix <b>et la promo</b> du produit.</td></tr>
+</table>
+<div class="box"><b>Exclure une couleur d'une promotion</b>Donnez-lui son propre prix : elle ne prend plus la promo du produit. Pour qu'elle profite de la promo du produit, videz son prix. Une couleur peut aussi avoir sa propre promo.</div>
+
+<h2><span class="n">8</span>Catégories (Categories)</h2>
+<ul>
+  <li>Créer une catégorie principale (ex. Pants) et des sous-catégories (ex. Jeans, Baggy jeans) avec « Belongs to ».</li>
+  <li>Dans la boutique, choisir Pants montre tous les pantalons ; les sous-catégories apparaissent comme filtres.</li>
+  <li><b>Order</b> = position dans la liste. Décocher « Shown in the shop » cache la catégorie sans supprimer ses produits.</li>
+  <li>Supprimer une catégorie ne supprime jamais les produits.</li>
+</ul>
+
+<h2 style="page-break-before:always;margin-top:0"><span class="n">9</span>Le stock — comment il fonctionne</h2>
+<p>Chaque taille de chaque couleur a trois nombres :</p>
+<table>
+  <tr><th>Nombre</th><th>Signification</th></tr>
+  <tr><td>Physical</td><td>Pièces réellement présentes dans la boutique / le dépôt.</td></tr>
+  <tr><td>Reserved</td><td>Pièces bloquées pour des commandes pas encore livrées.</td></tr>
+  <tr><td>Available</td><td><b>Physical − Reserved</b> : ce qui peut encore être vendu en ligne.</td></tr>
+</table>
+<h3>Ce qui se passe automatiquement</h3>
+<table>
+  <tr><th>Événement</th><th>Effet sur le stock</th></tr>
+  <tr><td>Le client commande</td><td>Les pièces sont <b>réservées</b> (Reserved +, Available −). Personne d'autre ne peut les acheter.</td></tr>
+  <tr><td>Commande annulée</td><td>La réservation est libérée : les pièces redeviennent disponibles.</td></tr>
+  <tr><td>Commande livrée</td><td>Les pièces sortent : Physical − et Reserved − (Available ne change pas).</td></tr>
+  <tr><td>Retour reçu « resellable »</td><td>La pièce retourne en stock (Physical +).</td></tr>
+  <tr><td>Retour reçu « damaged »</td><td>Rien : la pièce abîmée ne revient pas en stock.</td></tr>
+  <tr><td>Échange accepté / terminé</td><td>La nouvelle pièce est réservée à l'acceptation, puis sort du stock à la fin.</td></tr>
+</table>
+<p class="muted">Ajouter un article au panier <b>ne réserve pas</b> le stock : seule la commande réserve.</p>
+<h3>Ce que vous faites vous-même</h3>
+<ul>
+  <li><span class="ui">Add stock</span> : vous avez reçu de la marchandise → ajoutez la quantité reçue (ex. +10).</li>
+  <li><span class="ui">Set count</span> : après un inventaire, écrivez le nombre réel compté ; le système corrige la différence. Le stock physique ne peut jamais descendre sous le nombre déjà réservé par des commandes en cours.</li>
+  <li><b>Inventory</b> montre toutes les tailles et leur stock ; cliquez sur une taille pour voir son <b>historique</b> (chaque entrée et sortie, avec la date et la raison).</li>
+  <li><b>Low alert</b> : quand le disponible descend à ce seuil, la taille apparaît dans « Low stock » et le compteur rouge du menu s'allume.</li>
+</ul>
+
+<h2><span class="n">10</span>Clients et utilisateurs</h2>
+<ul>
+  <li><b>Customers</b> : chaque client, ses commandes et ce qu'il a dépensé.</li>
+  <li><b>Users</b> : tous les comptes. Vous pouvez donner les droits administrateur à quelqu'un (ex. un deuxième gérant), ou supprimer un compte. <span class="ui">New admin (manager)</span> crée un compte gérant. La colonne « Found us via » indique comment la personne a connu la boutique.</li>
+</ul>
+
+<h2><span class="n">11</span>Avis, témoignages, réseaux sociaux</h2>
+<ul>
+  <li><b>Reviews</b> : les avis laissés par les clients sur les produits. Rien n'est publié sans votre accord : approuvez ou refusez.</li>
+  <li><b>Testimonials</b> : témoignages affichés sur les pages Accueil et Who Is King. Écrivez le nom, la ville ou le rôle, et les mots <b>exactement comme le client les a dits</b>.</li>
+  <li><b>Social media</b> : combien de comptes ont été créés via TikTok, Instagram, Facebook, un ami… et ce qu'ils ont rapporté. Utile pour savoir où investir en publicité.</li>
+</ul>
+
+<h2><span class="n">12</span>Contenu, boutiques et réglages</h2>
+<ul>
+  <li><b>Content</b> : modifier les textes et les images des pages Accueil, Who Is King, Location et Clothes. Un champ laissé vide garde le texte d'origine. <span class="ui">View on page</span> montre l'endroit exact sur le site.</li>
+  <li><b>Locations</b> : vos boutiques physiques (adresse, horaires, et position GPS facultative pour « trouver la boutique la plus proche »).</li>
+</ul>
+<h3>Settings — les réglages</h3>
+<table>
+  <tr><th>Réglage</th><th>Rôle</th></tr>
+  <tr><td>Brand name, Contact phone / email, WhatsApp</td><td>Nom et coordonnées affichés aux clients.</td></tr>
+  <tr><td>Home delivery fee (DA)</td><td>Prix de la livraison à domicile.</td></tr>
+  <tr><td>Delivery time shown at checkout</td><td>Délai annoncé au client (ex. 2 à 4 jours).</td></tr>
+  <tr><td>Free delivery promotion / Free delivery from</td><td>Livraison gratuite à partir d'un montant de vêtements. <b>Attention</b> : c'est la boutique qui paie alors le livreur.</td></tr>
+  <tr><td>Order number prefix</td><td>Début des numéros de commande (ex. KING253).</td></tr>
+  <tr><td>Default low-stock alert</td><td>Seuil d'alerte par défaut des nouvelles tailles.</td></tr>
+  <tr><td>Cart counts as abandoned after (hours)</td><td>Après combien d'heures un panier est considéré abandonné.</td></tr>
+  <tr><td>Email (sender, alerts)</td><td>Adresse qui reçoit l'alerte « nouvelle commande », et envoi d'e-mails aux clients.</td></tr>
+  <tr><td>Social links</td><td>Liens Instagram, TikTok, Facebook affichés sur le site.</td></tr>
+</table>
+
+<h2><span class="n">13</span>La routine conseillée</h2>
+<ol>
+  <li><b>Chaque matin</b> : ouvrir Orders, appeler les commandes « Pending », passer celles confirmées en « Confirmed ».</li>
+  <li><b>Préparer</b> les colis → « Preparing » puis « Ready for delivery ».</li>
+  <li><b>À la livraison</b> → « Delivered » (le stock se met à jour tout seul).</li>
+  <li><b>À la réception de marchandise</b> → Inventory / produit → « Add stock ».</li>
+  <li><b>Chaque semaine</b> : regarder le Dashboard, le stock bas, les avis à valider et les paniers abandonnés.</li>
+</ol>
+
+<p class="foot">Guide du tableau de bord KING 253 — pour toute question : Zack Saidani, 0774 84 04 92</p>
+</body>
+</html>
