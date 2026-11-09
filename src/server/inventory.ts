@@ -371,6 +371,27 @@ export function storefrontStock() {
   }
 }
 
+/** Per product: each active shop that sells it, with the units it can ship (all sizes together). */
+export async function productShopStock(db: DbOrTx, productIds: string[]) {
+  const out = new Map<string, { storeId: number; name: string; available: number }[]>()
+  if (!productIds.length) return out
+  const rows = await db
+    .select({
+      productId: productVariants.productId,
+      storeId: stores.id,
+      name: stores.name,
+      available: sql<number>`coalesce(sum(greatest(${storeStock.physical} - ${storeStock.reserved}, 0)) filter (where ${productVariants.active}), 0)::int`,
+    })
+    .from(storeStock)
+    .innerJoin(stores, eq(stores.id, storeStock.storeId))
+    .innerJoin(productVariants, eq(productVariants.id, storeStock.variantId))
+    .where(and(inArray(productVariants.productId, productIds), eq(stores.active, true)))
+    .groupBy(productVariants.productId, stores.id, stores.name, stores.sortOrder)
+    .orderBy(asc(stores.sortOrder), asc(stores.name))
+  for (const r of rows) out.set(r.productId, [...(out.get(r.productId) ?? []), { storeId: r.storeId, name: r.name, available: r.available }])
+  return out
+}
+
 export function availableOf(variant: { physical: number; reserved: number; active?: boolean }) {
   if (variant.active === false) return 0
   return Math.max(0, variant.physical - variant.reserved)

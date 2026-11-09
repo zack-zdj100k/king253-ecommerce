@@ -49,3 +49,4 @@ next-env.d.ts
 
 # DZSecurity bundle
 /dist
+/docs/card-preview
