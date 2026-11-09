@@ -1,9 +1,10 @@
-/** Answers to "How did you find KING 253?" at sign-up. */
+/** Answers to "Where did you hear about us?" (sign-up and checkout). */
 export const REFERRAL_SOURCES = [
-  { key: "tiktok", label: "TikTok" },
   { key: "instagram", label: "Instagram" },
+  { key: "tiktok", label: "TikTok" },
   { key: "facebook", label: "Facebook" },
   { key: "friend", label: "A friend" },
+  { key: "google", label: "Google" },
   { key: "other", label: "Other" },
 ] as const
 

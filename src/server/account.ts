@@ -31,6 +31,8 @@ export async function getAccount(db: DbOrTx, userId: string) {
       id: users.id,
       name: users.name,
       email: users.email,
+      loginPhone: users.loginPhone,
+      referralSource: users.referralSource,
       role: users.role,
       phone: users.phone,
       wilaya: users.wilaya,
@@ -83,6 +85,8 @@ export async function accountOrders(db: DbOrTx, userId: string) {
 
 const detailsInput = z.object({
   name: z.string().trim().min(2, "Enter your name.").max(120),
+  /** Optional: accounts created at checkout may have none yet. Undefined = unchanged. */
+  email: z.union([z.literal(""), z.email("Enter a valid email address.")]).optional(),
   phone: z.string().trim().max(40).optional().default(""),
   wilaya: z.string().trim().max(80).optional().default(""),
   city: z.string().trim().max(120).optional().default(""),
@@ -115,12 +119,31 @@ export async function updateAccountDetails(db: Db, userId: string, raw: DetailsI
   if (d.address && (!wilaya || !city)) throw new AppError("ADDRESS_INCOMPLETE", "Choose your wilaya and commune too.")
   if (d.address && d.address.length < 4) throw new AppError("INVALID_ADDRESS", "Enter your street address.")
 
-  const [updated] = await db
+  const [current] = await db.select({ email: users.email, loginPhone: users.loginPhone }).from(users).where(eq(users.id, userId))
+  if (!current) throw new NotFoundError("This account")
+
+  // Email: optional, unique; an account always keeps an email or a sign-in phone.
+  const email = d.email === undefined ? current.email : d.email.toLowerCase() || null
+  if (email && email !== current.email) {
+    const [taken] = await db.select({ id: users.id }).from(users).where(and(sql`lower(${users.email}) = ${email}`, ne(users.id, userId)))
+    if (taken) throw new AppError("EMAIL_TAKEN", "Another account already uses this email.")
+  }
+
+  // The saved phone is also the sign-in phone, unless another account signs in with it.
+  let loginPhone = current.loginPhone
+  if (phone && phone !== current.loginPhone) {
+    const [taken] = await db.select({ id: users.id }).from(users).where(and(eq(users.loginPhone, phone), ne(users.id, userId)))
+    if (taken && current.loginPhone) throw new AppError("PHONE_TAKEN", "Another account signs in with this phone number.")
+    if (!taken) loginPhone = phone
+  }
+  if (!phone && current.loginPhone && !email) throw new AppError("PHONE_REQUIRED", "Keep your phone number — you sign in with it. Add an email first to remove it.")
+  if (!phone && email) loginPhone = null
+  if (!email && !loginPhone) throw new AppError("EMAIL_REQUIRED", "Enter an email or a phone number to sign in with.")
+
+  await db
     .update(users)
-    .set({ name: d.name, phone, wilaya, city, address: d.address || null, updatedAt: new Date() })
+    .set({ name: d.name, email, loginPhone, phone, wilaya, city, address: d.address || null, updatedAt: new Date() })
     .where(eq(users.id, userId))
-    .returning({ id: users.id })
-  if (!updated) throw new NotFoundError("This account")
 }
 
 /** "Remove my address": phone stays, delivery details are cleared. */

@@ -1,7 +1,7 @@
 import type { Metadata } from "next"
 import Link from "next/link"
 import { redirect } from "next/navigation"
-import { ArrowRight, Heart, LayoutDashboard, LogOut, MapPin, Package, Settings2, ShieldCheck } from "lucide-react"
+import { ArrowRight, Heart, LayoutDashboard, LogOut, MailPlus, MapPin, Package, Settings2, ShieldCheck } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { formatDA } from "@/lib/money"
@@ -51,7 +51,7 @@ export default async function AccountPage({ searchParams }: PageProps<"/account"
               <p className="king-label text-[0.6rem] text-king-gray">[ My account ]</p>
               <h1 className="king-display mt-2 truncate text-[clamp(2.25rem,6vw,4.5rem)] text-king-white">Hi, {user.name.split(" ")[0]}.</h1>
               <p className="mt-1 truncate text-sm text-king-gray">
-                {user.email} · member since {fmtDate(user.createdAt)}
+                {user.email ?? (user.loginPhone ? formatPhone(user.loginPhone) : "")} · member since {fmtDate(user.createdAt)}
               </p>
             </div>
           </div>
@@ -75,6 +75,18 @@ export default async function AccountPage({ searchParams }: PageProps<"/account"
             </form>
           </div>
         </div>
+
+        {!user.email && (
+          <div role="status" className="mt-8 flex flex-col gap-4 border border-king-red-line bg-king-red/10 p-5 sm:flex-row sm:items-center sm:justify-between">
+            <p className="flex items-start gap-3 text-sm text-king-white">
+              <MailPlus className="mt-0.5 size-5 shrink-0 text-king-bright-red" aria-hidden />
+              Add your email to become a loyal customer and receive updates about your order.
+            </p>
+            <Button asChild variant="king" size="xl" className="shrink-0">
+              <Link href="/account?tab=info#acc-email">Add my email</Link>
+            </Button>
+          </div>
+        )}
 
         {/* Tabs */}
         <nav aria-label="Account sections" className="mt-10 flex gap-1 overflow-x-auto border-b border-white/10 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
@@ -106,7 +118,7 @@ export default async function AccountPage({ searchParams }: PageProps<"/account"
                 <DetailsForm
                   initial={{
                     name: user.name,
-                    email: user.email,
+                    email: user.email ?? "",
                     phone: user.phone ? formatPhone(user.phone) : "",
                     wilaya: user.wilaya ?? "",
                     city: user.city ?? "",

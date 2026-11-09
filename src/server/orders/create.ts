@@ -20,6 +20,9 @@ import { reserveStock, shopAvailability, shopsThatCanFulfil } from "../inventory
 import { computeTotals, qualifiesForFreeDelivery, unitPriceOf } from "../pricing"
 import { applyFreeDeliveryPromo, findOpenDelivery } from "./delivery"
 import { getSettings } from "../settings"
+import { quoteShops } from "../shipping"
+import { findWilaya } from "@/lib/algeria"
+import { isReferralSource } from "@/lib/referral"
 import { createOrderSchema, fieldErrors, type CreateOrderInput } from "../validation"
 import { algiersDay, nextOrderNumber } from "./number"
 
@@ -97,21 +100,31 @@ export async function createOrder(db: Db, input: CreateOrderInput, ctx: CreateOr
 
   // Departure shop: must hold the whole order (orders are never split between shops).
   const eligible = await shopsThatCanFulfil(db, lines)
-  const shop = parsed.data.storeId ? eligible.find((s) => s.id === parsed.data.storeId) : eligible[0]
-  if (!shop) {
+  if (!eligible.length) {
     // A line that no shop has in that quantity gets the precise "only N left" message.
     const perShop = await shopAvailability(db, lines.map((l) => l.variantId))
     for (const l of lines) {
       const best = Math.max(0, ...(perShop.get(l.variantId)?.values() ?? []))
       if (best < l.quantity) throw new OutOfStockError(l.variantId, best, l.label)
     }
-    throw new AppError(
-      "NO_SHOP",
-      parsed.data.storeId
-        ? "The shop you chose no longer has everything in your order. Please choose another shop."
-        : "No single shop has every item of your order in stock. Remove an item or lower a quantity."
-    )
+    throw new AppError("NO_SHOP", "No single shop has every item of your order in stock. Remove an item or lower a quantity.")
   }
+  const wilaya = findWilaya(customer.wilaya)!
+  const { delivery } = parsed.data
+  const quotes = await quoteShops(db, {
+    shops: eligible,
+    wilayaCode: wilaya.code,
+    wilayaName: wilaya.fr,
+    commune: customer.city,
+    type: delivery.type,
+  })
+  const quote = parsed.data.storeId ? quotes.find((q) => q.storeId === parsed.data.storeId) : quotes.find((q) => q.available)
+  if (!quote) throw new AppError("NO_SHOP", "The shop you chose no longer has everything in your order. Please choose another shop.")
+  if (!quote.available) throw new AppError("NO_DESK", `${quote.storeName} has no stop desk in ${wilaya.fr}. Choose home delivery or another shop.`)
+  const shop = eligible.find((s) => s.id === quote.storeId)!
+  const desk = delivery.type === "desk" ? quote.desks.find((d) => d.id === delivery.deskId) : null
+  if (delivery.type === "desk" && !desk) throw new ValidationError({ "delivery.deskId": "Choose one of the stop desks in the list." })
+  const courierFee = (desk ? desk.price : quote.price) ?? 0
 
   // One delivery fee for all of Algeria (admin can still adjust per order).
   const settings = await getSettings(db)
@@ -124,8 +137,15 @@ export async function createOrder(db: Db, input: CreateOrderInput, ctx: CreateOr
       const number = await nextOrderNumber(tx, prefix)
 
       // Ordered again before the earlier parcel was delivered → same delivery, no second fee.
-      const lead = await findOpenDelivery(tx, { phone: customer.phone, wilaya: customer.wilaya, city: customer.city })
-      const deliveryFee = lead ? 0 : settings.deliveryFee
+      const lead = await findOpenDelivery(tx, {
+        phone: customer.phone,
+        wilaya: customer.wilaya,
+        city: customer.city,
+        storeId: shop.id,
+        deliveryType: delivery.type,
+        deskId: desk?.id ?? null,
+      })
+      const deliveryFee = lead ? 0 : courierFee
       const freeDelivery = lead ? false : qualifiesForFreeDelivery(settings, subtotal)
       const { discountAmount, total } = computeTotals({ subtotal, deliveryFee, discount: { type: null, value: 0 }, freeDelivery })
 
@@ -145,8 +165,15 @@ export async function createOrder(db: Db, input: CreateOrderInput, ctx: CreateOr
           customerEmail: customer.email,
           customerAge: customer.age,
           wilayaName: customer.wilaya,
+          wilayaCode: wilaya.code,
           city: customer.city,
           address: customer.address,
+          deliveryType: delivery.type,
+          deliveryDeskId: desk?.id ?? null,
+          deskName: desk?.name ?? null,
+          deskAddress: desk ? [desk.address, desk.commune].filter(Boolean).join(", ") : null,
+          referralSource: isReferralSource(parsed.data.referralSource) ? parsed.data.referralSource : null,
+          locale: parsed.data.locale ?? null,
           estimatedDays: deliveryEstimate || null,
           deliveryFee,
           freeDelivery,

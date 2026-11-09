@@ -113,7 +113,8 @@ export async function getOrderDetail(db: DbOrTx, id: string) {
         productSlug: products.slug,
         variants: sql<{ id: string; size: string; color: string; available: number; active: boolean }[]>`(
           select coalesce(json_agg(json_build_object('id', v.id, 'size', v.size, 'color', v.color,
-            'available', greatest(v.physical - v.reserved, 0), 'active', v.active) order by v.sort_order, v.color), '[]')
+            'available', coalesce((select greatest(ss.physical - ss.reserved, 0) from store_stock ss
+              where ss.variant_id = v.id and ss.store_id = ${order.storeId ?? 0}), 0), 'active', v.active) order by v.sort_order, v.color), '[]')
           from product_variants v where v.product_id = ${orderItems.productId})`,
       })
       .from(orderItems)

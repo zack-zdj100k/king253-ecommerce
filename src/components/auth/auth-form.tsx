@@ -146,17 +146,19 @@ export function AuthForm({ mode: initialMode, next }: { mode: Mode; next?: strin
 
             <div className="space-y-2">
               <Label htmlFor={`${id}-email`} className="text-sm font-medium text-king-white">
-                Email
+                {signIn ? "Email or phone" : "Email"}
               </Label>
               <div className="relative">
                 <Mail className={iconClass} aria-hidden />
                 <Input
+                  key={signIn ? "identifier" : "email"}
                   id={`${id}-email`}
                   name="email"
-                  type="email"
-                  autoComplete="email"
+                  type={signIn ? "text" : "email"}
+                  inputMode={signIn ? "email" : undefined}
+                  autoComplete={signIn ? "username" : "email"}
                   required
-                  placeholder="you@example.com"
+                  placeholder={signIn ? "you@example.com or 05…" : "you@example.com"}
                   className={fieldClass}
                 />
               </div>

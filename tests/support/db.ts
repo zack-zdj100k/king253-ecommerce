@@ -2,7 +2,7 @@ import { config } from "dotenv"
 import { sql } from "drizzle-orm"
 
 import { createDb } from "@/server/db/client"
-import { categories, productImages, productStores, productVariants, products, storeStock, stores } from "@/server/db/schema"
+import { categories, deliveryRates, productImages, productStores, productVariants, products, storeStock, stores } from "@/server/db/schema"
 import { saveSettings } from "@/server/settings"
 
 config({ path: ".env.local" })
@@ -19,8 +19,14 @@ export async function resetDb() {
 }
 
 /** Test fixtures — clearly fake values used only in the test database. */
+/** Home delivery from the main test shop to Alger (16) costs `fee`. */
 export async function seedDelivery(fee = 500) {
   await saveSettings(testDb, { deliveryFee: fee, deliveryEstimate: "2–3 days" })
+  const shop = await testShop()
+  await testDb.insert(deliveryRates).values({ storeId: shop.id, wilayaCode: 16, homePrice: fee }).onConflictDoUpdate({
+    target: [deliveryRates.storeId, deliveryRates.wilayaCode],
+    set: { homePrice: fee },
+  })
   return { wilaya: "Alger" }
 }
 

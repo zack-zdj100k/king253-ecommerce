@@ -26,11 +26,11 @@ export const phoneSchema = z
 
 const customerFields = z.object({
   fullName: z.string({ error: "Enter your full name." }).trim().min(2, "Enter your full name.").max(120),
-  age: z.coerce
-    .number({ error: "Enter your age." })
-    .int("Enter your age in years.")
-    .min(13, "You must be at least 13 to order.")
-    .max(110, "Enter a valid age."),
+  /** No longer asked at checkout (kept for older forms and saved details). */
+  age: z.preprocess(
+    (v) => (v === "" || v === null || v === undefined ? null : v),
+    z.coerce.number().int("Enter your age in years.").min(13, "You must be at least 13 to order.").max(110, "Enter a valid age.").nullable()
+  ),
   phone: phoneSchema,
   email: z
     .union([z.literal(""), z.email("Enter a valid email address.")])
@@ -66,8 +66,17 @@ export const orderLineSchema = z.object({
 export const createOrderSchema = z.object({
   customer: customerInfoSchema,
   lines: z.array(orderLineSchema).min(1, "Your bag is empty.").max(30),
-  /** Departure shop chosen at checkout; empty = the first shop that has everything. */
+  /** Departure shop chosen at checkout; empty = the cheapest shop that has everything. */
   storeId: z.coerce.number().int().positive().optional().nullable(),
+  delivery: z
+    .object({
+      type: z.enum(["home", "desk"]).default("home"),
+      deskId: z.coerce.number().int().positive().optional().nullable(),
+    })
+    .default({ type: "home" })
+    .refine((d) => d.type === "home" || Boolean(d.deskId), { message: "Choose a stop desk.", path: ["deskId"] }),
+  referralSource: z.string().max(20).optional().nullable(),
+  locale: z.enum(["ar", "fr", "en"]).optional().nullable(),
   idempotencyKey: z.string().min(16).max(100),
 })
 export type CreateOrderInput = z.input<typeof createOrderSchema>

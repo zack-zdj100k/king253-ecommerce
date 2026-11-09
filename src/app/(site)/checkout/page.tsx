@@ -2,7 +2,6 @@ import type { Metadata } from "next"
 import Link from "next/link"
 import { desc, eq } from "drizzle-orm"
 import { after } from "next/server"
-import { redirect } from "next/navigation"
 
 import { formatPhone } from "@/lib/phone"
 import { findCommune, findWilaya } from "@/lib/algeria"
@@ -26,13 +25,7 @@ const UUID = /^[0-9a-f-]{36}$/i
 export default async function CheckoutPage({ searchParams }: PageProps<"/checkout">) {
   const p = await searchParams
 
-  // Ordering needs an account: send visitors to create one (or sign in), then straight back here.
-  if (!(await getCurrentUser())) {
-    const back = new URLSearchParams()
-    for (const [k, v] of Object.entries(p)) if (typeof v === "string") back.set(k, v)
-    const next = `/checkout${back.size ? `?${back}` : ""}`
-    redirect(`/sign-up?next=${encodeURIComponent(next)}`)
-  }
+  // Guests can order directly: an account is created from their phone + password at confirmation.
   const buy = typeof p.buy === "string" && UUID.test(p.buy) ? p.buy : null
   const qty = Math.min(Math.max(Number.parseInt(typeof p.qty === "string" ? p.qty : "1", 10) || 1, 1), 20)
   const mode = buy ? "buy_now" : "cart"
@@ -68,15 +61,14 @@ export default async function CheckoutPage({ searchParams }: PageProps<"/checkou
   const savedPhone = account?.phone ?? profile?.phone ?? lastOrder?.customerPhone ?? null
   const prefill: CheckoutPrefill = {
     fullName: account?.name ?? profile?.fullName ?? lastOrder?.customerName ?? "",
-    age: String(profile?.age ?? lastOrder?.customerAge ?? ""),
     phone: savedPhone ? formatPhone(savedPhone) : "",
-    email: profile?.email ?? lastOrder?.customerEmail ?? user?.email ?? "",
+    email: user?.email ?? profile?.email ?? lastOrder?.customerEmail ?? "",
     wilaya: savedWilaya?.fr ?? "",
     city: savedWilaya ? (findCommune(savedWilaya, accountAddress?.city ?? profile?.city ?? lastOrder?.city) ?? "") : "",
     address: accountAddress?.address ?? profile?.address ?? lastOrder?.address ?? "",
     notes: "",
   }
-  const returning = Boolean(prefill.fullName && prefill.phone && prefill.wilaya && prefill.city && prefill.address && prefill.age)
+  const returning = Boolean(user && prefill.fullName && prefill.phone && prefill.wilaya && prefill.city && prefill.address)
 
   after(async () => {
     if (cartId) await markCheckoutStarted(db, cartId)
@@ -91,7 +83,14 @@ export default async function CheckoutPage({ searchParams }: PageProps<"/checkou
         <p className="king-label text-[0.6rem] text-king-gray">[ Checkout ] · Cash on delivery</p>
         <h1 className="king-display mt-4 text-[clamp(2.75rem,6vw,5.5rem)] text-king-white">{mode === "buy_now" ? "Buy now." : "Buy all."}</h1>
         <div className="mt-12">
-          <CheckoutForm mode={mode} lines={lines} delivery={{ fee: settings.deliveryFee, estimate: settings.deliveryEstimate, freeDelivery: settings.freeDelivery, freeDeliveryMin: settings.freeDeliveryMin }} prefill={prefill} returning={returning} />
+          <CheckoutForm
+            mode={mode}
+            lines={lines}
+            delivery={{ estimate: settings.deliveryEstimate, freeDelivery: settings.freeDelivery, freeDeliveryMin: settings.freeDeliveryMin }}
+            prefill={prefill}
+            returning={returning}
+            account={user ? { signedIn: true, needsReferral: !account?.referralSource } : { signedIn: false, needsReferral: true }}
+          />
         </div>
       </div>
     </section>

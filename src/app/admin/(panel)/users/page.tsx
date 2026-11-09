@@ -5,13 +5,13 @@ import { db } from "@/server/db"
 import { requireAdminPage } from "@/server/auth/session"
 import { listUsers, userStats } from "@/server/admin/users"
 import { referralLabel } from "@/lib/referral"
-import { AddAdminForm, UserActions } from "@/components/admin/user-actions"
+import { AddAdminForm, AddCustomerForm, UserActions } from "@/components/admin/user-actions"
+import { formatPhone } from "@/lib/phone"
 import { Badge, Empty, PageHeader, Panel, Stat, Table, inputClass, pill, td, th } from "@/components/admin/ui"
 
 export const metadata: Metadata = { title: "Users" }
 
 const FILTERS = [
-  ["all", "All accounts"],
   ["customer", "Customers"],
   ["admin", "Admins"],
   ["blocked", "Blocked"],
@@ -23,7 +23,8 @@ export default async function UsersPage({ searchParams }: PageProps<"/admin/user
   const me = await requireAdminPage()
   const p = await searchParams
   const one = (v: unknown) => (typeof v === "string" ? v : undefined)
-  const f = { q: one(p.q), role: one(p.role) ?? "all", page: Number(one(p.page)) || 1 }
+  const role = FILTERS.some(([k]) => k === one(p.role)) ? one(p.role)! : "customer"
+  const f = { q: one(p.q), role, page: Number(one(p.page)) || 1 }
   const [stats, { rows, total, page, pages }] = await Promise.all([userStats(db), listUsers(db, f)])
   const qs = (patch: Record<string, string>) => `/admin/users?${new URLSearchParams({ ...(f.q ? { q: f.q } : {}), role: f.role, ...patch })}`
 
@@ -33,7 +34,16 @@ export default async function UsersPage({ searchParams }: PageProps<"/admin/user
 
   return (
     <div className="space-y-6">
-      <PageHeader eyebrow="People" title="Users" actions={<AddAdminForm />}>
+      <PageHeader
+        eyebrow="People"
+        title="Users"
+        actions={
+          <div className="flex flex-wrap gap-2">
+            <AddCustomerForm />
+            <AddAdminForm />
+          </div>
+        }
+      >
         <p className="mt-2 max-w-3xl text-sm text-king-gray">
           Accounts created on the website (sign up) and admin accounts. People who only ordered without an account are in Customers.
         </p>
@@ -69,7 +79,7 @@ export default async function UsersPage({ searchParams }: PageProps<"/admin/user
         ))}
         <form action="/admin/users" className="ml-auto w-full sm:w-72">
           <input type="hidden" name="role" value={f.role} />
-          <input name="q" defaultValue={f.q} placeholder="Search name or email" aria-label="Search users" className={inputClass} />
+          <input name="q" defaultValue={f.q} placeholder="Search name, email or phone" aria-label="Search users" className={inputClass} />
         </form>
       </div>
       <p className="text-xs text-king-gray">{total} account(s)</p>
@@ -99,7 +109,9 @@ export default async function UsersPage({ searchParams }: PageProps<"/admin/user
                     </span>
                     <span className="min-w-0">
                       <span className="block truncate font-medium text-king-white">{u.name}</span>
-                      <span className="block truncate text-xs">{u.email}</span>
+                      <span className="block truncate text-xs">
+                        {[u.email, u.loginPhone ? formatPhone(u.loginPhone) : null].filter(Boolean).join(" · ")}
+                      </span>
                     </span>
                   </span>
                 </td>

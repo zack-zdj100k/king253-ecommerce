@@ -30,6 +30,6 @@ describe("Social media statistics", () => {
     expect(s.notAsked).toBe(1)
     expect(s.top).toMatchObject({ key: "tiktok", accounts: 2, buyers: 1, orders: 1, revenue: 3000 })
     expect(s.sources.find((x) => x.key === "instagram")).toMatchObject({ accounts: 1, buyers: 0 })
-    expect(s.sources).toHaveLength(5)
+    expect(s.sources).toHaveLength(6)
   })
 })

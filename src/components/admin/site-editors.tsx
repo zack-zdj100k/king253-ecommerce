@@ -162,8 +162,7 @@ const GROUPS: { title: string; fields: { key: string; label: string; type?: "num
   {
     title: "Delivery",
     fields: [
-      { key: "deliveryFee", label: "Home delivery fee (DA)", type: "number", help: "What the courier charges — paid by the customer, never part of the clothes price. 0 = confirmed by phone, set per order." },
-      { key: "freeDelivery", label: "Free delivery promotion — the shop pays the courier", type: "boolean" },
+      { key: "freeDelivery", label: "Free delivery promotion — the shop pays the courier (prices per shop and wilaya: Admin → Delivery)", type: "boolean" },
       { key: "freeDeliveryMin", label: "Free delivery from (clothes total, DA)", type: "number", help: "0 = every order. Orders that ship together count together." },
       { key: "deliveryEstimate", label: "Delivery time shown at checkout", help: "e.g. 2–5 days. Leave empty to hide." },
     ],

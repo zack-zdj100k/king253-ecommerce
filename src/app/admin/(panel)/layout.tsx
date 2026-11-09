@@ -21,7 +21,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     until: c.state !== "open" && c.until ? formatClosureDate(c.until) : null,
   }
   return (
-    <AdminShell user={{ name: user.name, email: user.email }} badges={badges} closure={closure}>
+    <AdminShell user={{ name: user.name, email: user.email ?? user.loginPhone ?? "" }} badges={badges} closure={closure}>
       {children}
     </AdminShell>
   )

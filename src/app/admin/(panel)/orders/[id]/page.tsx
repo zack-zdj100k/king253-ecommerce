@@ -5,6 +5,8 @@ import { Mail, MessageCircle, Phone } from "lucide-react"
 
 import { formatDA } from "@/lib/money"
 import { formatPhone, whatsappLink } from "@/lib/phone"
+import { referralLabel } from "@/lib/referral"
+import { listStores } from "@/server/stores"
 import { db } from "@/server/db"
 import { getOrderDetail } from "@/server/admin/queries"
 import { STATUS_LABELS } from "@/server/orders/manage"
@@ -77,8 +79,10 @@ export default async function AdminOrderPage({ params }: PageProps<"/admin/order
   const { id } = await params
   if (!/^[0-9a-f-]{36}$/i.test(id)) notFound()
   const detail = await getOrderDetail(db, id)
+  const shops = await listStores(db)
   if (!detail) notFound()
   const { order, items, history, audit, mails, returns, customerOrders, shipping } = detail
+  const shopName = shops.find((s) => s.id === order.storeId)?.name ?? null
   const money = orderMoney(order)
   const refunded = returns.reduce((n, r) => n + (r.type === "return" && r.status === "completed" ? (r.refundAmount ?? 0) : 0), 0)
   const editable = order.status !== "delivered" && order.status !== "cancelled"
@@ -250,6 +254,17 @@ export default async function AdminOrderPage({ params }: PageProps<"/admin/order
                   — same customer, one parcel, this order carries the delivery fee.
                 </p>
               )}
+              <p>
+                <span className="font-medium text-king-white">{shopName ?? "No shop"}</span> →{" "}
+                {order.deliveryType === "desk" ? (
+                  <>
+                    Stop desk <span className="text-king-white">{order.deskName ?? "—"}</span>
+                    {order.deskAddress ? ` (${order.deskAddress})` : ""}
+                  </>
+                ) : (
+                  "Home delivery"
+                )}
+              </p>
               <p>{order.address}, {order.city}, {order.wilayaName}</p>
               {order.estimatedDays && <p className="text-king-gray">Estimated: {order.estimatedDays}</p>}
               {order.customerNotes && <p className="mt-2 border-l-2 border-king-red-line pl-3">Customer note: {order.customerNotes}</p>}
@@ -307,6 +322,7 @@ export default async function AdminOrderPage({ params }: PageProps<"/admin/order
               {order.customerAge ? ` · ${order.customerAge} y/o` : ""}
             </p>
             {order.customerEmail && <p className="text-sm text-king-muted">{order.customerEmail}</p>}
+            <p className="mt-1 text-xs text-king-gray">Heard about us via: {referralLabel(order.referralSource)}</p>
             <div className="mt-4 flex flex-wrap gap-2">
               <a href={`tel:${order.customerPhone}`} className={btnRed}>
                 <Phone className="size-3.5" aria-hidden /> Call

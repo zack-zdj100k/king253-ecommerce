@@ -3,13 +3,14 @@
 import * as React from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { AlertTriangle, Banknote, ChevronDown, Loader2, MapPin, Pencil, Truck } from "lucide-react"
+import { AlertTriangle, Banknote, Building2, Check, ChevronDown, Home, Loader2, MapPin, Pencil, Store } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { findCommune, findWilaya, WILAYAS, wilayaLabel } from "@/lib/algeria"
 import { formatDA } from "@/lib/money"
 import { formatPhone } from "@/lib/phone"
-import { placeOrderAction, saveCheckoutDraftAction } from "@/app/actions/checkout"
+import { placeOrderAction, quoteCheckoutAction, saveCheckoutDraftAction, type CheckoutQuote } from "@/app/actions/checkout"
+import { REFERRAL_SOURCES } from "@/lib/referral"
 import type { CartLine } from "@/server/cart"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -19,7 +20,6 @@ import { ProductImage } from "@/components/shop/product-image"
 
 export type CheckoutPrefill = {
   fullName: string
-  age: string
   phone: string
   email: string
   wilaya: string
@@ -37,14 +37,17 @@ export function CheckoutForm({
   delivery,
   prefill,
   returning,
+  account,
 }: {
   mode: "buy_now" | "cart"
   lines: CartLine[]
-  /** One fee for all of Algeria (0 = confirmed by phone); free when the promotion applies. */
-  delivery: { fee: number; estimate: string; freeDelivery: boolean; freeDeliveryMin: number }
+  /** Delivery prices come per shop from the server; the shop pays it when the promotion applies. */
+  delivery: { estimate: string; freeDelivery: boolean; freeDeliveryMin: number }
   prefill: CheckoutPrefill
   /** True when details were saved from a previous checkout — show them as a summary. */
   returning: boolean
+  /** Guests set a password (their account is created by phone); everyone answers the referral once. */
+  account: { signedIn: boolean; needsReferral: boolean }
 }) {
   const router = useRouter()
   const { refreshCart } = useShop()
@@ -58,12 +61,62 @@ export function CheckoutForm({
   const draftTimer = React.useRef<number | null>(null)
 
   const selectedWilaya = findWilaya(values.wilaya)
+  const selectedCommune = selectedWilaya ? findCommune(selectedWilaya, values.city) : null
   const estimated = delivery.estimate
   const subtotal = lines.reduce((s, l) => s + (l.lineTotal ?? 0), 0)
   const free = delivery.freeDelivery && subtotal >= delivery.freeDeliveryMin
-  const deliveryFee = free ? 0 : delivery.fee
   const missingForFree = delivery.freeDelivery && !free ? delivery.freeDeliveryMin - subtotal : 0
   const blocked = lines.find((l) => l.issue)
+
+  // Delivery: type → shops that have the whole order (cheapest first) → desk.
+  const [type, setType] = React.useState<"home" | "desk">("home")
+  const [quote, setQuote] = React.useState<CheckoutQuote | null>(null)
+  const [quoting, setQuoting] = React.useState(false)
+  const [storeId, setStoreId] = React.useState<number | null>(null)
+  const [deskId, setDeskId] = React.useState<number | null>(null)
+  const [password, setPassword] = React.useState("")
+  const [forgot, setForgot] = React.useState(false)
+  const [phoneTaken, setPhoneTaken] = React.useState(false)
+  const [referral, setReferral] = React.useState("")
+
+  React.useEffect(() => {
+    if (!selectedWilaya) return
+    let live = true
+    const t = window.setTimeout(async () => {
+      setQuoting(true)
+      const r = await quoteCheckoutAction({
+        mode,
+        buyNow: mode === "buy_now" ? { variantId: lines[0].variantId, quantity: lines[0].quantity } : undefined,
+        wilaya: selectedWilaya.fr,
+        city: selectedCommune ?? "",
+        type,
+      }).catch(() => null)
+      if (!live) return
+      setQuoting(false)
+      setQuote(r)
+      if (r?.ok) {
+        const available = r.shops.filter((q) => q.available)
+        const keep = available.find((q) => q.storeId === storeId) ?? available[0] ?? null
+        setStoreId(keep?.storeId ?? null)
+        setDeskId(keep && type === "desk" ? (keep.desks.some((d) => d.id === deskId) ? deskId : keep.suggestedDeskId) : null)
+      }
+    }, 250)
+    return () => {
+      live = false
+      window.clearTimeout(t)
+    }
+    // Re-quote only when the destination, type or lines change.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedWilaya?.code, selectedCommune, type, mode, lines])
+
+  const shops = quote?.ok ? quote.shops : []
+  const chosen = shops.find((q) => q.storeId === storeId) ?? null
+  const chosenDesk = chosen?.desks.find((d) => d.id === deskId) ?? null
+  const courierFee = type === "desk" ? (chosenDesk?.price ?? null) : (chosen?.price ?? null)
+  const deliveryFee = free ? 0 : (courierFee ?? 0)
+  const deliveryLabel = !chosen ? "—" : free ? "Free" : courierFee === null ? "Confirmed by phone" : formatDA(courierFee)
+  const total = subtotal + deliveryFee
+  const ready = Boolean(chosen && chosen.available && (type === "home" || chosenDesk))
 
   const set = (patch: Partial<CheckoutPrefill>) => {
     const next = { ...values, ...patch }
@@ -82,11 +135,22 @@ export function CheckoutForm({
     if (submitting || blocked) return
     setSubmitting(true)
     setFormError(null)
+    if (!ready) {
+      setSubmitting(false)
+      setFormError(selectedWilaya ? "Choose how and from which shop your order is delivered." : "Choose your wilaya first.")
+      return
+    }
+    const lang = document.documentElement.lang
     const result = await placeOrderAction({
       mode,
       buyNow: mode === "buy_now" ? { variantId: lines[0].variantId, quantity: lines[0].quantity } : undefined,
       idempotencyKey,
       customer: values,
+      storeId,
+      delivery: { type, deskId: type === "desk" ? deskId : null },
+      referralSource: referral || null,
+      locale: lang === "ar" || lang === "fr" || lang === "en" ? lang : null,
+      account: account.signedIn ? undefined : { password, forgot },
     })
     if (result.ok) {
       if (mode === "cart") await refreshCart()
@@ -99,6 +163,7 @@ export function CheckoutForm({
       const mapped: Record<string, string> = {}
       for (const [k, v] of Object.entries(result.fields)) mapped[k.replace(/^customer\./, "")] = v
       setErrors(mapped)
+      if (mapped.password && !account.signedIn) setPhoneTaken(true)
       setEditing(true)
     }
     if (result.stock) router.refresh()
@@ -140,12 +205,65 @@ export function CheckoutForm({
               <Field label="Phone" error={errors.phone} hint="We'll call to confirm.">
                 {(id) => <Input id={id} value={values.phone} onChange={(e) => set({ phone: e.target.value })} type="tel" inputMode="tel" autoComplete="tel" placeholder="05 / 06 / 07 …" required className={fieldClass} />}
               </Field>
-              <Field label="Age" error={errors.age}>
-                {(id) => <Input id={id} value={values.age} onChange={(e) => set({ age: e.target.value.replace(/\D/g, "").slice(0, 3) })} inputMode="numeric" required className={fieldClass} />}
-              </Field>
-              <Field label="Email (optional)" error={errors.email} hint="For order updates by email." className="sm:col-span-2">
+              <Field label="Email (optional)" error={errors.email} hint="For the delivery confirmation by email.">
                 {(id) => <Input id={id} value={values.email} onChange={(e) => set({ email: e.target.value })} type="email" autoComplete="email" className={fieldClass} />}
               </Field>
+              {!account.signedIn && (
+                <Field
+                  label={phoneTaken ? "Password of your KING 253 account" : "Choose a password"}
+                  error={errors.password}
+                  hint={
+                    phoneTaken
+                      ? "This phone number already has an account."
+                      : "Your account is created with your phone number — sign in later with phone + password."
+                  }
+                  className="sm:col-span-2"
+                >
+                  {(id) => (
+                    <Input
+                      id={id}
+                      type="password"
+                      value={password}
+                      onChange={(e) => {
+                        setPassword(e.target.value)
+                        setErrors((e) => {
+                          const { password: _password, ...rest } = e
+                          void _password
+                          return rest
+                        })
+                      }}
+                      autoComplete={phoneTaken ? "current-password" : "new-password"}
+                      minLength={8}
+                      required={!forgot}
+                      disabled={forgot}
+                      className={fieldClass}
+                    />
+                  )}
+                </Field>
+              )}
+              {!account.signedIn && phoneTaken && (
+                <label className="flex items-start gap-3 text-sm text-king-muted sm:col-span-2">
+                  <input type="checkbox" checked={forgot} onChange={(e) => setForgot(e.target.checked)} className="mt-1 accent-[#d41414]" />
+                  <span>
+                    I forgot my password — place the order anyway. It is added to the account of this phone number;{" "}
+                    <Link href="/sign-in" className="underline underline-offset-4">sign in</Link> later to see it.
+                  </span>
+                </label>
+              )}
+              {account.needsReferral && (
+                <Field label="Where did you hear about us?" error={errors.referralSource} className="sm:col-span-2">
+                  {(id) => (
+                    <SelectBox id={id} value={referral} onChange={(v) => setReferral(v)} required={!account.signedIn}>
+                      <option value="">Choose…</option>
+                      {REFERRAL_SOURCES.map((r) => (
+                        <option key={r.key} value={r.key}>
+                          {r.label}
+                        </option>
+                      ))}
+                    </SelectBox>
+                  )}
+                </Field>
+              )}
 
               <Field label="Wilaya" error={errors.wilaya}>
                 {(id) => (
@@ -189,15 +307,6 @@ export function CheckoutForm({
               <Field label="Street / address" error={errors.address} className="sm:col-span-2">
                 {(id) => <Input id={id} value={values.address} onChange={(e) => set({ address: e.target.value })} autoComplete="street-address" required className={fieldClass} />}
               </Field>
-              <p className="flex items-start gap-2 text-xs text-king-gray sm:col-span-2">
-                <Truck className="mt-0.5 size-3.5 shrink-0 text-king-bright-red" aria-hidden />
-                <span>
-                  Home delivery everywhere in Algeria{free ? " · free" : deliveryFee > 0 ? ` · ${formatDA(deliveryFee)}` : ""}
-                  {estimated ? ` · ${estimated}` : ""}. Already ordered and not delivered yet? Orders to the same address come in one delivery — you pay
-                  it only once.
-                </span>
-              </p>
-
               <Field label="Delivery notes (optional)" error={errors.notes} className="sm:col-span-2">
                 {(id) => (
                   <textarea
@@ -213,10 +322,115 @@ export function CheckoutForm({
           )}
         </section>
 
+        <section aria-labelledby="delivery-title">
+          <h2 id="delivery-title" className="king-label text-king-white">
+            02 — Delivery
+          </h2>
+          <div role="radiogroup" aria-label="Delivery type" className="mt-5 grid grid-cols-2 gap-3">
+            {(
+              [
+                ["home", "Home delivery", "À domicile — to your address", Home],
+                ["desk", "Stop desk", "Pick it up at a courier desk", Building2],
+              ] as const
+            ).map(([key, title, sub, Icon]) => (
+              <button
+                key={key}
+                type="button"
+                role="radio"
+                aria-checked={type === key}
+                onClick={() => setType(key)}
+                className={cn(
+                  "flex items-start gap-3 border p-4 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-king-bright-red/40",
+                  type === key ? "border-king-bright-red bg-king-red/10" : "border-white/10 bg-king-near-black hover:border-white/25"
+                )}
+              >
+                <Icon className={cn("mt-0.5 size-5 shrink-0", type === key ? "text-king-bright-red" : "text-king-gray")} aria-hidden />
+                <span>
+                  <span className="block text-sm font-semibold text-king-white">{title}</span>
+                  <span className="mt-0.5 block text-xs text-king-gray">{sub}</span>
+                </span>
+              </button>
+            ))}
+          </div>
+
+          <div className="mt-6" aria-live="polite">
+            <p className="king-label flex items-center gap-2 text-[0.6rem] text-king-gray">
+              <Store className="size-3.5 text-king-bright-red" aria-hidden /> Ships from
+              {quoting && <Loader2 className="size-3 animate-spin" aria-label="Updating prices" />}
+            </p>
+            {!selectedWilaya ? (
+              <p className="mt-3 text-sm text-king-gray">Choose your wilaya to see the shops and delivery prices.</p>
+            ) : quote && !quote.ok ? (
+              <p role="alert" className="mt-3 flex items-start gap-2 border border-king-red-line bg-king-red/10 p-3 text-sm text-king-white">
+                <AlertTriangle className="mt-0.5 size-4 shrink-0 text-king-bright-red" aria-hidden />
+                {quote.error}
+              </p>
+            ) : (
+              <ul role="radiogroup" aria-label="Departure shop" className="mt-3 space-y-2">
+                {shops.map((q, i) => {
+                  const selected = q.storeId === storeId
+                  const price = free ? "Free" : q.price === null ? (q.available ? "Price by phone" : "") : formatDA(q.price)
+                  return (
+                    <li key={q.storeId}>
+                      <button
+                        type="button"
+                        role="radio"
+                        aria-checked={selected}
+                        disabled={!q.available}
+                        onClick={() => {
+                          setStoreId(q.storeId)
+                          setDeskId(type === "desk" ? q.suggestedDeskId : null)
+                        }}
+                        className={cn(
+                          "flex w-full items-center justify-between gap-4 border p-4 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-king-bright-red/40 disabled:cursor-not-allowed disabled:opacity-45",
+                          selected ? "border-king-bright-red bg-king-red/10" : "border-white/10 bg-king-near-black hover:border-white/25"
+                        )}
+                      >
+                        <span className="flex items-center gap-3">
+                          <span className={cn("grid size-5 shrink-0 place-items-center rounded-full border", selected ? "border-king-bright-red bg-king-bright-red" : "border-white/30")} aria-hidden>
+                            {selected && <Check className="size-3 text-king-white" />}
+                          </span>
+                          <span>
+                            <span className="block text-sm font-semibold text-king-white">{q.storeName}</span>
+                            <span className="block text-xs text-king-gray">
+                              {!q.available ? `No stop desk in ${selectedWilaya.fr}` : i === 0 && shops.length > 1 ? "Cheapest" : "Has your whole order"}
+                            </span>
+                          </span>
+                        </span>
+                        <span className="text-sm font-semibold text-king-white tabular-nums">{price}</span>
+                      </button>
+                    </li>
+                  )
+                })}
+              </ul>
+            )}
+          </div>
+
+          {type === "desk" && chosen && chosen.available && (
+            <div className="mt-5">
+              <Field label="Stop desk" error={errors["delivery.deskId"]} hint={chosenDesk?.address ? `${chosenDesk.address} · ${chosenDesk.commune}` : "Suggested: the desk closest to your commune."}>
+                {(id) => (
+                  <SelectBox id={id} value={deskId ? String(deskId) : ""} onChange={(v) => setDeskId(Number(v) || null)}>
+                    {chosen.desks.map((d) => (
+                      <option key={d.id} value={d.id}>
+                        {d.commune} — {d.name}
+                        {d.price !== null ? ` · ${formatDA(d.price)}` : ""}
+                        {d.id === chosen.suggestedDeskId ? " (closest)" : ""}
+                      </option>
+                    ))}
+                  </SelectBox>
+                )}
+              </Field>
+            </div>
+          )}
+          {estimated && <p className="mt-4 text-xs text-king-gray">Delivery time: {estimated}.</p>}
+        </section>
+
         <section aria-labelledby="payment-title">
           <h2 id="payment-title" className="king-label text-king-white">
-            02 — Payment
+            03 — Payment
           </h2>
+
           <p className="mt-5 flex items-start gap-3 border border-white/10 bg-king-near-black p-5 text-sm text-king-muted">
             <Banknote className="mt-0.5 size-4 shrink-0 text-king-bright-red" aria-hidden />
             <span>
@@ -259,13 +473,16 @@ export function CheckoutForm({
               <dt>Clothes</dt>
               <dd className="text-king-white">{formatDA(subtotal)}</dd>
             </div>
-            <div className="flex justify-between text-king-gray">
-              <dt>Delivery{estimated ? ` · ${estimated}` : ""}</dt>
-              <dd className="text-right text-king-white">{free ? "Free" : deliveryFee > 0 ? formatDA(deliveryFee) : "Confirmed by phone"}</dd>
+            <div className="flex justify-between gap-4 text-king-gray">
+              <dt>
+                {type === "desk" ? "Stop desk" : "Home delivery"}
+                {chosen ? <span className="block text-xs">from {chosen.storeName}</span> : null}
+              </dt>
+              <dd className="text-right text-king-white">{deliveryLabel}</dd>
             </div>
             <div className="flex justify-between border-t border-white/10 pt-3 text-base">
               <dt className="font-semibold text-king-white">To pay on delivery</dt>
-              <dd className="font-semibold text-king-white">{formatDA(subtotal + deliveryFee)}</dd>
+              <dd className="font-semibold text-king-white">{formatDA(total)}</dd>
             </div>
             {missingForFree > 0 && (
               <p className="text-xs text-king-bright-red">Add {formatDA(missingForFree)} more for free delivery.</p>
@@ -284,9 +501,9 @@ export function CheckoutForm({
             </p>
           )}
 
-          <Button type="submit" variant="king" size="xl" className="mt-6 w-full" disabled={submitting || !!blocked}>
+          <Button type="submit" variant="king" size="xl" className="mt-6 w-full" disabled={submitting || !!blocked || !ready}>
             {submitting ? <Loader2 className="size-4 animate-spin" aria-hidden /> : null}
-            {submitting ? "Placing your order…" : `Confirm order — ${formatDA(subtotal + deliveryFee)}`}
+            {submitting ? "Placing your order…" : `Confirm order — ${formatDA(total)}`}
           </Button>
           <p className="mt-3 text-center text-xs text-king-gray">Prices and stock are checked again when you confirm.</p>
         </div>
@@ -333,6 +550,7 @@ function SelectBox({
   onChange,
   disabled,
   autoComplete,
+  required = true,
   children,
 }: {
   id: string
@@ -340,6 +558,7 @@ function SelectBox({
   onChange: (value: string) => void
   disabled?: boolean
   autoComplete?: string
+  required?: boolean
   children: React.ReactNode
 }) {
   return (
@@ -350,7 +569,7 @@ function SelectBox({
         onChange={(e) => onChange(e.target.value)}
         disabled={disabled}
         autoComplete={autoComplete}
-        required
+        required={required}
         className={cn(fieldClass, "w-full appearance-none border pr-10 disabled:cursor-not-allowed disabled:opacity-50", !value && "text-king-gray")}
       >
         {children}

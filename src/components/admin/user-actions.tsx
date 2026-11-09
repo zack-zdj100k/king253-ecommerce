@@ -3,10 +3,11 @@
 import * as React from "react"
 import { Ban, Check, Eye, EyeOff, ShieldCheck, ShieldOff, UserPlus } from "lucide-react"
 
-import { createAdminAction, deleteUserAction, setUserBlockedAction, setUserRoleAction } from "@/app/admin/actions/users"
+import { createAdminAction, createCustomerAction, deleteUserAction, setUserBlockedAction, setUserRoleAction } from "@/app/admin/actions/users"
+import { REFERRAL_SOURCES } from "@/lib/referral"
 import { DeleteButton } from "@/components/admin/delete-button"
 import { Feedback, useAdminAction } from "@/components/admin/use-admin-action"
-import { btnGhost, btnOutline, btnRed, inputClass, labelClass } from "@/components/admin/ui"
+import { btnGhost, btnOutline, btnRed, inputClass, labelClass, selectClass } from "@/components/admin/ui"
 import { ConfirmButton } from "@/components/admin/confirm-button"
 
 /** Make admin / customer, block / unblock, delete — for one account row. */
@@ -44,6 +45,75 @@ export function UserActions({ user, isMe }: { user: { id: string; name: string; 
 }
 
 /** Create a second admin (manager) with their own login. */
+/** Customer account created by the shop: signs in with phone + password (email optional). */
+export function AddCustomerForm() {
+  const { run, pending, feedback } = useAdminAction()
+  const [open, setOpen] = React.useState(false)
+  const blank = { name: "", phone: "", email: "", password: "", referralSource: "" }
+  const [v, setV] = React.useState(blank)
+
+  if (!open) {
+    return (
+      <button type="button" onClick={() => setOpen(true)} className={btnOutline}>
+        <UserPlus className="size-4" aria-hidden /> Add a customer
+      </button>
+    )
+  }
+  return (
+    <form
+      className="w-full space-y-4 rounded-2xl border border-white/[0.08] bg-white/[0.025] p-5"
+      onSubmit={(e) => {
+        e.preventDefault()
+        run(() => createCustomerAction(v), () => {
+          setV(blank)
+          setOpen(false)
+        })
+      }}
+    >
+      <p className="text-sm font-semibold text-king-white">New customer account</p>
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-5">
+        <label className="block">
+          <span className={labelClass}>Phone</span>
+          <input type="tel" inputMode="tel" value={v.phone} onChange={(e) => setV({ ...v, phone: e.target.value })} placeholder="05 / 06 / 07 …" autoComplete="off" className={inputClass} />
+        </label>
+        <label className="block">
+          <span className={labelClass}>Full name</span>
+          <input value={v.name} onChange={(e) => setV({ ...v, name: e.target.value })} autoComplete="off" className={inputClass} />
+        </label>
+        <label className="block">
+          <span className={labelClass}>Email (optional)</span>
+          <input type="email" value={v.email} onChange={(e) => setV({ ...v, email: e.target.value })} autoComplete="off" className={inputClass} />
+        </label>
+        <label className="block">
+          <span className={labelClass}>Password</span>
+          <input type="text" value={v.password} onChange={(e) => setV({ ...v, password: e.target.value })} autoComplete="new-password" className={inputClass} />
+        </label>
+        <label className="block">
+          <span className={labelClass}>Heard about us via</span>
+          <select value={v.referralSource} onChange={(e) => setV({ ...v, referralSource: e.target.value })} className={selectClass}>
+            <option value="">Not asked</option>
+            {REFERRAL_SOURCES.map((r) => (
+              <option key={r.key} value={r.key}>
+                {r.label}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
+      <p className="text-xs text-king-gray">Give the customer their password. They sign in on the website with their phone number.</p>
+      <div className="flex flex-wrap items-center gap-2">
+        <button type="submit" disabled={pending} className={btnRed}>
+          Create customer
+        </button>
+        <button type="button" onClick={() => setOpen(false)} className={btnGhost}>
+          Cancel
+        </button>
+        <Feedback feedback={feedback} />
+      </div>
+    </form>
+  )
+}
+
 export function AddAdminForm() {
   const { run, pending, feedback } = useAdminAction()
   const [open, setOpen] = React.useState(false)

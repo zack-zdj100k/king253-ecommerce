@@ -41,7 +41,8 @@ export async function listUsers(db: DbOrTx, f: { q?: string; role?: string; page
   const where: SQL[] = []
   if (f.q?.trim()) {
     const pat = `%${escapeLike(f.q.trim())}%`
-    where.push(or(ilike(users.email, pat), ilike(users.name, pat))!)
+    const digits = f.q.replace(/\D/g, "").replace(/^0/, "")
+    where.push(or(ilike(users.email, pat), ilike(users.name, pat), ...(digits.length >= 4 ? [ilike(users.loginPhone, `%${digits}%`)] : []))!)
   }
   if (f.role === "admin" || f.role === "customer") where.push(eq(users.role, f.role))
   if (f.role === "blocked") where.push(sql`${users.disabledAt} is not null`)
@@ -51,6 +52,7 @@ export async function listUsers(db: DbOrTx, f: { q?: string; role?: string; page
       id: users.id,
       name: users.name,
       email: users.email,
+      loginPhone: users.loginPhone,
       role: users.role,
       disabledAt: users.disabledAt,
       createdAt: users.createdAt,
@@ -136,6 +138,17 @@ export async function removeAccountRecords(tx: Tx, id: string) {
   await tx.update(reviews).set({ moderatedBy: null }).where(eq(reviews.moderatedBy, id))
   await tx.update(carts).set({ userId: null }).where(eq(carts.userId, id))
   await tx.delete(users).where(eq(users.id, id))
+}
+
+/** A customer account made by the shop (e.g. for a phone order): identified by phone, email optional. */
+export async function createCustomerUser(
+  db: Db,
+  input: { phone: string; name: string; email?: string | null; password: string; referralSource?: string | null },
+  actor: Actor
+) {
+  const user = await createUser(db, { ...input, role: "customer" })
+  await audit(db, actor, "user.create_customer", "user", user.id, { name: user.name })
+  return user
 }
 
 /** A second admin (manager) with their own email and password. */

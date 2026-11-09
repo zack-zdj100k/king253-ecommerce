@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm"
 import { beforeEach, describe, expect, it } from "vitest"
 
-import { auditLogs, cartItems, carts, customers, orderItems, orders, products, stores, users } from "@/server/db/schema"
+import { auditLogs, cartItems, carts, customers, deliveryRates, orderItems, orders, products, stores, users } from "@/server/db/schema"
 import { deleteCart } from "@/server/cart"
 import { deleteCustomer } from "@/server/customers"
 import { createOrder } from "@/server/orders/create"
@@ -27,15 +27,25 @@ async function orderOf(variantId: string, quantity = 1, phone = "0550000001") {
 }
 
 describe("Checkout delivery", () => {
-  it("uses the typed wilaya and the single delivery fee from settings", async () => {
+  it("uses the typed wilaya and the departure shop's home price for that wilaya", async () => {
     const p = await seedProduct({ slug: "tee", price: 2000, variants: [{ size: "M", color: "Black", physical: 3 }] })
-    await seedDelivery(700)
+    await seedDelivery(400)
+    await testDb.insert(deliveryRates).values({ storeId: p.shop.id, wilayaCode: 31, homePrice: 700 })
     const order = await createOrder(testDb, {
       customer: customer({ wilaya: "  Oran ", city: "Bir El Djir", address: "12 Rue des Palmiers" }),
       lines: [{ variantId: p.variants[0].id, quantity: 1 }],
       idempotencyKey: key(),
     })
-    expect(order).toMatchObject({ wilayaName: "Oran", city: "Bir El Djir", deliveryFee: 700, total: 2700, estimatedDays: "2–3 days" })
+    expect(order).toMatchObject({
+      wilayaName: "Oran",
+      wilayaCode: 31,
+      city: "Bir El Djir",
+      deliveryType: "home",
+      storeId: p.shop.id,
+      deliveryFee: 700,
+      total: 2700,
+      estimatedDays: "2–3 days",
+    })
   })
 
   it("defaults to a 0 DA fee (confirmed by phone) and requires a wilaya", async () => {

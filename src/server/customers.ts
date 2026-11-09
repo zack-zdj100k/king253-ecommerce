@@ -27,7 +27,7 @@ export async function upsertCustomerByPhone(db: DbOrTx, info: CustomerInfo) {
       set: {
         fullName: info.fullName,
         email: sql`coalesce(${info.email}, ${customers.email})`,
-        age: info.age,
+        age: sql`coalesce(${info.age}, ${customers.age})`,
         wilaya: info.wilaya,
         city: info.city,
         address: info.address,

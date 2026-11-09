@@ -68,9 +68,14 @@ export const users = pgTable(
   "users",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    email: text("email").notNull(),
+    /** Optional since accounts can be created at checkout with a phone number only. */
+    email: text("email"),
+    /** Normalised phone (+213…) used to sign in; unique. Set at checkout or on the account page. */
+    loginPhone: text("login_phone"),
     name: text("name").notNull(),
     passwordHash: text("password_hash").notNull(),
+    /** Preferred language for emails (ar | fr | en). */
+    locale: text("locale"),
     role: userRole("role").notNull().default("customer"),
     customerId: uuid("customer_id").references(() => customers.id),
     /** Sign-up answer to "How did you find us?" (tiktok, instagram, facebook, friend, other). */
@@ -83,7 +88,11 @@ export const users = pgTable(
     disabledAt: timestamp("disabled_at", { withTimezone: true }),
     ...timestamps,
   },
-  (t) => [uniqueIndex("users_email_unique").on(sql`lower(${t.email})`)]
+  (t) => [
+    uniqueIndex("users_email_unique").on(sql`lower(${t.email})`),
+    uniqueIndex("users_login_phone_unique").on(t.loginPhone),
+    check("users_email_or_phone", sql`${t.email} is not null or ${t.loginPhone} is not null`),
+  ]
 )
 
 /** Session id = SHA-256 of the cookie token, so a DB leak cannot hijack sessions. */
@@ -491,6 +500,17 @@ export const orders = pgTable(
     city: text("city").notNull(),
     address: text("address").notNull(),
     estimatedDays: text("estimated_days"),
+    /** Official wilaya code (null on orders placed before 2026-11). */
+    wilayaCode: smallint("wilaya_code"),
+    deliveryType: deliveryType("delivery_type").notNull().default("home"),
+    /** Stop desk chosen by the customer; name/address are snapshotted below. */
+    deliveryDeskId: integer("delivery_desk_id").references(() => deliveryDesks.id, { onDelete: "set null" }),
+    deskName: text("desk_name"),
+    deskAddress: text("desk_address"),
+    /** "Where did you hear about us?" at the time of the order. */
+    referralSource: text("referral_source"),
+    /** Language the customer used (emails are sent in it). */
+    locale: text("locale"),
     /** What the courier charges. Paid by the customer — unless freeDelivery, then the shop pays it. */
     deliveryFee: integer("delivery_fee").notNull(),
     freeDelivery: boolean("free_delivery").notNull().default(false),

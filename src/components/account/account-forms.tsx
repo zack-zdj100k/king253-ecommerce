@@ -65,14 +65,14 @@ export function DetailsForm({ initial }: { initial: AccountDetails }) {
   const { pending, result, run } = useAccountAction()
   const [v, setV] = React.useState(initial)
   const wilaya = findWilaya(v.wilaya)
-  const dirty = (["name", "phone", "wilaya", "city", "address"] as const).some((k) => v[k] !== initial[k])
+  const dirty = (["name", "email", "phone", "wilaya", "city", "address"] as const).some((k) => v[k] !== initial[k])
 
   return (
     <form
       className="space-y-6"
       onSubmit={(e) => {
         e.preventDefault()
-        run(() => updateDetailsAction({ name: v.name, phone: v.phone, wilaya: v.wilaya, city: v.city, address: v.address }))
+        run(() => updateDetailsAction({ name: v.name, email: v.email, phone: v.phone, wilaya: v.wilaya, city: v.city, address: v.address }))
       }}
     >
       <div className="grid gap-5 sm:grid-cols-2">
@@ -84,13 +84,21 @@ export function DetailsForm({ initial }: { initial: AccountDetails }) {
         </div>
         <div>
           <label htmlFor="acc-email" className={label}>
-            Email <span className="font-normal text-king-gray">· used to sign in</span>
+            Email <span className="font-normal text-king-gray">· sign in and order updates</span>
           </label>
-          <input id="acc-email" value={v.email} disabled className={field} />
+          <input
+            id="acc-email"
+            type="email"
+            value={v.email}
+            onChange={(e) => setV({ ...v, email: e.target.value })}
+            autoComplete="email"
+            placeholder="you@example.com"
+            className={field}
+          />
         </div>
         <div className="sm:col-span-2">
           <label htmlFor="acc-phone" className={label}>
-            Phone
+            Phone <span className="font-normal text-king-gray">· you can also sign in with it</span>
           </label>
           <input id="acc-phone" type="tel" inputMode="tel" value={v.phone} onChange={(e) => setV({ ...v, phone: e.target.value })} placeholder="05 / 06 / 07 …" autoComplete="tel" className={field} />
         </div>

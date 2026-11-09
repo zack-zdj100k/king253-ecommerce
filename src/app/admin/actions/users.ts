@@ -3,7 +3,8 @@
 import { z } from "zod"
 
 import { db } from "@/server/db"
-import { createAdminUser, deleteUser, setUserBlocked, setUserRole } from "@/server/admin/users"
+import { createAdminUser, createCustomerUser, deleteUser, setUserBlocked, setUserRole } from "@/server/admin/users"
+import { isReferralSource } from "@/lib/referral"
 import { adminAction } from "./_shared"
 
 const id = z.uuid()
@@ -43,5 +44,21 @@ export async function createAdminAction(input: { email: string; name: string; pa
       await createAdminUser(db, data, actor)
     },
     { revalidate: paths, message: "Admin account created. They can sign in at /admin/login." }
+  )
+}
+
+export async function createCustomerAction(input: { phone: string; name: string; email: string; password: string; referralSource: string }) {
+  return adminAction(
+    async ({ actor }) => {
+      const data = z
+        .object({ phone: z.string().max(40), name: z.string().max(120), email: z.string().max(200), password: z.string().max(200), referralSource: z.string().max(20) })
+        .parse(input)
+      await createCustomerUser(
+        db,
+        { ...data, email: data.email || null, referralSource: isReferralSource(data.referralSource) ? data.referralSource : null },
+        actor
+      )
+    },
+    { revalidate: paths, message: "Customer account created. They sign in with their phone number and this password." }
   )
 }

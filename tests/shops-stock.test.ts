@@ -5,6 +5,7 @@ import { orders, productStores, stockMovements, storeStock, users } from "@/serv
 import { adjustPhysicalStock, setProductStores, shopsThatCanFulfil } from "@/server/inventory"
 import { createOrder } from "@/server/orders/create"
 import { createVariant, saveProduct } from "@/server/products-admin"
+import { saveDesk } from "@/server/shipping"
 import { saveStore } from "@/server/stores"
 import { customer, key, resetDb, seedDelivery, seedProduct, stockOf, testDb, testShop } from "./support/db"
 
@@ -84,5 +85,40 @@ describe("Stock per shop", () => {
     await expect(
       createOrder(testDb, { customer: customer({ wilaya }), lines: [{ variantId: tee.variants[0].id, quantity: 1 }], idempotencyKey: key() })
     ).rejects.toThrow(/no longer available|Only|No single shop/)
+  })
+})
+
+describe("Checkout delivery choice", () => {
+  beforeEach(async () => {
+    await resetDb()
+  })
+
+  it("stop desk: the desk must belong to the chosen shop; its price and name are kept on the order", async () => {
+    const { wilaya } = await seedDelivery(600)
+    const tee = await seedProduct({ slug: "tee", price: 2000, variants: [{ size: "M", color: "Black", physical: 3 }] })
+    const desk = await saveDesk(testDb, tee.shop.id, null, { wilayaCode: 16, commune: "Bab Ezzouar", name: "Desk BZ", address: "1 rue", deskPrice: "350" }, { userId: null, label: "t" })
+    const order = await createOrder(testDb, {
+      customer: customer({ wilaya, city: "Bab Ezzouar" }),
+      lines: [{ variantId: tee.variants[0].id, quantity: 1 }],
+      delivery: { type: "desk", deskId: desk.id },
+      idempotencyKey: key(),
+    })
+    expect(order).toMatchObject({ deliveryType: "desk", deliveryDeskId: desk.id, deskName: "Desk BZ", deliveryFee: 350, total: 2350 })
+    await expect(
+      createOrder(testDb, {
+        customer: customer({ wilaya, city: "Bab Ezzouar" }),
+        lines: [{ variantId: tee.variants[0].id, quantity: 1 }],
+        delivery: { type: "desk", deskId: 999999 },
+        idempotencyKey: key(),
+      })
+    ).rejects.toThrow(/check the highlighted/i)
+  })
+
+  it("an order ships with an open one only from the same shop and the same delivery", async () => {
+    const { wilaya } = await seedDelivery(600)
+    const tee = await seedProduct({ slug: "tee", price: 2000, variants: [{ size: "M", color: "Black", physical: 5 }] })
+    const first = await createOrder(testDb, { customer: customer({ wilaya }), lines: [{ variantId: tee.variants[0].id, quantity: 1 }], idempotencyKey: key() })
+    const second = await createOrder(testDb, { customer: customer({ wilaya }), lines: [{ variantId: tee.variants[0].id, quantity: 1 }], idempotencyKey: key() })
+    expect([first.deliveryFee, second.deliveryFee, second.shipsWithOrderId]).toEqual([600, 0, first.id])
   })
 })

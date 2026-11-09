@@ -14,8 +14,14 @@ import { qualifiesForFreeDelivery } from "../pricing"
 
 const CLOSED = ["delivered", "cancelled"] as const
 
-/** The open lead order this customer's new order should ship with, locked for update. */
-export async function findOpenDelivery(tx: Tx, who: { phone: string; wilaya: string; city: string }) {
+/**
+ * The open lead order this customer's new order should ship with, locked for update:
+ * same phone, same address, same departure shop and same delivery (home, or the same desk).
+ */
+export async function findOpenDelivery(
+  tx: Tx,
+  who: { phone: string; wilaya: string; city: string; storeId: number; deliveryType: "home" | "desk"; deskId: number | null }
+) {
   const [lead] = await tx
     .select()
     .from(orders)
@@ -24,6 +30,9 @@ export async function findOpenDelivery(tx: Tx, who: { phone: string; wilaya: str
         eq(orders.customerPhone, who.phone),
         eq(orders.wilayaName, who.wilaya),
         eq(orders.city, who.city),
+        eq(orders.storeId, who.storeId),
+        eq(orders.deliveryType, who.deliveryType),
+        who.deskId === null ? isNull(orders.deliveryDeskId) : eq(orders.deliveryDeskId, who.deskId),
         isNull(orders.shipsWithOrderId),
         notInArray(orders.status, [...CLOSED])
       )

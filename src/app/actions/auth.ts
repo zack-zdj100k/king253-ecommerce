@@ -23,7 +23,7 @@ export async function signInAction(raw: { email: string; password: string; next?
   if (!rateLimit(`login:${ip}`, 10, 15 * 60_000).ok) return { ok: false, error: "Too many attempts. Wait 15 minutes and try again." }
   const email = String(raw.email ?? "").slice(0, 200)
   const user = await authenticate(db, email, String(raw.password ?? "").slice(0, 200))
-  if (!user) return { ok: false, error: "Email or password is incorrect." }
+  if (!user) return { ok: false, error: "Email/phone or password is incorrect." }
   await startSession(user.id)
   // replace: the sign-in page is a detour, so it leaves no history entry.
   redirect(safeNext(raw.next, user.role === "admin" ? "/admin" : "/account"), RedirectType.replace)
