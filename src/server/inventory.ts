@@ -250,6 +250,36 @@ export async function restockReturnedUnits(tx: Tx, input: { variantId: string; s
 }
 
 /**
+ * Exchange: units handed straight to the customer from a shop's shelf
+ * (no reservation step). Refused when the shop doesn't have them available.
+ */
+export async function handOverUnits(tx: Tx, input: { variantId: string; storeId: number; quantity: number; label?: string } & Ref) {
+  if (!Number.isInteger(input.quantity) || input.quantity <= 0) throw new AppError("INVALID_QUANTITY", "Quantity must be at least 1.")
+  const [row] = await tx
+    .update(storeStock)
+    .set({ physical: sql`${storeStock.physical} - ${input.quantity}`, updatedAt: new Date() })
+    .where(
+      and(
+        eq(storeStock.variantId, input.variantId),
+        eq(storeStock.storeId, input.storeId),
+        sql`${storeStock.physical} - ${storeStock.reserved} >= ${input.quantity}`
+      )
+    )
+    .returning({ physical: storeStock.physical, reserved: storeStock.reserved })
+  if (!row) {
+    const [cur] = await tx
+      .select({ physical: storeStock.physical, reserved: storeStock.reserved })
+      .from(storeStock)
+      .where(and(eq(storeStock.variantId, input.variantId), eq(storeStock.storeId, input.storeId)))
+    throw new OutOfStockError(input.variantId, cur ? Math.max(0, cur.physical - cur.reserved) : 0, input.label)
+  }
+  const delta = { physical: -input.quantity, reserved: 0 }
+  await bumpTotals(tx, input.variantId, delta)
+  await logMovement(tx, input.variantId, input.storeId, "exchange_ship", row, delta, input)
+  return row
+}
+
+/**
  * Shops a product is sold in. Adding a shop creates 0-stock rows for every
  * variant; removing one is refused while that shop still has units of it.
  */

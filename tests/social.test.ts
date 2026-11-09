@@ -5,7 +5,7 @@ import { createUser } from "@/server/auth/users"
 import { createOrder } from "@/server/orders/create"
 import { changeOrderStatus } from "@/server/orders/manage"
 
-import { customer, key, resetDb, seedDelivery, seedProduct, testDb } from "./support/db"
+import { deliver, customer, key, resetDb, seedDelivery, seedProduct, testDb } from "./support/db"
 
 beforeEach(async () => {
   await resetDb()
@@ -23,7 +23,7 @@ describe("Social media statistics", () => {
     await seedDelivery()
     const p = await seedProduct({ slug: "tee", price: 3000, variants: [{ size: "M", color: "Black", physical: 5 }] })
     const o = await createOrder(testDb, { customer: customer({ wilaya: "Alger" }), lines: [{ variantId: p.variants[0].id, quantity: 1 }], idempotencyKey: key() }, { userId: tiktok.id })
-    await changeOrderStatus(testDb, { orderId: o.id, to: "delivered", actor: { userId: null, label: "Admin" } })
+    await deliver(o.id, { userId: null, label: "Admin" })
 
     const s = await socialStats(testDb)
     expect(s.answered).toBe(3)

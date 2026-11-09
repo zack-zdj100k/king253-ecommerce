@@ -5,7 +5,7 @@ import { formatDA } from "@/lib/money"
 import { formatPhone } from "@/lib/phone"
 import { db } from "@/server/db"
 import { listOrders } from "@/server/admin/queries"
-import { ORDER_STATUSES, STATUS_LABELS } from "@/server/orders/manage"
+import { FLOW_STATUSES, STATUS_LABELS } from "@/server/orders/manage"
 import { deleteOrderAction } from "@/app/admin/actions/orders"
 import { DeleteButton } from "@/components/admin/delete-button"
 import { Badge, Empty, PageHeader, Table, inputClass, selectClass, td, th, btnRed, pill } from "@/components/admin/ui"
@@ -15,7 +15,9 @@ export const metadata: Metadata = { title: "Orders" }
 export default async function AdminOrdersPage({ searchParams }: PageProps<"/admin/orders">) {
   const p = await searchParams
   const one = (v: unknown) => (typeof v === "string" ? v : undefined)
-  const filters = { q: one(p.q), status: one(p.status) ?? "all", sort: one(p.sort) ?? "newest", page: Number(one(p.page)) || 1 }
+  // No "All": the list always shows one status, Pending by default (the orders to call).
+  const status = (FLOW_STATUSES as readonly string[]).includes(one(p.status) ?? "") ? one(p.status)! : "pending"
+  const filters = { q: one(p.q), status, sort: one(p.sort) ?? (status === "pending" ? "oldest" : "newest"), page: Number(one(p.page)) || 1 }
   const { rows, total, page, pages } = await listOrders(db, filters)
   const qs = (patch: Record<string, string>) => {
     const s = new URLSearchParams({ ...(filters.q ? { q: filters.q } : {}), status: filters.status, sort: filters.sort, ...patch })
@@ -25,17 +27,21 @@ export default async function AdminOrdersPage({ searchParams }: PageProps<"/admi
   return (
     <div className="space-y-6">
       <PageHeader eyebrow="Sales" title="Orders">
-        <p className="mt-2 text-sm text-king-gray">{total} order(s)</p>
+        <p className="mt-2 text-sm text-king-gray">
+          {total} {STATUS_LABELS[filters.status as keyof typeof STATUS_LABELS].toLowerCase()} order(s)
+        </p>
       </PageHeader>
 
-      <form className="grid grid-cols-1 gap-3 md:grid-cols-[1fr_200px_200px_auto]" action="/admin/orders">
+      <nav aria-label="Status" className="flex flex-wrap gap-2">
+        {FLOW_STATUSES.map((s) => (
+          <Link key={s} href={qs({ status: s, page: "1", sort: s === "pending" ? "oldest" : "newest" })} className={pill(filters.status === s)}>
+            {STATUS_LABELS[s]}
+          </Link>
+        ))}
+      </nav>
+      <form className="grid grid-cols-1 gap-3 md:grid-cols-[1fr_200px_auto]" action="/admin/orders">
+        <input type="hidden" name="status" value={filters.status} />
         <input name="q" defaultValue={filters.q} placeholder="Search number, name or phone" aria-label="Search orders" className={inputClass} />
-        <select name="status" defaultValue={filters.status} aria-label="Status" className={selectClass}>
-          <option value="all">All statuses</option>
-          {ORDER_STATUSES.map((s) => (
-            <option key={s} value={s}>{STATUS_LABELS[s]}</option>
-          ))}
-        </select>
         <select name="sort" defaultValue={filters.sort} aria-label="Sort" className={selectClass}>
           <option value="newest">Newest first</option>
           <option value="oldest">Oldest first</option>
@@ -54,7 +60,7 @@ export default async function AdminOrdersPage({ searchParams }: PageProps<"/admi
               <th className={th}>Order</th>
               <th className={th}>Date</th>
               <th className={th}>Customer</th>
-              <th className={th}>Wilaya</th>
+              <th className={th}>Shop → wilaya</th>
               <th className={th}>Items</th>
               <th className={th}>Status</th>
               <th className={`${th} text-right`}>Clothes · delivery</th>
@@ -73,9 +79,17 @@ export default async function AdminOrdersPage({ searchParams }: PageProps<"/admi
                   <span className="block text-king-white">{o.customerName}</span>
                   <span className="text-xs">{formatPhone(o.customerPhone)}</span>
                 </td>
-                <td className={td}>{o.wilayaName}</td>
+                <td className={td}>
+                  <span className="block text-king-white">{o.storeName ?? "—"}</span>
+                  <span className="text-xs">
+                    {o.wilayaName} · {o.deliveryType === "desk" ? "Stop desk" : "Home"}
+                  </span>
+                </td>
                 <td className={td}>{o.items}</td>
-                <td className={td}><Badge status={o.status}>{STATUS_LABELS[o.status]}</Badge></td>
+                <td className={td}>
+                  <Badge status={o.status}>{STATUS_LABELS[o.status]}</Badge>
+                  {o.paymentStatus === "refused" && o.status === "delivered" && <span className="mt-1 block text-xs text-king-bright-red">Fully returned</span>}
+                </td>
                 <td className={`${td} text-right`}>
                   <span className="block text-king-white">{formatDA(o.clothes)}</span>
                   <span className="text-xs">

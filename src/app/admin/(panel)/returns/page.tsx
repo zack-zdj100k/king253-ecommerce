@@ -1,69 +1,162 @@
 import type { Metadata } from "next"
 import Link from "next/link"
 
-import { cn } from "@/lib/utils"
 import { formatDA } from "@/lib/money"
 import { formatPhone } from "@/lib/phone"
 import { db } from "@/server/db"
-import { listReturnsAdmin } from "@/server/admin/queries"
-import { ReturnActions } from "@/components/admin/moderation"
-import { Badge, Empty, PageHeader, pill } from "@/components/admin/ui"
+import { listJournal } from "@/server/returns"
+import { listStores } from "@/server/stores"
+import { Empty, PageHeader, Stat, Table, inputClass, pill, td, th } from "@/components/admin/ui"
 
 export const metadata: Metadata = { title: "Returns & exchanges" }
 
-export default async function ReturnsPage({ searchParams }: PageProps<"/admin/returns">) {
+const TYPES = [
+  ["return", "Returns"],
+  ["exchange", "Exchanges"],
+] as const
+
+const fmt = (d: Date) => d.toLocaleString("en-GB", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })
+const day = (d: Date) => d.toISOString().slice(0, 10)
+
+/**
+ * The journal: every return and exchange recorded on delivered orders.
+ * Filters: period (default last 30 days), shop, type — each list shows one
+ * choice at a time (no "All" option).
+ */
+export default async function ReturnsJournalPage({ searchParams }: PageProps<"/admin/returns">) {
   const p = await searchParams
-  const status = typeof p.status === "string" && ["open", "completed", "rejected", "all"].includes(p.status) ? p.status : "open"
-  const rows = await listReturnsAdmin(db, status)
+  const one = (v: unknown) => (typeof v === "string" ? v : undefined)
+  const shops = await listStores(db)
+  const shop = shops.find((s) => String(s.id) === one(p.shop)) ?? shops.find((s) => s.active) ?? shops[0]
+  const type = TYPES.some(([k]) => k === one(p.type)) ? (one(p.type) as "return" | "exchange") : "return"
+  const today = new Date()
+  const parse = (v: string | undefined, fallback: Date) => (v && /^\d{4}-\d{2}-\d{2}$/.test(v) ? new Date(`${v}T00:00:00Z`) : fallback)
+  const from = parse(one(p.from), new Date(today.getTime() - 29 * 86_400_000))
+  const to = parse(one(p.to), today)
+  const page = Number(one(p.page)) || 1
+  const qs = (patch: Record<string, string | number>) =>
+    `/admin/returns?${new URLSearchParams({ shop: String(shop?.id ?? ""), type, from: day(from), to: day(to), ...Object.fromEntries(Object.entries(patch).map(([k, v]) => [k, String(v)])) })}`
+
+  if (!shop) {
+    return (
+      <div className="space-y-6">
+        <PageHeader eyebrow="Sales" title="Returns & exchanges" />
+        <Empty>No shop yet.</Empty>
+      </div>
+    )
+  }
+  const { rows, totals, total, pages } = await listJournal(db, {
+    from: new Date(`${day(from)}T00:00:00Z`),
+    to: new Date(new Date(`${day(to)}T00:00:00Z`).getTime() + 86_400_000),
+    storeId: shop.id,
+    type,
+    page,
+  })
+
   return (
     <div className="space-y-6">
-      <PageHeader eyebrow="After sales" title="Returns & exchanges">
+      <PageHeader eyebrow="Sales" title="Returns & exchanges">
         <p className="mt-2 max-w-3xl text-sm text-king-gray">
-          Approve → (exchange: the new size is reserved) → Receive the item (resellable goes back to physical stock, damaged does not) → Complete (exchange: the replacement leaves stock; return: the refund is deducted from revenue).
+          Journal of every return and exchange. Record them from a delivered order (Orders → order → Returns & exchanges). Refunds come off
+          revenue; an order whose every item came back counts as refused and leaves the statistics.
         </p>
       </PageHeader>
-      <div className="flex gap-2">
-        {["open", "completed", "rejected", "all"].map((s) => (
-          <Link key={s} href={`/admin/returns?status=${s}`} className={pill(status === s)}>
-            {s}
+
+      <nav aria-label="Shop" className="flex flex-wrap gap-2">
+        {shops.map((s) => (
+          <Link key={s.id} href={qs({ shop: s.id, page: 1 })} className={pill(s.id === shop.id)}>
+            {s.name}
           </Link>
         ))}
+      </nav>
+      <div className="flex flex-wrap items-end gap-2">
+        {TYPES.map(([k, label]) => (
+          <Link key={k} href={qs({ type: k, page: 1 })} className={pill(type === k)}>
+            {label}
+          </Link>
+        ))}
+        <form action="/admin/returns" className="ml-auto flex flex-wrap items-end gap-2">
+          <input type="hidden" name="shop" value={shop.id} />
+          <input type="hidden" name="type" value={type} />
+          <label className="text-xs text-king-gray">
+            From
+            <input type="date" name="from" defaultValue={day(from)} className={`${inputClass} h-9 w-40`} />
+          </label>
+          <label className="text-xs text-king-gray">
+            To
+            <input type="date" name="to" defaultValue={day(to)} className={`${inputClass} h-9 w-40`} />
+          </label>
+          <button type="submit" className={pill(false)}>
+            Apply
+          </button>
+        </form>
       </div>
+
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <Stat label="Returns" value={totals.returns} />
+        <Stat label="Exchanges" value={totals.exchanges} />
+        <Stat label="Refunded" value={formatDA(totals.refunded)} tone={totals.refunded ? "red" : undefined} />
+        <Stat label="Collected (exchanges)" value={formatDA(totals.collected)} />
+      </div>
+      <p className="text-xs text-king-gray">
+        {total} {type === "return" ? "return(s)" : "exchange(s)"} in {shop.name}, {day(from)} → {day(to)}
+      </p>
+
       {rows.length === 0 ? (
-        <Empty>No {status} requests.</Empty>
+        <Empty>Nothing recorded for this shop and period.</Empty>
       ) : (
-        <ul className="space-y-3">
-          {rows.map((r) => (
-            <li key={r.request.id} className="grid gap-4 border border-white/10 bg-king-near-black p-5 lg:grid-cols-[1fr_auto]">
-              <div className="space-y-1 text-sm">
-                <div className="flex flex-wrap items-center gap-3">
-                  <span className="text-xs font-medium text-king-white">{r.request.type}</span>
-                  <Badge status={r.request.status}>{r.request.status}</Badge>
-                  <Link href={`/admin/orders/${r.orderId}`} className="text-king-white hover:text-king-bright-red">{r.orderNumber}</Link>
-                  <span className="text-xs text-king-gray">{r.request.createdAt.toLocaleString("en-GB")}</span>
-                </div>
-                <p className="text-king-muted">
-                  {r.customerName} · {formatPhone(r.customerPhone)}
-                </p>
-                <p className="text-king-white">
-                  {r.item.name} — {r.item.color} / {r.item.size} × {r.request.quantity}
-                  {r.replacement && (
-                    <span className="text-king-muted">
-                      {" "}→ {r.replacement.color} / {r.replacement.size} <span className="text-xs text-king-gray">({r.replacement.available} available)</span>
+        <Table>
+          <thead>
+            <tr>
+              <th className={th}>Date</th>
+              <th className={th}>Order · customer</th>
+              <th className={th}>Items</th>
+              <th className={`${th} text-right`}>Amount</th>
+              <th className={th}>By · reason</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((r) => (
+              <tr key={r.entry.id} className="align-top">
+                <td className={td}>{fmt(r.entry.createdAt)}</td>
+                <td className={td}>
+                  <Link href={`/admin/orders/${r.entry.orderId}#returns`} className="font-medium text-king-white hover:text-king-bright-red">
+                    {r.orderNumber}
+                  </Link>
+                  <span className="block text-xs">
+                    {r.customerName} · {formatPhone(r.customerPhone)}
+                  </span>
+                </td>
+                <td className={td}>
+                  {r.items.map((i) => (
+                    <span key={i.id} className="block text-xs">
+                      {i.direction === "in" ? "↩" : "→"} {i.productName} — {i.color} / {i.size} × {i.quantity}
                     </span>
-                  )}
-                </p>
-                <p className="text-king-muted">Reason: {r.request.reason}{r.request.details ? ` — ${r.request.details}` : ""}</p>
-                {r.request.condition && <p className="text-xs text-king-gray">Received: {r.request.condition}</p>}
-                {r.request.refundAmount ? <p className="text-xs text-king-bright-red">Refunded {formatDA(r.request.refundAmount)} — deducted from revenue</p> : null}
-                {r.request.adminNote && <p className="text-xs text-king-gray">Note: {r.request.adminNote}</p>}
-              </div>
-              <div className="lg:w-80">
-                <ReturnActions id={r.request.id} status={r.request.status} type={r.request.type} />
-              </div>
-            </li>
+                  ))}
+                </td>
+                <td className={`${td} text-right tabular-nums ${r.entry.amount < 0 ? "text-king-bright-red" : r.entry.amount > 0 ? "text-emerald-300" : ""}`}>
+                  {r.entry.amount < 0 ? `− ${formatDA(-r.entry.amount)}` : r.entry.amount > 0 ? `+ ${formatDA(r.entry.amount)}` : "0"}
+                </td>
+                <td className={td}>
+                  {r.entry.actorLabel}
+                  <span className="block text-xs">
+                    {r.entry.reason ?? ""}
+                    {r.entry.note ? ` — ${r.entry.note}` : ""}
+                  </span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </Table>
+      )}
+      {pages > 1 && (
+        <nav aria-label="Pages" className="flex gap-2">
+          {Array.from({ length: pages }, (_, i) => i + 1).map((n) => (
+            <Link key={n} href={qs({ page: n })} className={pill(n === page)}>
+              {n}
+            </Link>
           ))}
-        </ul>
+        </nav>
       )}
     </div>
   )

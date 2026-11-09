@@ -7,7 +7,6 @@ import { AppError, toUserMessage } from "@/server/errors"
 import { cancelOrderByCustomer, findOrderByToken, findOrderForCustomer, type CustomerOrderView } from "@/server/orders/view"
 import { rateLimit } from "@/server/rate-limit"
 import { clientIp } from "@/server/request"
-import { createReturnRequest, RETURN_REASONS } from "@/server/returns"
 import { fieldErrors, phoneSchema, trackSchema } from "@/server/validation"
 
 export type TrackResult =
@@ -23,33 +22,6 @@ export async function trackOrderAction(input: { number: string; phone: string })
   const order = await findOrderForCustomer(db, parsed.data.number, parsed.data.phone)
   if (!order) return { ok: false, error: "We couldn't find an order with this number and phone." }
   return { ok: true, order, phone: parsed.data.phone }
-}
-
-const returnInput = z.object({
-  number: z.string().trim().toUpperCase().max(40),
-  phone: phoneSchema,
-  orderItemId: z.uuid(),
-  type: z.enum(["return", "exchange"]),
-  reason: z.enum(RETURN_REASONS),
-  details: z.string().trim().max(1000).optional(),
-  quantity: z.coerce.number().int().min(1).max(50),
-  replacementVariantId: z.uuid().optional().nullable(),
-})
-
-export async function requestReturnAction(raw: unknown): Promise<TrackResult> {
-  try {
-    if (!rateLimit(`return:${await clientIp()}`, 10, 60 * 60_000).ok) {
-      return { ok: false, error: "Too many requests. Please try again later." }
-    }
-    const input = returnInput.parse(raw)
-    await createReturnRequest(db, { ...input, orderNumber: input.number })
-    const order = await findOrderForCustomer(db, input.number, input.phone)
-    if (!order) throw new AppError("NOT_FOUND", "Order not found.")
-    return { ok: true, order, phone: input.phone }
-  } catch (error) {
-    if (error instanceof z.ZodError) return { ok: false, error: "Please complete the request form." }
-    return { ok: false, error: toUserMessage(error) }
-  }
 }
 
 const cancelInput = z.object({

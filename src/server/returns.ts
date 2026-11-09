@@ -1,255 +1,310 @@
-import { and, eq, inArray, ne, sql } from "drizzle-orm"
+import { and, asc, desc, eq, gte, inArray, isNull, lt, sql, type SQL } from "drizzle-orm"
+import { z } from "zod"
 
-import type { Db, Tx } from "./db/client"
-import { orderItems, orders, productVariants, returnRequests, stockReservations } from "./db/schema"
-import { audit, CUSTOMER_ACTOR, type Actor } from "./audit"
-import { AppError, NotFoundError } from "./errors"
-import { consumeReservation, releaseReservation, reserveStock, restockReturnedUnits } from "./inventory"
-import { refundFor } from "./pricing"
+import type { Db, DbOrTx, Tx } from "./db/client"
+import { orderItems, orderStatusHistory, orders, productImages, productVariants, products, returnJournal, returnJournalItems, stores } from "./db/schema"
+import { audit, type Actor } from "./audit"
+import { NotFoundError, RuleError } from "./errors"
+import { handOverUnits, restockReturnedUnits } from "./inventory"
+import { refundFor, unitPriceOf } from "./pricing"
+
+/*
+ * Returns & exchanges (admin only, on delivered orders), recorded in one
+ * journal. Everything happens in one transaction:
+ *   Return   → returned units back in stock (order's shop, or one the admin picks),
+ *              money given back = what was paid for them; when every item is back
+ *              the order's payment becomes "refused" and it leaves revenue/statistics.
+ *   Exchange → returned units back in stock, new units out of the same shop's stock,
+ *              difference = new items − returned items (+ collect / − refund).
+ */
 
 export const RETURN_REASONS = ["Wrong size", "Wrong colour", "Product issue", "Changed my mind", "Other"] as const
 
-/**
- * Customer asks to return/exchange part of a DELIVERED order. Identity is
- * proven with order number + phone. Nothing moves in stock until an admin acts.
- */
-type ReturnInput = {
-  orderItemId: string
-  type: "return" | "exchange"
-  reason: string
-  details?: string | null
-  quantity: number
-  replacementVariantId?: string | null
+const line = z.object({ orderItemId: z.uuid(), quantity: z.coerce.number().int().min(1).max(100) })
+const added = z.object({ variantId: z.uuid(), quantity: z.coerce.number().int().min(1).max(50) })
+const base = {
+  orderId: z.uuid(),
+  /** Shop that receives the returned units (and gives the exchange units). Empty = the order's shop. */
+  storeId: z.coerce.number().int().positive().nullable().optional(),
+  returned: z.array(line).min(1, "Choose at least one item that comes back.").max(30),
+  reason: z.string().trim().max(60).optional().nullable(),
+  note: z.string().trim().max(1000).optional().nullable(),
+}
+export const returnInput = z.object(base)
+export const exchangeInput = z.object({ ...base, added: z.array(added).min(1, "Choose at least one new item.").max(30) })
+export type ReturnInput = z.input<typeof returnInput>
+export type ExchangeInput = z.input<typeof exchangeInput>
+
+async function lockDeliveredOrder(tx: Tx, orderId: string) {
+  const [order] = await tx.select().from(orders).where(eq(orders.id, orderId)).for("update")
+  if (!order) throw new NotFoundError("This order")
+  if (order.status !== "delivered") throw new RuleError("Returns and exchanges are only possible on delivered orders.")
+  if (order.paymentStatus === "refused") throw new RuleError("Every item of this order has already come back.")
+  return order
 }
 
-/**
- * Customer asks to return/exchange part of a DELIVERED order. Identity is
- * proven with order number + phone. Nothing moves in stock until an admin acts.
- */
-export async function createReturnRequest(db: Db, input: ReturnInput & { orderNumber: string; phone: string }) {
-  return db.transaction(async (tx) => {
-    const [order] = await tx
-      .select()
-      .from(orders)
-      .where(and(eq(orders.number, input.orderNumber), eq(orders.customerPhone, input.phone)))
-      .for("update")
-    if (!order) throw new NotFoundError("This order")
-    return insertReturn(tx, order, input, CUSTOMER_ACTOR)
-  })
+async function shopFor(tx: Tx, order: { storeId: number | null }, wanted: number | null | undefined) {
+  const id = wanted ?? order.storeId
+  if (!id) throw new RuleError("Choose the shop that receives the items.")
+  const [shop] = await tx.select({ id: stores.id, name: stores.name, active: stores.active }).from(stores).where(eq(stores.id, id))
+  if (!shop) throw new NotFoundError("This shop")
+  return shop
 }
 
-/**
- * Admin records a return/exchange (customer came to the shop or called).
- * Same checks as the customer flow; `approve` skips the "requested" step and,
- * for an exchange, reserves the replacement straight away.
- */
-export async function createReturnByAdmin(db: Db, input: ReturnInput & { orderId: string; actor: Actor; approve?: boolean }) {
-  const created = await db.transaction(async (tx) => {
-    const [order] = await tx.select().from(orders).where(eq(orders.id, input.orderId)).for("update")
-    if (!order) throw new NotFoundError("This order")
-    return insertReturn(tx, order, input, input.actor)
-  })
-  return input.approve ? approveReturn(db, { id: created.id, actor: input.actor, note: "Recorded and approved by the shop" }) : created
-}
-
-async function insertReturn(tx: Tx, order: typeof orders.$inferSelect, input: ReturnInput, actor: Actor) {
-  const reason = input.reason.trim()
-  if (!reason) throw new AppError("REASON_REQUIRED", "Tell us why you want to return this item.")
-  if (!Number.isInteger(input.quantity) || input.quantity < 1) throw new AppError("INVALID_QUANTITY", "Choose a quantity.")
-  if (order.status !== "delivered") throw new AppError("NOT_DELIVERED", "Returns and exchanges open once the order is delivered.")
-
-  const [item] = await tx
+/** Lock the returned items, check quantities, compute what the customer paid for them. */
+async function takeBack(tx: Tx, order: typeof orders.$inferSelect, lines: z.infer<typeof line>[], storeId: number, journalId: string, ref: { refId: string; actorUserId: string | null; reason: string }) {
+  const merged = new Map<string, number>()
+  for (const l of lines) merged.set(l.orderItemId, (merged.get(l.orderItemId) ?? 0) + l.quantity)
+  const items = await tx
     .select()
     .from(orderItems)
-    .where(and(eq(orderItems.id, input.orderItemId), eq(orderItems.orderId, order.id)))
-  if (!item || item.removedAt) throw new NotFoundError("This item")
-
-  const [{ requested }] = await tx
-    .select({ requested: sql<number>`coalesce(sum(${returnRequests.quantity}), 0)::int` })
-    .from(returnRequests)
-    .where(and(eq(returnRequests.orderItemId, item.id), ne(returnRequests.status, "rejected")))
-  const remaining = item.quantity - requested
-  if (input.quantity > remaining) {
-    throw new AppError("TOO_MANY", remaining > 0 ? `You can return up to ${remaining} of this item.` : "A request already covers this item.")
-  }
-
-  let replacementVariantId: string | null = null
-  if (input.type === "exchange") {
-    if (!input.replacementVariantId) throw new AppError("REPLACEMENT_REQUIRED", "Choose the size or colour you want instead.")
-    const [replacement] = await tx
-      .select({ id: productVariants.id, productId: productVariants.productId, active: productVariants.active })
-      .from(productVariants)
-      .where(eq(productVariants.id, input.replacementVariantId))
-    if (!replacement || !replacement.active || replacement.productId !== item.productId) {
-      throw new AppError("INVALID_REPLACEMENT", "Choose another size or colour of the same product.")
+    .where(and(eq(orderItems.orderId, order.id), inArray(orderItems.id, [...merged.keys()]), isNull(orderItems.removedAt)))
+    .for("update")
+  let value = 0
+  for (const [itemId, qty] of merged) {
+    const item = items.find((i) => i.id === itemId)
+    if (!item) throw new NotFoundError("This order item")
+    const left = item.quantity - item.returnedQuantity
+    if (qty > left) throw new RuleError(`Only ${left} × ${item.productName} (${item.size}) can still come back.`)
+    // Exchange items were given at their full price; original items at their share of the order discount.
+    const paid = item.exchangeJournalId ? item.unitPrice * qty : refundFor(item, qty, order)
+    value += paid
+    await tx.update(orderItems).set({ returnedQuantity: item.returnedQuantity + qty }).where(eq(orderItems.id, item.id))
+    if (item.variantId) {
+      await restockReturnedUnits(tx, { variantId: item.variantId, storeId, quantity: qty, refType: "return", ...ref })
     }
-    if (replacement.id === item.variantId) throw new AppError("INVALID_REPLACEMENT", "Choose a different size or colour.")
-    replacementVariantId = replacement.id
-  }
-
-  const [created] = await tx
-    .insert(returnRequests)
-    .values({
-      orderId: order.id,
+    await tx.insert(returnJournalItems).values({
+      journalId,
+      direction: "in",
       orderItemId: item.id,
-      type: input.type,
-      reason,
-      details: input.details?.trim() || null,
-      quantity: input.quantity,
-      replacementVariantId,
+      variantId: item.variantId,
+      productName: item.productName,
+      size: item.size,
+      color: item.color,
+      quantity: qty,
+      unitValue: Math.round(paid / qty),
     })
-    .returning()
-  await audit(tx, actor, "return.request", "return", created.id, { order: order.number, type: input.type })
-  return created
+  }
+  return value
 }
 
-/** Shop the order shipped from: returns go back to its shelf, exchanges leave from it. */
-async function orderShop(tx: Parameters<Parameters<Db["transaction"]>[0]>[0], orderId: string) {
-  const [o] = await tx.select({ storeId: orders.storeId, number: orders.number }).from(orders).where(eq(orders.id, orderId))
-  if (!o) throw new NotFoundError("This order")
-  if (o.storeId === null) throw new AppError("NO_SHOP", `Order ${o.number} has no departure shop.`)
-  return o.storeId
+/** True when every live item of the order (original or exchanged) has come back. */
+async function everythingBack(tx: Tx, orderId: string) {
+  const [row] = await tx
+    .select({ open: sql<number>`count(*) filter (where ${orderItems.returnedQuantity} < ${orderItems.quantity})::int` })
+    .from(orderItems)
+    .where(and(eq(orderItems.orderId, orderId), isNull(orderItems.removedAt)))
+  return row.open === 0
 }
 
-async function lockReturn(tx: Parameters<Parameters<Db["transaction"]>[0]>[0], id: string) {
-  const [request] = await tx.select().from(returnRequests).where(eq(returnRequests.id, id)).for("update")
-  if (!request) throw new NotFoundError("This return request")
-  return request
+async function history(tx: Tx, order: typeof orders.$inferSelect, actor: Actor, note: string) {
+  await tx.insert(orderStatusHistory).values({
+    orderId: order.id,
+    fromStatus: order.status,
+    toStatus: order.status,
+    note,
+    actorUserId: actor.userId,
+    actorLabel: actor.label,
+  })
 }
 
-/** Approve. For an exchange the replacement unit is reserved now so it cannot be sold to someone else. */
-export async function approveReturn(db: Db, input: { id: string; actor: Actor; note?: string | null }) {
+export async function recordReturn(db: Db, raw: ReturnInput, actor: Actor) {
+  const input = returnInput.parse(raw)
   return db.transaction(async (tx) => {
-    const request = await lockReturn(tx, input.id)
-    if (request.status !== "requested") throw new AppError("INVALID_STATE", "Only new requests can be approved.")
-    if (request.type === "exchange" && request.replacementVariantId) {
-      await reserveStock(tx, {
-        variantId: request.replacementVariantId,
-        storeId: await orderShop(tx, request.orderId),
-        quantity: request.quantity,
-        returnRequestId: request.id,
-        label: "The replacement",
-        refType: "return",
-        refId: request.id,
-        actorUserId: input.actor.userId,
-        reason: "Exchange approved",
+    const order = await lockDeliveredOrder(tx, input.orderId)
+    const shop = await shopFor(tx, order, input.storeId)
+    const [entry] = await tx
+      .insert(returnJournal)
+      .values({ orderId: order.id, storeId: shop.id, type: "return", amount: 0, reason: input.reason || null, note: input.note || null, actorUserId: actor.userId, actorLabel: actor.label })
+      .returning()
+    const ref = { refId: entry.id, actorUserId: actor.userId, reason: `Return on ${order.number}` }
+    const refund = await takeBack(tx, order, input.returned, shop.id, entry.id, ref)
+    const [saved] = await tx.update(returnJournal).set({ amount: -refund }).where(eq(returnJournal.id, entry.id)).returning()
+    const full = await everythingBack(tx, order.id)
+    if (full) await tx.update(orders).set({ paymentStatus: "refused" }).where(eq(orders.id, order.id))
+    await history(tx, order, actor, `Return recorded — refund ${refund} DA${full ? " · every item is back: payment refused" : ""}`)
+    await audit(tx, actor, "order.return", "order", order.id, { journal: entry.id, refund, full, shop: shop.name })
+    return { ...saved, full }
+  })
+}
+
+export async function recordExchange(db: Db, raw: ExchangeInput, actor: Actor) {
+  const input = exchangeInput.parse(raw)
+  return db.transaction(async (tx) => {
+    const order = await lockDeliveredOrder(tx, input.orderId)
+    const shop = await shopFor(tx, order, input.storeId)
+    const [entry] = await tx
+      .insert(returnJournal)
+      .values({ orderId: order.id, storeId: shop.id, type: "exchange", amount: 0, reason: input.reason || null, note: input.note || null, actorUserId: actor.userId, actorLabel: actor.label })
+      .returning()
+    const ref = { refId: entry.id, actorUserId: actor.userId, reason: `Exchange on ${order.number}` }
+    const returnedValue = await takeBack(tx, order, input.returned, shop.id, entry.id, ref)
+
+    // New items: any active product/size the shop has in stock, at today's price.
+    const wanted = new Map<string, number>()
+    for (const a of input.added) wanted.set(a.variantId, (wanted.get(a.variantId) ?? 0) + a.quantity)
+    const rows = await tx
+      .select({
+        variantId: productVariants.id,
+        productId: products.id,
+        productName: products.name,
+        status: products.status,
+        active: productVariants.active,
+        sku: productVariants.sku,
+        size: productVariants.size,
+        color: productVariants.color,
+        price: products.price,
+        salePrice: products.salePrice,
+        priceOverride: productVariants.priceOverride,
+        salePriceOverride: productVariants.salePriceOverride,
+        imageUrl: sql<string | null>`(select ${productImages.url} from ${productImages} where ${productImages.productId} = "products"."id"
+          order by ${productImages.isMain} desc, ${productImages.sortOrder} asc limit 1)`,
       })
-    }
-    const [updated] = await tx
-      .update(returnRequests)
-      .set({ status: "approved", adminNote: input.note?.trim() || request.adminNote })
-      .where(eq(returnRequests.id, request.id))
-      .returning()
-    await audit(tx, input.actor, "return.approve", "return", request.id, {})
-    return updated
-  })
-}
-
-export async function rejectReturn(db: Db, input: { id: string; actor: Actor; note?: string | null }) {
-  return db.transaction(async (tx) => {
-    const request = await lockReturn(tx, input.id)
-    if (!["requested", "approved"].includes(request.status)) throw new AppError("INVALID_STATE", "This request can no longer be rejected.")
-    const reservations = await tx
-      .select({ id: stockReservations.id })
-      .from(stockReservations)
-      .where(and(eq(stockReservations.returnRequestId, request.id), eq(stockReservations.status, "active")))
-    for (const r of reservations) {
-      await releaseReservation(tx, r.id, { refType: "return", refId: request.id, actorUserId: input.actor.userId, reason: "Exchange rejected" })
-    }
-    const [updated] = await tx
-      .update(returnRequests)
-      .set({ status: "rejected", adminNote: input.note?.trim() || request.adminNote })
-      .where(eq(returnRequests.id, request.id))
-      .returning()
-    await audit(tx, input.actor, "return.reject", "return", request.id, {})
-    return updated
-  })
-}
-
-/** The original item is back. Resellable units return to physical stock; damaged ones do not. */
-export async function markReturnReceived(db: Db, input: { id: string; condition: "resellable" | "damaged"; actor: Actor }) {
-  return db.transaction(async (tx) => {
-    const request = await lockReturn(tx, input.id)
-    if (request.status !== "approved") throw new AppError("INVALID_STATE", "Approve the request before receiving the item.")
-    const [item] = await tx.select().from(orderItems).where(eq(orderItems.id, request.orderItemId))
-    if (input.condition === "resellable") {
-      if (!item?.variantId) {
-        throw new AppError("VARIANT_DELETED", "This product option was deleted, so the item cannot go back into stock. Mark it as damaged instead.")
-      }
-      await restockReturnedUnits(tx, {
-        variantId: item.variantId,
-        storeId: await orderShop(tx, request.orderId),
-        quantity: request.quantity,
-        refType: "return",
-        refId: request.id,
-        actorUserId: input.actor.userId,
-        reason: `Returned ${request.type === "exchange" ? "for exchange" : "item"} — resellable`,
+      .from(productVariants)
+      .innerJoin(products, eq(products.id, productVariants.productId))
+      .where(inArray(productVariants.id, [...wanted.keys()]))
+    let newValue = 0
+    for (const [variantId, qty] of wanted) {
+      const v = rows.find((r) => r.variantId === variantId)
+      const price = v ? unitPriceOf(v, v) : null
+      if (!v || !v.active || price === null) throw new RuleError("One of the new items can no longer be sold.")
+      const label = `${v.productName} — ${v.color} / ${v.size}`
+      await handOverUnits(tx, { variantId, storeId: shop.id, quantity: qty, label, refType: "return", ...ref })
+      await tx.insert(orderItems).values({
+        orderId: order.id,
+        productId: v.productId,
+        variantId,
+        productName: v.productName,
+        sku: v.sku,
+        size: v.size,
+        color: v.color,
+        imageUrl: v.imageUrl,
+        unitPrice: price,
+        quantity: qty,
+        lineTotal: price * qty,
+        exchangeJournalId: entry.id,
       })
+      await tx.insert(returnJournalItems).values({
+        journalId: entry.id,
+        direction: "out",
+        variantId,
+        productName: v.productName,
+        size: v.size,
+        color: v.color,
+        quantity: qty,
+        unitValue: price,
+      })
+      newValue += price * qty
     }
-    const [updated] = await tx
-      .update(returnRequests)
-      .set({ status: "received", condition: input.condition })
-      .where(eq(returnRequests.id, request.id))
-      .returning()
-    await audit(tx, input.actor, "return.receive", "return", request.id, { condition: input.condition })
-    return updated
+    const difference = newValue - returnedValue
+    const [saved] = await tx.update(returnJournal).set({ amount: difference }).where(eq(returnJournal.id, entry.id)).returning()
+    const money = difference > 0 ? `to collect ${difference} DA` : difference < 0 ? `to refund ${-difference} DA` : "no difference"
+    await history(tx, order, actor, `Exchange recorded — ${money}`)
+    await audit(tx, actor, "order.exchange", "order", order.id, { journal: entry.id, returnedValue, newValue, difference, shop: shop.name })
+    return saved
   })
 }
 
-/** Done. For an exchange the replacement leaves the shop: its reservation is consumed. */
-export async function completeReturn(db: Db, input: { id: string; actor: Actor }) {
-  return db.transaction(async (tx) => {
-    const request = await lockReturn(tx, input.id)
-    if (request.status !== "received") throw new AppError("INVALID_STATE", "Receive the returned item first.")
-    if (request.type === "exchange") {
-      const reservations = await tx
-        .select({ id: stockReservations.id })
-        .from(stockReservations)
-        .where(and(eq(stockReservations.returnRequestId, request.id), eq(stockReservations.status, "active")))
-      for (const r of reservations) {
-        await consumeReservation(tx, r.id, {
-          type: "exchange_ship",
-          refType: "return",
-          refId: request.id,
-          actorUserId: input.actor.userId,
-          reason: "Exchange replacement handed over",
-        })
-      }
-    }
-    // A return (not an exchange) gives the money back: recorded so revenue drops by exactly that.
-    let refundAmount: number | null = null
-    if (request.type === "return") {
-      const [line] = await tx
-        .select({ unitPrice: orderItems.unitPrice, subtotal: orders.subtotal, discountAmount: orders.discountAmount })
-        .from(orderItems)
-        .innerJoin(orders, eq(orders.id, orderItems.orderId))
-        .where(eq(orderItems.id, request.orderItemId))
-      refundAmount = line ? refundFor(line, request.quantity, line) : 0
-    }
-    const [updated] = await tx.update(returnRequests).set({ status: "completed", refundAmount }).where(eq(returnRequests.id, request.id)).returning()
-    await audit(tx, input.actor, "return.complete", "return", request.id, { refund: refundAmount })
-    return updated
-  })
+/* ------------------------------------------------------------------ */
+/* Reading the journal                                                */
+/* ------------------------------------------------------------------ */
+
+export type JournalFilter = { from?: Date; to?: Date; storeId?: number | null; type?: "return" | "exchange" | null; orderId?: string; page?: number }
+
+export async function listJournal(db: DbOrTx, f: JournalFilter = {}) {
+  // Totals cover both types for the period/shop; the list shows the chosen type.
+  const scope: SQL[] = []
+  if (f.from) scope.push(gte(returnJournal.createdAt, f.from))
+  if (f.to) scope.push(lt(returnJournal.createdAt, f.to))
+  if (f.storeId) scope.push(eq(returnJournal.storeId, f.storeId))
+  if (f.orderId) scope.push(eq(returnJournal.orderId, f.orderId))
+  const where = f.type ? [...scope, eq(returnJournal.type, f.type)] : scope
+  const page = Math.max(1, f.page ?? 1)
+  const rows = await db
+    .select({
+      entry: returnJournal,
+      orderNumber: orders.number,
+      customerName: orders.customerName,
+      customerPhone: orders.customerPhone,
+      shopName: stores.name,
+      count: sql<number>`count(*) over()::int`,
+    })
+    .from(returnJournal)
+    .innerJoin(orders, eq(orders.id, returnJournal.orderId))
+    .leftJoin(stores, eq(stores.id, returnJournal.storeId))
+    .where(where.length ? and(...where) : undefined)
+    .orderBy(desc(returnJournal.createdAt))
+    .limit(50)
+    .offset((page - 1) * 50)
+  const items = rows.length
+    ? await db
+        .select()
+        .from(returnJournalItems)
+        .where(inArray(returnJournalItems.journalId, rows.map((r) => r.entry.id)))
+        .orderBy(asc(returnJournalItems.id))
+    : []
+  const [totals] = await db
+    .select({
+      returns: sql<number>`count(*) filter (where ${returnJournal.type} = 'return')::int`,
+      exchanges: sql<number>`count(*) filter (where ${returnJournal.type} = 'exchange')::int`,
+      refunded: sql<number>`coalesce(-sum(${returnJournal.amount}) filter (where ${returnJournal.amount} < 0), 0)::int`,
+      collected: sql<number>`coalesce(sum(${returnJournal.amount}) filter (where ${returnJournal.amount} > 0), 0)::int`,
+    })
+    .from(returnJournal)
+    .where(scope.length ? and(...scope) : undefined)
+  const total = rows[0]?.count ?? 0
+  return {
+    rows: rows.map((r) => ({ ...r, items: items.filter((i) => i.journalId === r.entry.id) })),
+    totals,
+    total,
+    page,
+    pages: Math.max(1, Math.ceil(total / 50)),
+  }
 }
 
-export async function returnsForOrders(db: Db, orderIds: string[]) {
-  if (!orderIds.length) return []
-  return db.select().from(returnRequests).where(inArray(returnRequests.orderId, orderIds))
+/** Items of a delivered order that can still come back, with what was paid per unit. */
+export async function returnableItems(db: DbOrTx, orderId: string) {
+  const [order] = await db.select().from(orders).where(eq(orders.id, orderId))
+  if (!order) return []
+  const items = await db
+    .select()
+    .from(orderItems)
+    .where(and(eq(orderItems.orderId, orderId), isNull(orderItems.removedAt)))
+    .orderBy(asc(orderItems.createdAt))
+  return items
+    .filter((i) => i.quantity > i.returnedQuantity)
+    .map((i) => ({
+      id: i.id,
+      name: i.productName,
+      size: i.size,
+      color: i.color,
+      left: i.quantity - i.returnedQuantity,
+      unitValue: i.exchangeJournalId ? i.unitPrice : refundFor(i, 1, order),
+      fromExchange: Boolean(i.exchangeJournalId),
+    }))
 }
 
-/** Permanently removes a request; a replacement still on hold goes back to "available". */
-export async function deleteReturn(db: Db, input: { id: string; actor: Actor }) {
-  return db.transaction(async (tx) => {
-    const request = await lockReturn(tx, input.id)
-    const holds = await tx
-      .select({ id: stockReservations.id })
-      .from(stockReservations)
-      .where(and(eq(stockReservations.returnRequestId, request.id), eq(stockReservations.status, "active")))
-    for (const r of holds) {
-      await releaseReservation(tx, r.id, { refType: "return", refId: request.id, actorUserId: input.actor.userId, reason: "Return request deleted" })
-    }
-    await tx.delete(returnRequests).where(eq(returnRequests.id, request.id))
-    await audit(tx, input.actor, "return.delete", "return", request.id, { type: request.type, status: request.status, orderId: request.orderId })
-    return request
-  })
+/** For the exchange picker: every sellable variant with its price and stock per active shop. */
+export async function exchangeCatalog(db: DbOrTx) {
+  const rows = await db
+    .select({
+      variantId: productVariants.id,
+      productName: products.name,
+      size: productVariants.size,
+      color: productVariants.color,
+      price: products.price,
+      salePrice: products.salePrice,
+      priceOverride: productVariants.priceOverride,
+      salePriceOverride: productVariants.salePriceOverride,
+      stock: sql<{ storeId: number; available: number }[]>`(select coalesce(json_agg(json_build_object('storeId', ss.store_id,
+        'available', greatest(ss.physical - ss.reserved, 0))), '[]') from store_stock ss join stores s on s.id = ss.store_id and s.active
+        where ss.variant_id = "product_variants"."id")`,
+    })
+    .from(productVariants)
+    .innerJoin(products, eq(products.id, productVariants.productId))
+    .where(and(eq(productVariants.active, true), eq(products.status, "published")))
+    .orderBy(asc(products.name), asc(productVariants.color), asc(productVariants.sortOrder))
+  return rows
+    .map((r) => ({ variantId: r.variantId, label: `${r.productName} — ${r.color} / ${r.size}`, price: unitPriceOf(r, r), stock: r.stock }))
+    .filter((r): r is typeof r & { price: number } => r.price !== null)
 }

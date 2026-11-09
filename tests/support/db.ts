@@ -3,6 +3,7 @@ import { sql } from "drizzle-orm"
 
 import { createDb } from "@/server/db/client"
 import { categories, deliveryRates, productImages, productStores, productVariants, products, storeStock, stores } from "@/server/db/schema"
+import { changeOrderStatus } from "@/server/orders/manage"
 import { saveSettings } from "@/server/settings"
 
 config({ path: ".env.local" })
@@ -98,4 +99,10 @@ export function customer<T extends { wilaya: string } & Record<string, unknown>>
 export function key() {
   n += 1
   return `test-key-${Date.now()}-${n}-${Math.random().toString(36).slice(2)}`
+}
+
+/** Pending → Confirmed → Delivered (the only way to deliver an order). */
+export async function deliver(orderId: string, actor: { userId: string | null; label: string }) {
+  await changeOrderStatus(testDb, { orderId, to: "confirmed", actor })
+  return changeOrderStatus(testDb, { orderId, to: "delivered", actor })
 }

@@ -10,16 +10,8 @@ import { AppError, NotFoundError } from "./errors"
 import { findCommune, findWilaya } from "@/lib/algeria"
 import { normalizePhone } from "@/lib/phone"
 
-/**
- * A delivered order whose every item went back on a return the shop accepted
- * (approved, received or completed). Exchanges don't count: the customer
- * still has clothes from that order.
- */
-const fullyReturnedSql = sql<boolean>`(${orders.status} = 'delivered' and not exists (
-  select 1 from order_items oi
-  where oi.order_id = "orders"."id" and oi.removed_at is null
-    and oi.quantity > coalesce((select sum(r.quantity) from return_requests r
-      where r.order_item_id = oi.id and r.type = 'return' and r.status in ('approved', 'received', 'completed')), 0)))`
+/** A delivered order whose every item came back (payment refused): it brought nothing. */
+const fullyReturnedSql = sql<boolean>`(${orders.status} = 'delivered' and ${orders.paymentStatus} = 'refused')`
 
 /* ------------------------------------------------------------------ */
 /* What the customer sees on /account                                 */

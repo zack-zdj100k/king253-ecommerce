@@ -91,19 +91,21 @@ export function refundFor(item: { unitPrice: number }, quantity: number, order: 
   return Math.round(item.unitPrice * quantity * paidShare)
 }
 
-/** Refunds of completed returns for an order row in SQL (same formula as refundFor). */
+/** Money given back through the Returns & Exchanges journal for an order row (positive DA). */
 export function refundsSql(o: string) {
-  return `coalesce((select sum(coalesce(r.refund_amount, round(oi.unit_price * r.quantity * (${o}.subtotal - ${o}.discount_amount)::numeric / nullif(${o}.subtotal, 0))))
-    from return_requests r join order_items oi on oi.id = r.order_item_id
-    where r.order_id = ${o}.id and r.type = 'return' and r.status = 'completed'), 0)`
+  return `greatest(-coalesce((select sum(j.amount) from return_journal j where j.order_id = ${o}.id), 0), 0)`
 }
 
 /**
  * The shop's revenue for an order row in SQL (`o` = orders alias): clothes,
- * minus delivery the shop pays (free delivery), minus refunds of completed returns.
+ * minus delivery the shop pays (free delivery), plus the journal's effect
+ * (returns refunded, exchange differences). Refused orders (refused at the
+ * door or fully returned) bring nothing.
  */
 export function netRevenueSql(o = "orders") {
-  return sql.raw(`(${o}.subtotal - ${o}.discount_amount - case when ${o}.free_delivery then ${o}.delivery_fee else 0 end - ${refundsSql(o)})`)
+  return sql.raw(`(case when ${o}.payment_status = 'refused' then 0 else
+    ${o}.subtotal - ${o}.discount_amount - case when ${o}.free_delivery then ${o}.delivery_fee else 0 end
+    + coalesce((select sum(j.amount) from return_journal j where j.order_id = ${o}.id), 0) end)`)
 }
 
 /** Free-delivery promotion from settings, judged on the clothes total of the whole delivery. */

@@ -12,7 +12,7 @@ export const metadata: Metadata = { title: "Reviews" }
 
 export default async function ReviewsPage({ searchParams }: PageProps<"/admin/reviews">) {
   const p = await searchParams
-  const status = typeof p.status === "string" && ["pending", "approved", "rejected", "all"].includes(p.status) ? p.status : "pending"
+  const status = typeof p.status === "string" && ["pending", "approved", "rejected"].includes(p.status) ? p.status : "pending"
   const rows = await listReviewsAdmin(db, status)
   return (
     <div className="space-y-6">
@@ -20,14 +20,14 @@ export default async function ReviewsPage({ searchParams }: PageProps<"/admin/re
         <p className="mt-2 max-w-2xl text-sm text-king-gray">New reviews stay hidden until approved. &ldquo;Verified purchase&rdquo; is set automatically only when the order number + phone match a delivered order with this product.</p>
       </PageHeader>
       <div className="flex gap-2">
-        {["pending", "approved", "rejected", "all"].map((s) => (
+        {["pending", "approved", "rejected"].map((s) => (
           <Link key={s} href={`/admin/reviews?status=${s}`} className={pill(status === s)}>
             {s}
           </Link>
         ))}
       </div>
       {rows.length === 0 ? (
-        <Empty>No {status === "all" ? "" : status} reviews.</Empty>
+        <Empty>No {status} reviews.</Empty>
       ) : (
         <ul className="space-y-3">
           {rows.map(({ review: r, productName, productSlug }) => (

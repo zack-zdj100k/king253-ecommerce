@@ -21,31 +21,37 @@ import { ConfirmButton } from "@/components/admin/confirm-button"
 type Status = "pending" | "contacting" | "confirmed" | "preparing" | "ready_for_delivery" | "delivered" | "cancelled"
 const STATUS_LABELS: Record<Status, string> = {
   pending: "Pending",
-  contacting: "Contacting",
+  contacting: "Pending",
   confirmed: "Confirmed",
-  preparing: "Preparing",
-  ready_for_delivery: "Ready for delivery",
+  preparing: "Confirmed",
+  ready_for_delivery: "Confirmed",
   delivered: "Delivered",
   cancelled: "Cancelled",
 }
-const FLOW: Status[] = ["pending", "contacting", "confirmed", "preparing", "ready_for_delivery", "delivered"]
+/** Pending → Confirmed → Delivered (old in-between statuses continue from Confirmed). */
+const NEXT: Partial<Record<Status, Status>> = {
+  pending: "confirmed",
+  contacting: "confirmed",
+  confirmed: "delivered",
+  preparing: "delivered",
+  ready_for_delivery: "delivered",
+}
 
 /* ------------------------------------------------------------------ */
 
 export function StatusPanel({ orderId, status }: { orderId: string; status: Status }) {
   const { run, pending, feedback } = useAdminAction()
-  const closed = status === "delivered" || status === "cancelled"
-  const next = FLOW[FLOW.indexOf(status) + 1] as Status | undefined
-  const [to, setTo] = React.useState<Status>(next ?? status)
+  const next = NEXT[status]
+  const [to, setTo] = React.useState<Status | null>(next ?? null)
   const [note, setNote] = React.useState("")
 
-  if (closed) {
+  if (!next) {
     return (
       <div className="space-y-3">
         <p className="text-sm text-king-gray">This order is {STATUS_LABELS[status].toLowerCase()} and closed.</p>
         {status === "delivered" && (
           <a href="#returns" className={btnOutline}>
-            <RotateCcw className="size-3.5" aria-hidden /> Return or exchange an item ↓
+            <RotateCcw className="size-3.5" aria-hidden /> Return or exchange ↓
           </a>
         )}
       </div>
@@ -53,42 +59,44 @@ export function StatusPanel({ orderId, status }: { orderId: string; status: Stat
   }
   const warning =
     to === "delivered"
-      ? "Delivered removes the units from physical stock (and from reserved)."
+      ? "Delivered: the units leave the shop's physical stock and the payment counts as collected."
       : to === "cancelled"
-        ? "Cancelling releases the reservation. Physical stock is not changed."
-        : "Reserved stock stays reserved."
+        ? "Cancelling releases the reserved units back to the shop. Not counted in revenue."
+        : "The customer confirmed by phone. The units stay reserved in the departure shop."
 
   return (
     <form
       className="space-y-3"
       onSubmit={(e) => {
         e.preventDefault()
-        run(() => changeStatusAction(orderId, to, note), () => setNote(""))
+        if (to) run(() => changeStatusAction(orderId, to, note), () => setNote(""))
       }}
     >
+      <ol className="flex items-center gap-2 text-xs font-medium" aria-label="Order steps">
+        {(["pending", "confirmed", "delivered"] as const).map((s, i) => {
+          const done = ["pending", "confirmed", "delivered"].indexOf(STATUS_LABELS[status].toLowerCase()) >= i
+          return (
+            <li key={s} className="flex items-center gap-2">
+              {i > 0 && <span className="h-px w-6 bg-white/15" aria-hidden />}
+              <span className={done ? "text-king-white" : "text-king-gray"}>{STATUS_LABELS[s]}</span>
+            </li>
+          )
+        })}
+      </ol>
       <div className="flex flex-wrap gap-2">
-        {next && (
-          <button type="button" onClick={() => setTo(next)} className={to === next ? btnRed : btnOutline}>
-            → {STATUS_LABELS[next]}
-          </button>
-        )}
+        <button type="button" onClick={() => setTo(next)} className={to === next ? btnRed : btnOutline}>
+          → {STATUS_LABELS[next]}
+        </button>
         <button type="button" onClick={() => setTo("cancelled")} className={to === "cancelled" ? btnRed : btnOutline}>
           Cancel order
         </button>
-        <select value={to} onChange={(e) => setTo(e.target.value as Status)} aria-label="Any status" className={`${selectClass} w-auto`}>
-          {[...FLOW, "cancelled" as Status].map((s) => (
-            <option key={s} value={s} disabled={s === status}>
-              {STATUS_LABELS[s]}
-            </option>
-          ))}
-        </select>
       </div>
       <input value={note} onChange={(e) => setNote(e.target.value)} placeholder="Note for the timeline (optional)" aria-label="Status note" className={inputClass} />
       <p className="text-xs text-king-gray">{warning}</p>
       <div className="flex items-center gap-3">
-        <button type="submit" disabled={pending || to === status} className={btnRed}>
+        <button type="submit" disabled={pending || !to} className={btnRed}>
           {pending ? <Loader2 className="size-3.5 animate-spin" aria-hidden /> : null}
-          Set to {STATUS_LABELS[to]}
+          Set to {to ? STATUS_LABELS[to] : "…"}
         </button>
         <Feedback feedback={feedback} />
       </div>

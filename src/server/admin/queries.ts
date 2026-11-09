@@ -71,7 +71,10 @@ export async function listOrders(db: DbOrTx, f: OrderFilters) {
     if (digits.length >= 4) conds.push(ilike(orders.customerPhone, `%${digits.replace(/^0/, "")}%`))
     where.push(or(...conds)!)
   }
-  if (f.status && f.status !== "all") where.push(sql`${orders.status} = ${f.status}`)
+  // Old in-between statuses belong to the step they were mapped to.
+  if (f.status === "pending") where.push(sql`${orders.status} in ('pending', 'contacting')`)
+  else if (f.status === "confirmed") where.push(sql`${orders.status} in ('confirmed', 'preparing', 'ready_for_delivery')`)
+  else if (f.status) where.push(sql`${orders.status} = ${f.status}`)
   if (f.from) where.push(gte(orders.createdAt, f.from))
   if (f.to) where.push(lt(orders.createdAt, f.to))
   const order =
@@ -86,6 +89,9 @@ export async function listOrders(db: DbOrTx, f: OrderFilters) {
       customerName: orders.customerName,
       customerPhone: orders.customerPhone,
       wilayaName: orders.wilayaName,
+      deliveryType: orders.deliveryType,
+      paymentStatus: orders.paymentStatus,
+      storeName: sql<string | null>`(select s.name from stores s where s.id = "orders"."store_id")`,
       total: orders.total,
       clothes: sql<number>`(${orders.subtotal} - ${orders.discountAmount})::int`,
       deliveryFee: orders.deliveryFee,
@@ -430,34 +436,6 @@ export async function listReviewsAdmin(db: DbOrTx, status: string) {
     .innerJoin(products, eq(products.id, reviews.productId))
     .where(status === "all" ? undefined : sql`${reviews.status} = ${status}`)
     .orderBy(desc(reviews.createdAt))
-    .limit(100)
-}
-
-export async function listReturnsAdmin(db: DbOrTx, status: string) {
-  const replacement = sql<{ size: string; color: string; available: number } | null>`(
-    select json_build_object('size', v.size, 'color', v.color, 'available', greatest(v.physical - v.reserved, 0))
-    from product_variants v where v.id = ${returnRequests.replacementVariantId})`
-  return db
-    .select({
-      request: returnRequests,
-      orderNumber: orders.number,
-      orderId: orders.id,
-      customerName: orders.customerName,
-      customerPhone: orders.customerPhone,
-      item: { name: orderItems.productName, size: orderItems.size, color: orderItems.color, quantity: orderItems.quantity },
-      replacement,
-    })
-    .from(returnRequests)
-    .innerJoin(orders, eq(orders.id, returnRequests.orderId))
-    .innerJoin(orderItems, eq(orderItems.id, returnRequests.orderItemId))
-    .where(
-      status === "open"
-        ? inArray(returnRequests.status, ["requested", "approved", "received"])
-        : status === "all"
-          ? undefined
-          : sql`${returnRequests.status} = ${status}`
-    )
-    .orderBy(desc(returnRequests.createdAt))
     .limit(100)
 }
 

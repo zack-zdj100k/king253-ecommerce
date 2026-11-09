@@ -7,7 +7,7 @@ import { changeOrderStatus } from "@/server/orders/manage"
 import { authenticate, createSessionRecord, createUser, hashToken } from "@/server/auth/users"
 import { createOrder } from "@/server/orders/create"
 
-import { customer, key, resetDb, seedDelivery, seedProduct, testDb } from "./support/db"
+import { deliver, customer, key, resetDb, seedDelivery, seedProduct, testDb } from "./support/db"
 
 let userId: string
 
@@ -82,18 +82,17 @@ describe("Removing a cancelled order from My orders", () => {
 })
 
 describe("Removing a returned order from My orders", () => {
-  it("allowed once every item is on a return the shop approved", async () => {
-    const { approveReturn, createReturnRequest } = await import("@/server/returns")
+  it("allowed once every item came back (payment refused)", async () => {
+    const { recordReturn } = await import("@/server/returns")
     const { orderItems } = await import("@/server/db/schema")
     await seedDelivery()
     const p = await seedProduct({ slug: "tee", price: 3000, variants: [{ size: "M", color: "Black", physical: 5 }] })
     const o = await createOrder(testDb, { customer: customer({ wilaya: "Alger" }), lines: [{ variantId: p.variants[0].id, quantity: 2 }], idempotencyKey: key() }, { userId })
-    await changeOrderStatus(testDb, { orderId: o.id, to: "delivered", actor: { userId: null, label: "Admin" } })
+    await deliver(o.id, { userId: null, label: "Admin" })
     const [item] = await testDb.select().from(orderItems).where(eq(orderItems.orderId, o.id))
-    const r = await createReturnRequest(testDb, { orderNumber: o.number, phone: o.customerPhone, orderItemId: item.id, type: "return", reason: "Wrong size", quantity: 2 })
-
-    await expect(hideOrderFromAccount(testDb, userId, o.id)).rejects.toThrow(/Only cancelled orders/) // not accepted yet
-    await approveReturn(testDb, { id: r.id, actor: { userId: null, label: "Admin" } })
+    await recordReturn(testDb, { orderId: o.id, returned: [{ orderItemId: item.id, quantity: 1 }] }, { userId: null, label: "Admin" })
+    await expect(hideOrderFromAccount(testDb, userId, o.id)).rejects.toThrow(/Only cancelled orders/) // one piece still with the customer
+    await recordReturn(testDb, { orderId: o.id, returned: [{ orderItemId: item.id, quantity: 1 }] }, { userId: null, label: "Admin" })
     expect((await accountOrders(testDb, userId))[0].returned).toBe(true)
     await hideOrderFromAccount(testDb, userId, o.id)
     expect(await accountOrders(testDb, userId)).toHaveLength(0)

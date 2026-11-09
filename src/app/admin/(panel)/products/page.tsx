@@ -15,7 +15,9 @@ export const metadata: Metadata = { title: "Products" }
 export default async function AdminProductsPage({ searchParams }: PageProps<"/admin/products">) {
   const p = await searchParams
   const one = (v: unknown) => (typeof v === "string" ? v : undefined)
-  const f = { q: one(p.q), status: one(p.status) ?? "all", page: Number(one(p.page)) || 1 }
+  // No "All": one status at a time, Published by default.
+  const status = ["published", "draft", "archived"].includes(one(p.status) ?? "") ? one(p.status)! : "published"
+  const f = { q: one(p.q), status, page: Number(one(p.page)) || 1 }
   const { rows, total, page, pages } = await listProductsAdmin(db, f)
 
   return (
@@ -36,7 +38,6 @@ export default async function AdminProductsPage({ searchParams }: PageProps<"/ad
       <form className="grid grid-cols-1 gap-3 md:grid-cols-[1fr_200px_auto]" action="/admin/products">
         <input name="q" defaultValue={f.q} placeholder="Search name or slug" aria-label="Search products" className={inputClass} />
         <select name="status" defaultValue={f.status} aria-label="Status" className={selectClass}>
-          <option value="all">All statuses</option>
           <option value="published">Published</option>
           <option value="draft">Draft</option>
           <option value="archived">Archived</option>

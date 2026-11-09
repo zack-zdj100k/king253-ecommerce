@@ -1,49 +1,31 @@
 import { timingSafeEqual } from "node:crypto"
 
-import { and, asc, eq, inArray, isNull, ne } from "drizzle-orm"
+import { and, asc, eq, inArray, isNull } from "drizzle-orm"
 
 import type { Db, DbOrTx } from "../db/client"
-import { orderItems, orderStatusHistory, orders, productVariants, products, returnRequests } from "../db/schema"
-import { availableOf, storefrontStock } from "../inventory"
+import { orderItems, orderStatusHistory, orders, returnJournal, returnJournalItems } from "../db/schema"
 import { CUSTOMER_ACTOR } from "../audit"
 import { AppError, NotFoundError } from "../errors"
 import { changeOrderStatus, type OrderStatus } from "./manage"
 
-/** Customer-facing steps (admin statuses are more detailed). */
+/** Customer-facing steps (old in-between statuses count as the step they belong to). */
 export const CUSTOMER_STEPS = [
-  { key: "placed", label: "Order placed", statuses: ["pending"] },
-  { key: "confirmed", label: "Confirmed", statuses: ["contacting", "confirmed"] },
-  { key: "preparing", label: "Preparing", statuses: ["preparing"] },
-  { key: "shipping", label: "On its way", statuses: ["ready_for_delivery"] },
+  { key: "placed", label: "Order placed", statuses: ["pending", "contacting"] },
+  { key: "confirmed", label: "Confirmed", statuses: ["confirmed", "preparing", "ready_for_delivery"] },
   { key: "delivered", label: "Delivered", statuses: ["delivered"] },
 ] as const
 
-/** Statuses a customer may cancel from; once preparation starts they call the shop. */
+/** Statuses a customer may cancel from online; after that they call the shop. */
 export const CUSTOMER_CANCELLABLE = ["pending", "contacting", "confirmed"] as const
 
 async function buildView(db: DbOrTx, order: typeof orders.$inferSelect) {
-  const [items, history, returns] = await Promise.all([
-    db.select().from(orderItems).where(and(eq(orderItems.orderId, order.id), isNull(orderItems.removedAt))),
+  const [items, history, journal] = await Promise.all([
+    db.select().from(orderItems).where(and(eq(orderItems.orderId, order.id), isNull(orderItems.removedAt))).orderBy(asc(orderItems.createdAt)),
     db.select().from(orderStatusHistory).where(eq(orderStatusHistory.orderId, order.id)).orderBy(asc(orderStatusHistory.createdAt)),
-    db.select().from(returnRequests).where(and(eq(returnRequests.orderId, order.id), ne(returnRequests.status, "rejected"))),
+    db.select().from(returnJournal).where(eq(returnJournal.orderId, order.id)).orderBy(asc(returnJournal.createdAt)),
   ])
-
-  // Exchange options: other sizes/colours of the same product with stock.
-  const productIds = [...new Set(items.flatMap((i) => (i.productId ? [i.productId] : [])))]
-  const options = productIds.length
-    ? await db
-        .select({
-          id: productVariants.id,
-          productId: productVariants.productId,
-          size: productVariants.size,
-          color: productVariants.color,
-          ...storefrontStock(),
-          active: productVariants.active,
-          status: products.status,
-        })
-        .from(productVariants)
-        .innerJoin(products, eq(products.id, productVariants.productId))
-        .where(inArray(productVariants.productId, productIds))
+  const journalItems = journal.length
+    ? await db.select().from(returnJournalItems).where(inArray(returnJournalItems.journalId, journal.map((j) => j.id)))
     : []
 
   const [shipsWith] = order.shipsWithOrderId
@@ -59,6 +41,9 @@ async function buildView(db: DbOrTx, order: typeof orders.$inferSelect) {
     createdAt: order.createdAt,
     customerName: order.customerName,
     delivery: {
+      type: order.deliveryType,
+      deskName: order.deskName,
+      deskAddress: order.deskAddress,
       wilaya: order.wilayaName,
       city: order.city,
       address: order.address,
@@ -73,36 +58,35 @@ async function buildView(db: DbOrTx, order: typeof orders.$inferSelect) {
       shipsWith: shipsWith?.number ?? null,
       total: order.total,
     },
-    items: items.map((i) => {
-      const requested = returns.filter((r) => r.orderItemId === i.id).reduce((s, r) => s + r.quantity, 0)
-      return {
+    /** Original items (exchange items are listed under returns). */
+    items: items
+      .filter((i) => !i.exchangeJournalId)
+      .map((i) => ({
         id: i.id,
         name: i.productName,
         size: i.size,
         color: i.color,
         quantity: i.quantity,
+        returnedQuantity: i.returnedQuantity,
         unitPrice: i.unitPrice,
         lineTotal: i.lineTotal,
         imageUrl: i.imageUrl,
-        returnable: order.status === "delivered" ? i.quantity - requested : 0,
-        exchangeOptions: options
-          .filter((o) => o.productId === i.productId && o.id !== i.variantId && o.active && o.status === "published" && availableOf(o) > 0)
-          .map((o) => ({ id: o.id, label: `${o.color} / ${o.size}` })),
-      }
-    }),
-    returns: returns.map((r) => ({ id: r.id, type: r.type, status: r.status, quantity: r.quantity, itemId: r.orderItemId })),
-    /** Every piece came back (return approved or later) — same rule as the account list. */
-    returned:
-      order.status === "delivered" &&
-      items.length > 0 &&
-      items.every(
-        (i) =>
-          i.quantity <=
-          returns.filter((r) => r.orderItemId === i.id && r.type === "return" && r.status !== "requested").reduce((s, r) => s + r.quantity, 0)
-      ),
+      })),
+    /** Returns & exchanges done by the shop, with what came back and what was given. */
+    returns: journal.map((j) => ({
+      id: j.id,
+      type: j.type,
+      amount: j.amount,
+      at: j.createdAt,
+      items: journalItems
+        .filter((i) => i.journalId === j.id)
+        .map((i) => ({ direction: i.direction as "in" | "out", name: i.productName, size: i.size, color: i.color, quantity: i.quantity })),
+    })),
+    /** Every piece came back: the order brought no money. */
+    returned: order.status === "delivered" && order.paymentStatus === "refused",
     timeline,
     cancelledAt,
-    /** The customer can still cancel online (before preparation starts). */
+    /** The customer can still cancel online. */
     cancellable: (CUSTOMER_CANCELLABLE as readonly string[]).includes(order.status),
   }
 }
@@ -147,7 +131,7 @@ export async function cancelOrderByCustomer(
   if (!order || (!tokenOk && !phoneOk)) throw new NotFoundError("This order")
   if (order.status === "cancelled") return order
   if (!(CUSTOMER_CANCELLABLE as readonly string[]).includes(order.status)) {
-    throw new AppError("TOO_LATE", "Your order is already being prepared or on its way — call us to cancel it.")
+    throw new AppError("TOO_LATE", "Your order can no longer be cancelled online — call us.")
   }
   const reason = input.reason?.trim().slice(0, 300)
   const { order: updated } = await changeOrderStatus(db, {

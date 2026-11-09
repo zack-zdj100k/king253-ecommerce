@@ -36,9 +36,10 @@ describe("Customer cancels an order", () => {
     expect((await cancelOrderByCustomer(testDb, { number: order.number, phone: order.customerPhone })).status).toBe("cancelled")
   })
 
-  it("is refused once preparation started", async () => {
+  it("is refused once delivered", async () => {
     const { order } = await setup()
-    await changeOrderStatus(testDb, { orderId: order.id, to: "preparing", actor: admin })
+    await changeOrderStatus(testDb, { orderId: order.id, to: "confirmed", actor: admin })
+    await changeOrderStatus(testDb, { orderId: order.id, to: "delivered", actor: admin })
     expect((await findOrderByToken(testDb, order.number, order.accessToken))?.cancellable).toBe(false)
     await expect(cancelOrderByCustomer(testDb, { number: order.number, token: order.accessToken })).rejects.toThrow(/call us/)
   })

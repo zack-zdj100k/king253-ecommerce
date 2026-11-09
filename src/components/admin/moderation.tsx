@@ -4,11 +4,9 @@ import * as React from "react"
 import { Upload } from "lucide-react"
 
 import {
-  deleteReturnAction,
   deleteReviewAction,
   deleteTestimonialAction,
   moderateReviewAction,
-  returnAction,
   saveTestimonialAction,
 } from "@/app/admin/actions/moderation"
 import { DeleteButton } from "@/components/admin/delete-button"
@@ -99,43 +97,3 @@ export function TestimonialForm({ testimonial }: { testimonial: Testimonial | nu
   )
 }
 
-export function ReturnActions({ id, status, type }: { id: string; status: string; type: "return" | "exchange" }) {
-  const { run, pending, feedback } = useAdminAction()
-  const [note, setNote] = React.useState("")
-  return (
-    <div className="space-y-2">
-      {(status === "requested" || status === "approved") && (
-        <input value={note} onChange={(e) => setNote(e.target.value)} placeholder="Note (optional)" aria-label="Note" className={inputClass} />
-      )}
-      <div className="flex flex-wrap gap-2">
-        {status === "requested" && (
-          <button type="button" disabled={pending} onClick={() => run(() => returnAction(id, "approve", { note }))} className={btnRed}>
-            Approve{type === "exchange" ? " & reserve replacement" : ""}
-          </button>
-        )}
-        {(status === "requested" || status === "approved") && (
-          <button type="button" disabled={pending} onClick={() => run(() => returnAction(id, "reject", { note }))} className={btnOutline}>
-            Reject
-          </button>
-        )}
-        {status === "approved" && (
-          <>
-            <button type="button" disabled={pending} onClick={() => run(() => returnAction(id, "receive", { condition: "resellable" }))} className={btnOutline}>
-              Received — resellable (restock)
-            </button>
-            <button type="button" disabled={pending} onClick={() => run(() => returnAction(id, "receive", { condition: "damaged" }))} className={btnOutline}>
-              Received — damaged (no restock)
-            </button>
-          </>
-        )}
-        {status === "received" && (
-          <button type="button" disabled={pending} onClick={() => run(() => returnAction(id, "complete"))} className={btnRed}>
-            Complete{type === "exchange" ? " — replacement handed over" : ""}
-          </button>
-        )}
-        <DeleteButton label="Delete" confirm={status === "approved" && type === "exchange" ? "Delete and release the replacement?" : "Delete request?"} action={deleteReturnAction.bind(null, id)} />
-      </div>
-      <Feedback feedback={feedback} />
-    </div>
-  )
-}

@@ -6,9 +6,9 @@ import type { DbOrTx } from "../db/client"
 export async function adminBadges(db: DbOrTx, lowStockThreshold: number) {
   const [row] = (await db.execute(sql`
     select
-      (select count(*)::int from orders where status in ('pending', 'contacting')) as new_orders,
+      (select count(*)::int from orders where status = 'pending') as new_orders,
       (select count(*)::int from reviews where status = 'pending') as pending_reviews,
-      (select count(*)::int from return_requests where status in ('requested', 'approved', 'received')) as open_returns,
+      0 as open_returns,
       (select count(*)::int from store_stock ss
         join stores s on s.id = ss.store_id and s.active
         join product_variants v on v.id = ss.variant_id

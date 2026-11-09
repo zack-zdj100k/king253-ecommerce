@@ -7,11 +7,10 @@ import { deleteCustomer } from "@/server/customers"
 import { createOrder } from "@/server/orders/create"
 import { changeOrderStatus, deleteOrder } from "@/server/orders/manage"
 import { deleteProduct, deleteVariant } from "@/server/products-admin"
-import { approveReturn, createReturnRequest, deleteReturn } from "@/server/returns"
 import { getSettings } from "@/server/settings"
 import { deleteStore, listStores, saveStore } from "@/server/stores"
 
-import { customer, key, resetDb, seedDelivery, seedProduct, stockOf, testDb } from "./support/db"
+import { deliver, customer, key, resetDb, seedDelivery, seedProduct, stockOf, testDb } from "./support/db"
 
 let actor: { userId: string; label: string }
 
@@ -106,7 +105,7 @@ describe("Delete order", () => {
   it("does not touch physical stock of a delivered order", async () => {
     const p = await seedProduct({ slug: "hoodie", price: 4500, variants: [{ size: "M", color: "Black", physical: 5 }] })
     const order = await orderOf(p.variants[0].id, 1)
-    await changeOrderStatus(testDb, { orderId: order.id, to: "delivered", actor })
+    await deliver(order.id, actor)
     await deleteOrder(testDb, { orderId: order.id, actor })
     expect(await stockOf(p.variants[0].id)).toEqual({ physical: 4, reserved: 0, available: 4 })
   })
@@ -121,7 +120,7 @@ describe("Delete product / variant", () => {
     // Unreserved variant can go right away.
     await deleteVariant(testDb, p.variants[1].id, actor)
 
-    await changeOrderStatus(testDb, { orderId: order.id, to: "delivered", actor })
+    await deliver(order.id, actor)
     await deleteProduct(testDb, p.product.id, actor)
     expect(await testDb.select().from(products)).toHaveLength(0)
     const [item] = await testDb.select().from(orderItems).where(eq(orderItems.orderId, order.id))
@@ -140,29 +139,6 @@ describe("Delete customer", () => {
     expect(await testDb.select().from(customers)).toHaveLength(0)
     const [kept] = await testDb.select().from(orders)
     expect(kept).toMatchObject({ id: order.id, customerId: null, customerName: "Test Customer" })
-  })
-})
-
-describe("Delete return request", () => {
-  it("releases the replacement held for an approved exchange", async () => {
-    const p = await seedProduct({ slug: "hoodie", price: 4500, variants: [{ size: "M", color: "Black", physical: 5 }, { size: "L", color: "Black", physical: 5 }] })
-    const order = await orderOf(p.variants[0].id)
-    await changeOrderStatus(testDb, { orderId: order.id, to: "delivered", actor })
-    const [item] = await testDb.select().from(orderItems).where(eq(orderItems.orderId, order.id))
-    const request = await createReturnRequest(testDb, {
-      orderNumber: order.number,
-      phone: order.customerPhone,
-      orderItemId: item.id,
-      type: "exchange",
-      reason: "Wrong size",
-      quantity: 1,
-      replacementVariantId: p.variants[1].id,
-    })
-    await approveReturn(testDb, { id: request.id, actor })
-    expect((await stockOf(p.variants[1].id)).reserved).toBe(1)
-
-    await deleteReturn(testDb, { id: request.id, actor })
-    expect(await stockOf(p.variants[1].id)).toEqual({ physical: 5, reserved: 0, available: 5 })
   })
 })
 

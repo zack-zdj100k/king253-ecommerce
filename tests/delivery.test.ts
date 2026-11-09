@@ -8,7 +8,7 @@ import { changeOrderStatus, deleteOrder, updateOrderDelivery } from "@/server/or
 import { orderMoney } from "@/server/pricing"
 import { saveSettings } from "@/server/settings"
 
-import { customer, key, resetDb, seedDelivery, seedProduct, testDb } from "./support/db"
+import { deliver, customer, key, resetDb, seedDelivery, seedProduct, testDb } from "./support/db"
 
 const admin = { userId: null, label: "Test admin" }
 
@@ -74,7 +74,7 @@ describe("One delivery per customer until it is delivered", () => {
   it("after the first order is delivered, a new order pays delivery again", async () => {
     const { tee, jeans, buy } = await setup()
     const first = await buy(tee)
-    await changeOrderStatus(testDb, { orderId: first.id, to: "delivered", actor: admin })
+    await deliver(first.id, admin)
     const again = await buy(jeans)
     expect(again).toMatchObject({ shipsWithOrderId: null, deliveryFee: 800, total: 6800 })
   })
@@ -107,29 +107,33 @@ describe("One delivery per customer until it is delivered", () => {
   })
 })
 
-describe("Completed returns are deducted from revenue", () => {
-  it("refunds what the customer paid (after discount); exchanges change nothing", async () => {
+describe("Returns and exchanges change revenue", () => {
+  it("a return refunds what the customer paid (after discount); the order leaves revenue when all is back", async () => {
     const { applyOrderDiscount } = await import("@/server/orders/manage")
-    const { approveReturn, completeReturn, createReturnRequest, markReturnReceived } = await import("@/server/returns")
+    const { recordExchange, recordReturn } = await import("@/server/returns")
     const { orderItems } = await import("@/server/db/schema")
     await seedDelivery(800)
-    const tee = await seedProduct({ slug: "tee", price: 6500, variants: [{ size: "S", color: "Blue", physical: 5 }] })
+    const tee = await seedProduct({ slug: "tee", price: 6500, variants: [{ size: "S", color: "Blue", physical: 5 }, { size: "M", color: "Blue", physical: 5 }] })
     const o = await createOrder(testDb, { customer: customer({ wilaya: "Alger" }), lines: [{ variantId: tee.variants[0].id, quantity: 2 }], idempotencyKey: key() })
     await applyOrderDiscount(testDb, { orderId: o.id, discount: { type: "percent", value: 10 }, actor: admin })
-    await changeOrderStatus(testDb, { orderId: o.id, to: "delivered", actor: admin })
+    await deliver(o.id, admin)
     const range = { from: new Date(Date.now() - 86_400_000), to: new Date(Date.now() + 86_400_000) }
     expect((await getAnalytics(testDb, range)).deliveredRevenue).toBe(11700)
 
     const [item] = await testDb.select().from(orderItems).where(eq(orderItems.orderId, o.id))
-    const r = await createReturnRequest(testDb, { orderNumber: o.number, phone: o.customerPhone, orderItemId: item.id, type: "return", reason: "Changed my mind", quantity: 1 })
-    await approveReturn(testDb, { id: r.id, actor: admin })
-    await markReturnReceived(testDb, { id: r.id, condition: "resellable", actor: admin })
-    expect((await getAnalytics(testDb, range)).deliveredRevenue).toBe(11700) // not refunded until completed
-    const done = await completeReturn(testDb, { id: r.id, actor: admin })
-    expect(done.refundAmount).toBe(5850) // 6500 − 10%
+    const r = await recordReturn(testDb, { orderId: o.id, returned: [{ orderItemId: item.id, quantity: 1 }] }, admin)
+    expect(r.amount).toBe(-5850) // 6500 − 10%
+    expect((await getAnalytics(testDb, range)).deliveredRevenue).toBe(5850)
 
-    const a = await getAnalytics(testDb, range)
-    expect(a.deliveredRevenue).toBe(5850)
-    expect(a.units).toBe(1)
+    // Exchange the remaining S for an M at full price: difference 6500 − 5850 = +650 collected.
+    const ex = await recordExchange(testDb, { orderId: o.id, returned: [{ orderItemId: item.id, quantity: 1 }], added: [{ variantId: tee.variants[1].id, quantity: 1 }] }, admin)
+    expect(ex.amount).toBe(650)
+    expect((await getAnalytics(testDb, range)).deliveredRevenue).toBe(6500)
+
+    // The M comes back too: nothing left with the customer → refused, no revenue.
+    const items = await testDb.select().from(orderItems).where(eq(orderItems.orderId, o.id))
+    const m = items.find((i) => i.exchangeJournalId)!
+    await recordReturn(testDb, { orderId: o.id, returned: [{ orderItemId: m.id, quantity: 1 }] }, admin)
+    expect((await getAnalytics(testDb, range)).deliveredRevenue).toBe(0)
   })
 })

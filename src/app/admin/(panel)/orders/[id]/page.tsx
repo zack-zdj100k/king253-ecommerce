@@ -13,8 +13,8 @@ import { STATUS_LABELS } from "@/server/orders/manage"
 import { orderMoney } from "@/server/pricing"
 import { deleteOrderAction } from "@/app/admin/actions/orders"
 import { DeleteButton } from "@/components/admin/delete-button"
-import { ReturnActions } from "@/components/admin/moderation"
-import { AdminReturnForm } from "@/components/admin/order/return-form"
+import { ReturnExchangePanel } from "@/components/admin/order/return-exchange"
+import { exchangeCatalog, listJournal, returnableItems } from "@/server/returns"
 import { DeliveryPanel, DiscountPanel, ItemsPanel, NotesPanel, StatusPanel } from "@/components/admin/order/order-panels"
 import { Badge, PageHeader, Panel, btnRed, btnOutline } from "@/components/admin/ui"
 
@@ -79,12 +79,15 @@ export default async function AdminOrderPage({ params }: PageProps<"/admin/order
   const { id } = await params
   if (!/^[0-9a-f-]{36}$/i.test(id)) notFound()
   const detail = await getOrderDetail(db, id)
-  const shops = await listStores(db)
+  const [shops, journal] = await Promise.all([listStores(db), listJournal(db, { orderId: id })])
   if (!detail) notFound()
-  const { order, items, history, audit, mails, returns, customerOrders, shipping } = detail
+  const { order, items, history, audit, mails, customerOrders, shipping } = detail
   const shopName = shops.find((s) => s.id === order.storeId)?.name ?? null
   const money = orderMoney(order)
-  const refunded = returns.reduce((n, r) => n + (r.type === "return" && r.status === "completed" ? (r.refundAmount ?? 0) : 0), 0)
+  // Journal effect on revenue: refunds (−) and exchange differences (+/−).
+  const adjustments = journal.rows.reduce((n, r) => n + r.entry.amount, 0)
+  const refused = order.paymentStatus === "refused"
+  const [returnable, catalog] = order.status === "delivered" ? await Promise.all([returnableItems(db, order.id), exchangeCatalog(db)]) : [[], []]
   const editable = order.status !== "delivered" && order.status !== "cancelled"
 
   const firstName = order.customerName.split(" ")[0]
@@ -148,18 +151,19 @@ export default async function AdminOrderPage({ params }: PageProps<"/admin/order
                 <dt>To collect at delivery</dt>
                 <dd>{formatDA(order.total)}</dd>
               </div>
-              {refunded > 0 && (
+              {adjustments !== 0 && (
                 <div className="flex justify-between text-king-gray">
-                  <dt>Refunded (returned items)</dt>
-                  <dd className="text-king-bright-red">− {formatDA(refunded)}</dd>
+                  <dt>Returns & exchanges</dt>
+                  <dd className={adjustments < 0 ? "text-king-bright-red" : "text-emerald-300"}>
+                    {adjustments < 0 ? "−" : "+"} {formatDA(Math.abs(adjustments))}
+                  </dd>
                 </div>
               )}
               <div className="flex justify-between rounded-xl bg-emerald-400/[0.06] px-3 py-2 text-emerald-200">
                 <dt>
-                  Shop keeps (clothes{order.freeDelivery ? " − delivery" : ""}
-                  {refunded > 0 ? " − refunds" : ""})
+                  {refused ? "Payment refused — not counted in revenue" : `Shop keeps (clothes${order.freeDelivery ? " − delivery" : ""}${adjustments ? " ± returns" : ""})`}
                 </dt>
-                <dd className="font-semibold">{formatDA(money.shopKeeps - refunded)}</dd>
+                <dd className="font-semibold">{formatDA(refused ? 0 : money.shopKeeps + adjustments)}</dd>
               </div>
             </dl>
             <div className="mt-5">
@@ -167,63 +171,51 @@ export default async function AdminOrderPage({ params }: PageProps<"/admin/order
             </div>
           </Panel>
 
-          {(order.status === "delivered" || returns.length > 0) && (
+          {(order.status === "delivered" || journal.rows.length > 0) && (
             <div id="returns" className="scroll-mt-24">
-            <Panel
-              title="Returns & exchanges"
-              actions={
-                <Link href="/admin/returns" className="text-xs font-medium text-king-gray hover:text-king-white">
-                  All returns
-                </Link>
-              }
-            >
-              {returns.length > 0 && (
-                <ul className="mb-5 space-y-4">
-                  {returns.map((r) => {
-                    const line = items.find((i) => i.item.id === r.orderItemId)
-                    const swap = r.replacementVariantId ? line?.variants.find((x) => x.id === r.replacementVariantId) : null
-                    return (
-                      <li key={r.id} className="space-y-2 rounded-xl border border-white/[0.06] bg-black/20 p-3 text-sm">
+              <Panel
+                title="Returns & exchanges"
+                actions={
+                  <Link href="/admin/returns" className="text-xs font-medium text-king-gray hover:text-king-white">
+                    Journal
+                  </Link>
+                }
+              >
+                {journal.rows.length > 0 && (
+                  <ul className="mb-5 space-y-3">
+                    {journal.rows.map((r) => (
+                      <li key={r.entry.id} className="space-y-1.5 rounded-xl border border-white/[0.06] bg-black/20 p-3 text-sm">
                         <div className="flex flex-wrap items-center justify-between gap-2">
                           <span className="font-medium text-king-white capitalize">
-                            {r.type} × {r.quantity}
+                            {r.entry.type} · {r.shopName ?? "—"}
                           </span>
-                          <Badge status={r.status}>{r.status}</Badge>
+                          <span className={r.entry.amount < 0 ? "text-king-bright-red" : r.entry.amount > 0 ? "text-emerald-300" : "text-king-gray"}>
+                            {r.entry.amount < 0 ? `Refunded ${formatDA(-r.entry.amount)}` : r.entry.amount > 0 ? `Collected ${formatDA(r.entry.amount)}` : "No difference"}
+                          </span>
                         </div>
-                        <p className="text-king-muted">
-                          {line ? `${line.item.productName} — ${line.item.color} / ${line.item.size}` : "Item"}
-                          {swap ? ` → ${swap.color} / ${swap.size}` : ""}
-                        </p>
+                        {r.items.map((i) => (
+                          <p key={i.id} className="text-king-muted">
+                            {i.direction === "in" ? "↩ Back" : "→ Given"}: {i.productName} — {i.color} / {i.size} × {i.quantity}
+                          </p>
+                        ))}
                         <p className="text-xs text-king-gray">
-                          {r.reason}
-                          {r.details ? ` — ${r.details}` : ""}
+                          {r.entry.reason ?? ""}
+                          {r.entry.note ? ` — ${r.entry.note}` : ""} · {r.entry.actorLabel} · {fmt(r.entry.createdAt)}
                         </p>
-                        {r.refundAmount ? <p className="text-xs text-king-bright-red">Refunded {formatDA(r.refundAmount)}</p> : null}
-                        <ReturnActions id={r.id} status={r.status} type={r.type} />
                       </li>
-                    )
-                  })}
-                </ul>
-              )}
-              {order.status === "delivered" ? (
-                <AdminReturnForm
-                  orderId={order.id}
-                  items={items
-                    .filter((r) => !r.item.removedAt)
-                    .map((r) => ({
-                      id: r.item.id,
-                      name: r.item.productName,
-                      size: r.item.size,
-                      color: r.item.color,
-                      variantId: r.item.variantId,
-                      returnable:
-                        r.item.quantity -
-                        returns.filter((x) => x.orderItemId === r.item.id && x.status !== "rejected").reduce((n, x) => n + x.quantity, 0),
-                      options: r.variants,
-                    }))}
-                />
-              ) : null}
-            </Panel>
+                    ))}
+                  </ul>
+                )}
+                {order.status === "delivered" && (
+                  <ReturnExchangePanel
+                    orderId={order.id}
+                    items={returnable}
+                    shops={shops.filter((s) => s.active).map((s) => ({ id: s.id, name: s.name }))}
+                    orderShopId={order.storeId}
+                    catalog={catalog}
+                  />
+                )}
+              </Panel>
             </div>
           )}
 

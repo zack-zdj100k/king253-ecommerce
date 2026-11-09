@@ -51,6 +51,8 @@ export const returnStatus = pgEnum("return_status", ["requested", "approved", "r
 export const itemCondition = pgEnum("item_condition", ["resellable", "damaged"])
 export const reviewStatus = pgEnum("review_status", ["pending", "approved", "rejected"])
 export const notificationStatus = pgEnum("notification_status", ["sent", "failed", "skipped"])
+/** due = not yet paid (COD) · paid = collected on delivery · refused = refused / fully returned (no revenue). */
+export const paymentStatus = pgEnum("payment_status", ["due", "paid", "refused"])
 
 const timestamps = {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
@@ -489,6 +491,7 @@ export const orders = pgTable(
     storeId: integer("store_id").references(() => stores.id),
     status: orderStatus("status").notNull().default("pending"),
     paymentMethod: paymentMethod("payment_method").notNull().default("cod"),
+    paymentStatus: paymentStatus("payment_status").notNull().default("due"),
     // Customer snapshot at order time
     customerName: text("customer_name").notNull(),
     customerPhone: text("customer_phone").notNull(),
@@ -565,6 +568,10 @@ export const orderItems = pgTable(
     unitPrice: integer("unit_price").notNull(),
     quantity: integer("quantity").notNull(),
     lineTotal: integer("line_total").notNull(),
+    /** Units given back through Return / Exchange (see return_journal). */
+    returnedQuantity: integer("returned_quantity").notNull().default(0),
+    /** Set on items handed over in an exchange (not part of the original order). */
+    exchangeJournalId: uuid("exchange_journal_id"),
     removedAt: timestamp("removed_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
@@ -573,6 +580,7 @@ export const orderItems = pgTable(
     index("order_items_product_idx").on(t.productId),
     check("order_items_quantity_positive", sql`${t.quantity} > 0`),
     check("order_items_price_non_negative", sql`${t.unitPrice} >= 0`),
+    check("order_items_returned_within_quantity", sql`${t.returnedQuantity} >= 0 and ${t.returnedQuantity} <= ${t.quantity}`),
   ]
 )
 
@@ -671,6 +679,56 @@ export const returnRequests = pgTable(
     ...timestamps,
   },
   (t) => [index("return_requests_order_idx").on(t.orderId), index("return_requests_status_idx").on(t.status)]
+)
+
+/**
+ * Returns & Exchanges journal: every return or exchange done by the shop on a
+ * delivered order. `amount` is its effect on revenue in DA: negative = money
+ * given back to the customer, positive = difference collected.
+ */
+export const returnJournal = pgTable(
+  "return_journal",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    orderId: uuid("order_id")
+      .notNull()
+      .references(() => orders.id, { onDelete: "cascade" }),
+    /** Shop whose stock received the returned units (and gave the exchange units). */
+    storeId: integer("store_id").references(() => stores.id),
+    type: returnType("type").notNull(),
+    amount: integer("amount").notNull(),
+    reason: text("reason"),
+    note: text("note"),
+    actorUserId: uuid("actor_user_id").references(() => users.id, { onDelete: "set null" }),
+    actorLabel: text("actor_label").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("return_journal_created_idx").on(t.createdAt), index("return_journal_order_idx").on(t.orderId)]
+)
+
+export const returnJournalItems = pgTable(
+  "return_journal_items",
+  {
+    id: bigserial("id", { mode: "number" }).primaryKey(),
+    journalId: uuid("journal_id")
+      .notNull()
+      .references(() => returnJournal.id, { onDelete: "cascade" }),
+    /** in = came back from the customer · out = handed to the customer (exchange). */
+    direction: text("direction").notNull(),
+    orderItemId: uuid("order_item_id").references(() => orderItems.id, { onDelete: "set null" }),
+    variantId: uuid("variant_id").references(() => productVariants.id, { onDelete: "set null" }),
+    productName: text("product_name").notNull(),
+    size: text("size").notNull(),
+    color: text("color").notNull(),
+    quantity: integer("quantity").notNull(),
+    /** Value per unit in DA (paid price for "in", current price for "out"). */
+    unitValue: integer("unit_value").notNull(),
+  },
+  (t) => [
+    index("return_journal_items_journal_idx").on(t.journalId),
+    check("return_journal_items_direction", sql`${t.direction} in ('in', 'out')`),
+    check("return_journal_items_quantity_positive", sql`${t.quantity} > 0`),
+  ]
 )
 
 /* ------------------------------------------------------------------ */

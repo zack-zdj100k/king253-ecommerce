@@ -37,7 +37,7 @@ type Badges = { new_orders: number; pending_reviews: number; open_returns: numbe
 const NAV = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard, group: "Sales", color: "#e8282e" },
   { href: "/admin/orders", label: "Orders", icon: ShoppingBag, badge: "new_orders", group: "Sales", color: "#ff9f0a" },
-  { href: "/admin/returns", label: "Returns", icon: RotateCcw, badge: "open_returns", group: "Sales", color: "#ff375f" },
+  { href: "/admin/returns", label: "Returns & exchanges", icon: RotateCcw, group: "Sales", color: "#ff375f" },
   { href: "/admin/delivery", label: "Delivery", icon: Truck, group: "Sales", color: "#64d2ff" },
   { href: "/admin/abandoned", label: "Abandoned carts", icon: ShoppingCart, group: "Sales", color: "#bf5af2" },
   { href: "/admin/products", label: "Products", icon: Package, group: "Catalog", color: "#0a84ff" },

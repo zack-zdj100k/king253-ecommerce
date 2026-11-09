@@ -35,12 +35,30 @@ export const ORDER_STATUSES = [
 ] as const
 export type OrderStatus = (typeof ORDER_STATUSES)[number]
 
+/**
+ * The flow used since 2026-11: Pending → Confirmed → Delivered, plus Cancelled
+ * (refused or unreachable customer). The other values only exist in old history.
+ */
+export const FLOW_STATUSES = ["pending", "confirmed", "delivered", "cancelled"] as const satisfies readonly OrderStatus[]
+export type FlowStatus = (typeof FLOW_STATUSES)[number]
+
+/** Allowed next steps from each status. */
+export const NEXT_STATUSES: Record<OrderStatus, FlowStatus[]> = {
+  pending: ["confirmed", "cancelled"],
+  contacting: ["confirmed", "cancelled"],
+  confirmed: ["delivered", "cancelled"],
+  preparing: ["delivered", "cancelled"],
+  ready_for_delivery: ["delivered", "cancelled"],
+  delivered: [],
+  cancelled: [],
+}
+
 export const STATUS_LABELS: Record<OrderStatus, string> = {
   pending: "Pending",
-  contacting: "Contacting",
+  contacting: "Contacting (old)",
   confirmed: "Confirmed",
-  preparing: "Preparing",
-  ready_for_delivery: "Ready for delivery",
+  preparing: "Preparing (old)",
+  ready_for_delivery: "Ready (old)",
   delivered: "Delivered",
   cancelled: "Cancelled",
 }
@@ -86,6 +104,12 @@ export async function changeOrderStatus(
     const order = await lockOrder(tx, input.orderId)
     if (order.status === input.to) return { order, changed: false }
     assertEditable(order)
+    if (!(NEXT_STATUSES[order.status] as OrderStatus[]).includes(input.to)) {
+      throw new AppError(
+        "INVALID_STATUS",
+        `${STATUS_LABELS[order.status]} orders can only move to ${NEXT_STATUSES[order.status].map((s) => STATUS_LABELS[s]).join(" or ")}.`
+      )
+    }
 
     const ref = { refType: "order", refId: order.id, actorUserId: input.actor.userId, reason: `Order ${order.number} → ${STATUS_LABELS[input.to]}` }
     if (input.to === "cancelled" || input.to === "delivered") {
@@ -109,6 +133,7 @@ export async function changeOrderStatus(
       .update(orders)
       .set({
         status: input.to,
+        paymentStatus: input.to === "delivered" ? "paid" : input.to === "cancelled" ? "refused" : order.paymentStatus,
         deliveredAt: input.to === "delivered" ? now : order.deliveredAt,
         cancelledAt: input.to === "cancelled" ? now : order.cancelledAt,
       })

@@ -6,7 +6,6 @@ import { z } from "zod"
 import { db } from "@/server/db"
 import { reviews, testimonials } from "@/server/db/schema"
 import { audit } from "@/server/audit"
-import { approveReturn, completeReturn, createReturnByAdmin, deleteReturn, markReturnReceived, rejectReturn } from "@/server/returns"
 import { adminAction } from "./_shared"
 
 const id = z.uuid()
@@ -78,51 +77,3 @@ export async function deleteTestimonialAction(testimonialId: string) {
   )
 }
 
-/* Returns --------------------------------------------------------- */
-
-export async function returnAction(
-  requestId: string,
-  step: "approve" | "reject" | "receive" | "complete",
-  opts: { note?: string; condition?: "resellable" | "damaged" } = {}
-) {
-  return adminAction(
-    async ({ actor }) => {
-      const rid = id.parse(requestId)
-      if (step === "approve") await approveReturn(db, { id: rid, actor, note: opts.note })
-      else if (step === "reject") await rejectReturn(db, { id: rid, actor, note: opts.note })
-      else if (step === "receive") await markReturnReceived(db, { id: rid, actor, condition: z.enum(["resellable", "damaged"]).parse(opts.condition) })
-      else await completeReturn(db, { id: rid, actor })
-    },
-    { revalidate: ["/admin/returns", "/admin/inventory"], message: "Return updated." }
-  )
-}
-
-export async function deleteReturnAction(requestId: string) {
-  return adminAction(
-    async ({ actor }) => {
-      await deleteReturn(db, { id: id.parse(requestId), actor })
-    },
-    { revalidate: ["/admin/returns", "/admin/inventory"], message: "Request deleted." }
-  )
-}
-
-const adminReturnInput = z.object({
-  orderItemId: z.uuid(),
-  type: z.enum(["return", "exchange"]),
-  reason: z.string().trim().min(1, "Choose a reason.").max(120),
-  details: z.string().max(1000).optional(),
-  quantity: z.coerce.number().int().min(1, "Choose a quantity.").max(100),
-  replacementVariantId: z.uuid().nullable().optional(),
-  approve: z.boolean().default(true),
-})
-
-/** Shop records a return/exchange for a delivered order. */
-export async function createReturnAction(orderId: string, raw: z.input<typeof adminReturnInput>) {
-  return adminAction(
-    async ({ actor }) => {
-      const input = adminReturnInput.parse(raw)
-      await createReturnByAdmin(db, { ...input, orderId: id.parse(orderId), actor })
-    },
-    { revalidate: [`/admin/orders/${orderId}`, "/admin/returns", "/admin/inventory"], message: "Return recorded — follow it up below or in Returns." }
-  )
-}

@@ -6,9 +6,9 @@ import { AppError, OutOfStockError } from "@/server/errors"
 import { adjustPhysicalStock, receiveStock } from "@/server/inventory"
 import { createOrder, ValidationError } from "@/server/orders/create"
 import { applyOrderDiscount, changeOrderStatus, removeOrderItem, updateOrderItem } from "@/server/orders/manage"
-import { approveReturn, completeReturn, createReturnByAdmin, createReturnRequest, markReturnReceived, rejectReturn } from "@/server/returns"
+import { recordExchange, recordReturn } from "@/server/returns"
 
-import { customer, key, resetDb, seedDelivery, seedProduct, stockOf, testDb, testShop } from "./support/db"
+import { deliver, customer, key, resetDb, seedDelivery, seedProduct, stockOf, testDb, testShop } from "./support/db"
 
 const admin = { userId: null, label: "Test admin" }
 
@@ -112,15 +112,17 @@ describe("TEST 5 — Delivery consumes physical and reserved stock", () => {
   it("physical 10 → 7, reserved 3 → 0, with a full status timeline", async () => {
     const { wilaya, blackM } = await setup()
     const order = await createOrder(testDb, { customer: customer({ wilaya }), lines: [{ variantId: blackM.id, quantity: 3 }], idempotencyKey: key() })
-    for (const to of ["contacting", "confirmed", "preparing", "ready_for_delivery"] as const) {
-      await changeOrderStatus(testDb, { orderId: order.id, to, actor: admin })
-      expect(await stockOf(blackM.id)).toEqual({ physical: 10, reserved: 3, available: 7 })
-    }
-    await changeOrderStatus(testDb, { orderId: order.id, to: "delivered", actor: admin, note: "Handed to customer" })
+    // Only the next step is allowed: Pending → Confirmed → Delivered.
+    await expect(changeOrderStatus(testDb, { orderId: order.id, to: "delivered", actor: admin })).rejects.toThrow(/can only move to/)
+    await expect(changeOrderStatus(testDb, { orderId: order.id, to: "preparing", actor: admin })).rejects.toThrow(/can only move to/)
+    await changeOrderStatus(testDb, { orderId: order.id, to: "confirmed", actor: admin })
+    expect(await stockOf(blackM.id)).toEqual({ physical: 10, reserved: 3, available: 7 })
+    const done = await changeOrderStatus(testDb, { orderId: order.id, to: "delivered", actor: admin, note: "Handed to customer" })
+    expect(done.order.paymentStatus).toBe("paid")
     expect(await stockOf(blackM.id)).toEqual({ physical: 7, reserved: 0, available: 7 })
 
     const history = await testDb.select().from(orderStatusHistory).where(eq(orderStatusHistory.orderId, order.id))
-    expect(history.map((h) => h.toStatus)).toEqual(["pending", "contacting", "confirmed", "preparing", "ready_for_delivery", "delivered"])
+    expect(history.map((h) => h.toStatus)).toEqual(["pending", "confirmed", "delivered"])
   })
 })
 
@@ -265,60 +267,37 @@ describe("Manual stock adjustments", () => {
   })
 })
 
-describe("TEST 9 — Size exchange after delivery", () => {
-  it("M returned resellable goes back on the shelf; L is reserved then shipped", async () => {
+describe("TEST 9 — Return and exchange after delivery (admin)", () => {
+  it("exchange M → L: M back on the shelf, L handed over, difference 0; only on delivered orders", async () => {
     const { wilaya, blackM, blackL } = await setup()
     const order = await createOrder(testDb, { customer: customer({ wilaya }), lines: [{ variantId: blackM.id, quantity: 1 }], idempotencyKey: key() })
-    await changeOrderStatus(testDb, { orderId: order.id, to: "delivered", actor: admin })
+    const [item] = await testDb.select().from(orderItems).where(eq(orderItems.orderId, order.id))
+    const ex = { orderId: order.id, returned: [{ orderItemId: item.id, quantity: 1 }], added: [{ variantId: blackL.id, quantity: 1 }], reason: "Wrong size" }
+    await expect(recordExchange(testDb, ex, admin)).rejects.toThrow(/delivered/)
+
+    await deliver(order.id, admin)
     expect(await stockOf(blackM.id)).toEqual({ physical: 9, reserved: 0, available: 9 })
-
-    const [item] = await testDb.select().from(orderItems).where(eq(orderItems.orderId, order.id))
-    const request = await createReturnRequest(testDb, {
-      orderNumber: order.number,
-      phone: order.customerPhone,
-      orderItemId: item.id,
-      type: "exchange",
-      reason: "Wrong size",
-      quantity: 1,
-      replacementVariantId: blackL.id,
-    })
-    // Nothing moves until an admin approves.
-    expect(await stockOf(blackL.id)).toEqual({ physical: 10, reserved: 0, available: 10 })
-
-    await approveReturn(testDb, { id: request.id, actor: admin })
-    expect(await stockOf(blackL.id)).toEqual({ physical: 10, reserved: 1, available: 9 })
-
-    await markReturnReceived(testDb, { id: request.id, condition: "resellable", actor: admin })
+    const entry = await recordExchange(testDb, ex, admin)
+    expect(entry).toMatchObject({ type: "exchange", amount: 0 })
     expect(await stockOf(blackM.id)).toEqual({ physical: 10, reserved: 0, available: 10 })
-
-    await completeReturn(testDb, { id: request.id, actor: admin })
     expect(await stockOf(blackL.id)).toEqual({ physical: 9, reserved: 0, available: 9 })
+    // The returned M can't come back twice; the L received in the exchange can.
+    await expect(recordReturn(testDb, { orderId: order.id, returned: [{ orderItemId: item.id, quantity: 1 }] }, admin)).rejects.toThrow(/can still come back/)
   })
 
-  it("rejecting an approved exchange releases the replacement; damaged returns are not restocked", async () => {
-    const { wilaya, blackM, blackL } = await setup()
-    const order = await createOrder(testDb, { customer: customer({ wilaya }), lines: [{ variantId: blackM.id, quantity: 2 }], idempotencyKey: key() })
-    await changeOrderStatus(testDb, { orderId: order.id, to: "delivered", actor: admin })
-    const [item] = await testDb.select().from(orderItems).where(eq(orderItems.orderId, order.id))
-
-    const exchange = await createReturnRequest(testDb, { orderNumber: order.number, phone: order.customerPhone, orderItemId: item.id, type: "exchange", reason: "Wrong size", quantity: 1, replacementVariantId: blackL.id })
-    await approveReturn(testDb, { id: exchange.id, actor: admin })
-    await rejectReturn(testDb, { id: exchange.id, actor: admin })
-    expect(await stockOf(blackL.id)).toEqual({ physical: 10, reserved: 0, available: 10 })
-
-    const refund = await createReturnRequest(testDb, { orderNumber: order.number, phone: order.customerPhone, orderItemId: item.id, type: "return", reason: "Product issue", quantity: 1 })
-    await approveReturn(testDb, { id: refund.id, actor: admin })
-    await markReturnReceived(testDb, { id: refund.id, condition: "damaged", actor: admin })
-    expect(await stockOf(blackM.id)).toEqual({ physical: 8, reserved: 0, available: 8 })
-  })
-
-  it("requires the right phone and a delivered order", async () => {
+  it("partial return refunds what was paid; the last item back makes the payment refused", async () => {
     const { wilaya, blackM } = await setup()
-    const order = await createOrder(testDb, { customer: customer({ wilaya }), lines: [{ variantId: blackM.id, quantity: 1 }], idempotencyKey: key() })
+    const order = await createOrder(testDb, { customer: customer({ wilaya }), lines: [{ variantId: blackM.id, quantity: 2 }], idempotencyKey: key() })
+    await deliver(order.id, admin)
     const [item] = await testDb.select().from(orderItems).where(eq(orderItems.orderId, order.id))
-    const base = { orderNumber: order.number, orderItemId: item.id, type: "return" as const, reason: "Other", quantity: 1 }
-    await expect(createReturnRequest(testDb, { ...base, phone: "+213550999999" })).rejects.toThrow(/could not be found/)
-    await expect(createReturnRequest(testDb, { ...base, phone: order.customerPhone })).rejects.toThrow(/delivered/)
+    const first = await recordReturn(testDb, { orderId: order.id, returned: [{ orderItemId: item.id, quantity: 1 }], reason: "Product issue" }, admin)
+    expect(first).toMatchObject({ type: "return", amount: -item.unitPrice, full: false })
+    expect(await stockOf(blackM.id)).toEqual({ physical: 9, reserved: 0, available: 9 })
+    const second = await recordReturn(testDb, { orderId: order.id, returned: [{ orderItemId: item.id, quantity: 1 }] }, admin)
+    expect(second.full).toBe(true)
+    const [after] = await testDb.select().from(orders).where(eq(orders.id, order.id))
+    expect(after.paymentStatus).toBe("refused")
+    await expect(recordReturn(testDb, { orderId: order.id, returned: [{ orderItemId: item.id, quantity: 1 }] }, admin)).rejects.toThrow(/already come back/)
   })
 })
 
@@ -336,39 +315,5 @@ describe("Restock any time", () => {
     const moves = await testDb.select().from(stockMovements).where(eq(stockMovements.variantId, blackM.id))
     expect(moves.at(-1)).toMatchObject({ type: "adjustment", physicalBefore: 2, physicalAfter: 22, reason: "New stock received: +20 — Workshop batch" })
     await expect(testDb.transaction((tx) => receiveStock(tx, { variantId: blackM.id, storeId: shop.id, quantity: 0, actorUserId: u.id }))).rejects.toThrow(/how many units/)
-  })
-})
-
-describe("Shop records a return / exchange", () => {
-  it("approved straight away: replacement reserved, returned item restocked, replacement shipped", async () => {
-    const { wilaya, blackM, blackL } = await setup()
-    const order = await createOrder(testDb, { customer: customer({ wilaya }), lines: [{ variantId: blackM.id, quantity: 2 }], idempotencyKey: key() })
-    const [item] = await testDb.select().from(orderItems).where(eq(orderItems.orderId, order.id))
-    await expect(
-      createReturnByAdmin(testDb, { orderId: order.id, orderItemId: item.id, type: "return", reason: "Wrong size", quantity: 1, actor: admin })
-    ).rejects.toThrow(/delivered/)
-
-    await changeOrderStatus(testDb, { orderId: order.id, to: "delivered", actor: admin })
-    const r = await createReturnByAdmin(testDb, {
-      orderId: order.id,
-      orderItemId: item.id,
-      type: "exchange",
-      reason: "Wrong size",
-      quantity: 1,
-      replacementVariantId: blackL.id,
-      approve: true,
-      actor: admin,
-    })
-    expect(r.status).toBe("approved")
-    expect(await stockOf(blackL.id)).toEqual({ physical: 10, reserved: 1, available: 9 })
-
-    await markReturnReceived(testDb, { id: r.id, condition: "resellable", actor: admin })
-    await completeReturn(testDb, { id: r.id, actor: admin })
-    expect(await stockOf(blackM.id)).toEqual({ physical: 9, reserved: 0, available: 9 })
-    expect(await stockOf(blackL.id)).toEqual({ physical: 9, reserved: 0, available: 9 })
-
-    await expect(
-      createReturnByAdmin(testDb, { orderId: order.id, orderItemId: item.id, type: "return", reason: "Other", quantity: 2, actor: admin })
-    ).rejects.toThrow(/up to 1/)
   })
 })
