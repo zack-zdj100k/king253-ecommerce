@@ -1,6 +1,6 @@
 import "server-only"
 
-import { revalidatePath } from "next/cache"
+import { revalidatePath, revalidateTag } from "next/cache"
 
 import { actorOf, requireAdmin, type CurrentUser } from "@/server/auth/session"
 import { AppError, toUserMessage } from "@/server/errors"
@@ -20,6 +20,8 @@ export async function adminAction<T>(
     const user = await requireAdmin()
     const data = await run({ user, actor: actorOf(user) })
     for (const path of opts.revalidate ?? []) revalidatePath(path)
+    // Any admin change can move the Overview numbers.
+    revalidateTag("overview", "max")
     return { ok: true, message: opts.message, ...(data === undefined ? {} : { data }) } as never
   } catch (error) {
     if (error instanceof AppError) return { ok: false, error: error.userMessage }
