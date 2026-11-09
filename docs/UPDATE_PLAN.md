@@ -1,6 +1,6 @@
 # KING 253 — Multi-shop update: stack report and implementation plan
 
-Status: **waiting for owner approval** (2026-11-09). No code changed yet.
+Status: **done on branch `feature/multi-shop` (2026-11-09), not deployed yet.** Owner approved all recommendations (69 wilayas, Cancel kept, Annaba gets existing stock, /ar /fr /en URLs with French as x-default, hang-tag card as preview variant 3, Bento delta fix).
 Source spec: owner's "KING 253 — Update Specification for Claude Code" + `analytics-bento.tsx` + card reference.
 
 ---
@@ -90,3 +90,32 @@ Estimated size: large (several sessions). Deploy to king253.com only when you sa
 - Delivery desk PDFs (Annaba, Constantine) with prices → CSV for the import script.
 - The two shop notification emails.
 - SMTP provider credentials (production `.env`: `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM`). Without them every email is logged as "skipped".
+
+## 6. Result (2026-11-09)
+
+| Check | Result |
+|---|---|
+| New shop appears in products, checkout, delivery prices, emails, overview | Yes — shops are rows; new products get every active shop |
+| Stock per shop and per size | Yes (`store_stock`), tests |
+| Checkout: only shops with the whole cart, price per wilaya/type, cheapest first, home vs desk, 69 wilayas | Yes, tests + browser |
+| Guest checkout → account by phone, no duplicates, phone login, "add your email" banner | Yes, tests + browser |
+| "Where did you hear about us" saved for both account types, shown in admin | Yes |
+| New-order email only to the departure shop | Yes, test |
+| Customer gets only "Delivered" (in their language) | Yes, test |
+| Statuses Pending → Confirmed → Delivered (+ Cancel) | Yes, test |
+| Return: stock back in the right shop, refused when all is back, out of revenue, journal | Yes, tests |
+| Exchange: any in-stock item, ± difference, stock both ways, journal | Yes, tests + browser |
+| No "All" option in admin lists | Orders, products, reviews, users, inventory, journal |
+| Overview with real data, returns, shop filter, mobile | Yes |
+| Language page on first visit from any URL, back to that URL; Arabic RTL; bots not redirected; hreflang | Yes, browser + curl |
+| build, tsc, lint (0 errors), 120 tests | Pass |
+
+Migrations: 0012 shops_and_wilayas · 0013 stock_per_shop · 0014 delivery_rates_desks ·
+0015 checkout_accounts · 0016 status_flow_return_journal (all applied automatically at start).
+
+Env: nothing new is required. Emails need `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`,
+`SMTP_FROM` in `~/king253/.env`. Shop notification emails are set in Admin → Shops (not env).
+
+Waiting for the owner: card choice (01 / 02 / 03 on /dev/card-preview), delivery desk PDFs
+(→ `data/delivery/*.csv`, Admin → Delivery → Import), the two shop emails, SMTP account, go-ahead to deploy.
+Not translated by design: product texts and admin-written content (each language can be written in Admin → Content).

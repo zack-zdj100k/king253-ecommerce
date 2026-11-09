@@ -67,6 +67,13 @@ above the CloudLinux Passenger block. Do not remove the Passenger block.
 2. Stop the app, upload/extract the new zip over `~/king253` (the `.env` file and `~/king253-uploads` stay).
 3. Restart the app (new migrations are applied automatically; check `migrate.log`).
 
+## 5b. Shops, delivery prices, languages (since 2026-11)
+
+- Admin → Shops: set each shop's **new-order email** (Annaba, Constantine) and its address.
+- Admin → Delivery → Import CSV: courier prices and stop desks (format in `data/delivery/README.md`).
+  Terminal alternative: `node --env-file=.env scripts/import-delivery.mjs rates rates.csv`.
+- The storefront is at `/ar`, `/fr`, `/en`; first-time visitors see the language page.
+
 ## 6. Checks after each deploy
 
 - Home, `/clothes`, a product page, `/admin/login` load.
