@@ -1,3 +1,5 @@
+import { useTranslations } from "next-intl"
+import { getTranslations } from "next-intl/server"
 import type { Metadata } from "next"
 import Link from "next/link"
 import { redirect } from "next/navigation"
@@ -15,19 +17,22 @@ import { DeleteAccount, DetailsForm, PasswordForm, RemoveFromMyOrders } from "@/
 import { Button } from "@/components/ui/button"
 import { BackButton } from "@/components/ui/back-button"
 
-export const metadata: Metadata = { title: "Your account", robots: { index: false } }
+export async function generateMetadata(): Promise<Metadata> {
+  return { title: (await getTranslations("account"))("metaTitle"), robots: { index: false } }
+}
 export const dynamic = "force-dynamic"
 
 const TABS = [
-  { key: "orders", label: "My orders", icon: Package },
-  { key: "info", label: "My information", icon: Settings2 },
-  { key: "security", label: "Security", icon: ShieldCheck },
+  { key: "orders", icon: Package },
+  { key: "info", icon: Settings2 },
+  { key: "security", icon: ShieldCheck },
 ] as const
 type Tab = (typeof TABS)[number]["key"]
 
 const fmtDate = (d: Date) => d.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })
 
 export default async function AccountPage({ searchParams }: PageProps<"/account">) {
+  const t = await getTranslations("account")
   const session = await getCurrentUser()
   if (!session) redirect("/sign-in?next=/account")
   const requested = (await searchParams).tab
@@ -48,10 +53,10 @@ export default async function AccountPage({ searchParams }: PageProps<"/account"
               {user.name.trim().charAt(0).toUpperCase()}
             </span>
             <div className="min-w-0">
-              <p className="king-label text-[0.6rem] text-king-gray">[ My account ]</p>
-              <h1 className="king-display mt-2 truncate text-[clamp(2.25rem,6vw,4.5rem)] text-king-white">Hi, {user.name.split(" ")[0]}.</h1>
+              <p className="king-label text-[0.6rem] text-king-gray">{t("eyebrow")}</p>
+              <h1 className="king-display mt-2 truncate text-[clamp(2.25rem,6vw,4.5rem)] text-king-white">{t("hi", { name: user.name.split(" ")[0] })}</h1>
               <p className="mt-1 truncate text-sm text-king-gray">
-                {user.email ?? (user.loginPhone ? formatPhone(user.loginPhone) : "")} · member since {fmtDate(user.createdAt)}
+                {user.email ?? (user.loginPhone ? formatPhone(user.loginPhone) : "")} · {t("memberSince", { date: fmtDate(user.createdAt) })}
               </p>
             </div>
           </div>
@@ -59,18 +64,18 @@ export default async function AccountPage({ searchParams }: PageProps<"/account"
             {user.role === "admin" && (
               <Button asChild variant="king" size="xl">
                 <Link href="/admin">
-                  <LayoutDashboard className="size-4" aria-hidden /> Admin
+                  <LayoutDashboard className="size-4" aria-hidden /> {t("admin")}
                 </Link>
               </Button>
             )}
             <Button asChild variant="kingOutline" size="xl">
               <Link href="/wishlist">
-                <Heart className="size-4" aria-hidden /> Wishlist
+                <Heart className="size-4" aria-hidden /> {t("wishlist")}
               </Link>
             </Button>
             <form action={signOutAction}>
               <Button type="submit" variant="kingOutline" size="xl">
-                <LogOut className="size-4" aria-hidden /> Sign out
+                <LogOut className="size-4" aria-hidden /> {t("signOut")}
               </Button>
             </form>
           </div>
@@ -80,17 +85,17 @@ export default async function AccountPage({ searchParams }: PageProps<"/account"
           <div role="status" className="mt-8 flex flex-col gap-4 border border-king-red-line bg-king-red/10 p-5 sm:flex-row sm:items-center sm:justify-between">
             <p className="flex items-start gap-3 text-sm text-king-white">
               <MailPlus className="mt-0.5 size-5 shrink-0 text-king-bright-red" aria-hidden />
-              Add your email to become a loyal customer and receive updates about your order.
+              {t("addEmailBanner")}
             </p>
             <Button asChild variant="king" size="xl" className="shrink-0">
-              <Link href="/account?tab=info#acc-email">Add my email</Link>
+              <Link href="/account?tab=info#acc-email">{t("addEmail")}</Link>
             </Button>
           </div>
         )}
 
         {/* Tabs */}
-        <nav aria-label="Account sections" className="mt-10 flex gap-1 overflow-x-auto border-b border-white/10 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          {TABS.map(({ key, label, icon: Icon }) => (
+        <nav aria-label={t("sections")} className="mt-10 flex gap-1 overflow-x-auto border-b border-white/10 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {TABS.map(({ key, icon: Icon }) => (
             <Link
               key={key}
               href={key === "orders" ? "/account" : `/account?tab=${key}`}
@@ -102,7 +107,7 @@ export default async function AccountPage({ searchParams }: PageProps<"/account"
               )}
             >
               <Icon className="size-4" aria-hidden />
-              {label}
+              {t(`tab_${key}`)}
               {key === "orders" && orders.length > 0 && (
                 <span className="grid h-5 min-w-5 place-items-center rounded-full bg-white/10 px-1.5 text-[0.6rem] text-king-white">{orders.length}</span>
               )}
@@ -128,10 +133,10 @@ export default async function AccountPage({ searchParams }: PageProps<"/account"
               </div>
               <aside className="space-y-3 self-start border border-white/10 bg-king-near-black p-5 text-sm">
                 <p className="king-label flex items-center gap-2 text-[0.6rem] text-king-gray">
-                  <MapPin className="size-3.5 text-king-bright-red" aria-hidden /> Saved for delivery
+                  <MapPin className="size-3.5 text-king-bright-red" aria-hidden /> {t("savedForDelivery")}
                 </p>
                 <p className="font-medium text-king-white">{user.name}</p>
-                <p className="text-king-muted">{user.phone ? formatPhone(user.phone) : "No phone saved"}</p>
+                <p className="text-king-muted">{user.phone ? formatPhone(user.phone) : t("noPhone")}</p>
                 <p className="leading-relaxed text-king-muted">
                   {user.address && user.city ? (
                     <>
@@ -140,7 +145,7 @@ export default async function AccountPage({ searchParams }: PageProps<"/account"
                       {user.city}, {user.wilaya}
                     </>
                   ) : (
-                    "No address saved yet."
+                    t("noAddress")
                   )}
                 </p>
               </aside>
@@ -149,13 +154,13 @@ export default async function AccountPage({ searchParams }: PageProps<"/account"
           {tab === "security" && (
             <div className="space-y-8">
               <div className="border border-white/10 bg-king-near-black p-5 md:p-8">
-                <h2 className="king-label mb-6 text-king-white">Change password</h2>
+                <h2 className="king-label mb-6 text-king-white">{t("changePassword")}</h2>
                 <PasswordForm />
               </div>
               {user.role !== "admin" && (
                 <div className="border border-white/10 bg-king-near-black p-5 md:p-8">
-                  <h2 className="king-label mb-2 text-king-white">Delete account</h2>
-                  <p className="mb-5 text-sm text-king-gray">Permanently remove your account and saved details.</p>
+                  <h2 className="king-label mb-2 text-king-white">{t("deleteAccount")}</h2>
+                  <p className="mb-5 text-sm text-king-gray">{t("deleteText")}</p>
                   <DeleteAccount />
                 </div>
               )}
@@ -170,20 +175,22 @@ export default async function AccountPage({ searchParams }: PageProps<"/account"
 type AccountOrder = Awaited<ReturnType<typeof accountOrders>>[number]
 
 function Orders({ orders, open }: { orders: AccountOrder[]; open: number }) {
+  const t = useTranslations("account")
+  const to = useTranslations("order")
   if (!orders.length) {
     return (
       <div className="border border-dashed border-white/15 px-6 py-14 text-center">
         <Package className="mx-auto size-8 text-king-gray" aria-hidden />
-        <p className="king-display mt-4 text-3xl text-king-white">No orders yet.</p>
-        <p className="mt-2 text-sm text-king-gray">Orders you place while signed in appear here, with their delivery progress.</p>
+        <p className="king-display mt-4 text-3xl text-king-white">{t("noOrders")}</p>
+        <p className="mt-2 text-sm text-king-gray">{t("noOrdersText")}</p>
         <div className="mt-6 flex flex-wrap justify-center gap-3">
           <Button asChild variant="king" size="xl">
             <Link href="/clothes">
-              Shop the collection <ArrowRight className="size-4" aria-hidden />
+              {t("shop")} <ArrowRight className="size-4 rtl:rotate-180" aria-hidden />
             </Link>
           </Button>
           <Button asChild variant="kingOutline" size="xl">
-            <Link href="/track">Track a guest order</Link>
+            <Link href="/track">{t("trackGuest")}</Link>
           </Button>
         </div>
       </div>
@@ -193,7 +200,7 @@ function Orders({ orders, open }: { orders: AccountOrder[]; open: number }) {
     <div className="space-y-4">
       {open > 0 && (
         <p className="text-sm text-king-muted">
-          {open} order{open > 1 ? "s" : ""} on the way.
+          {t("onTheWay", { count: open })}
         </p>
       )}
       <ul className="space-y-4">
@@ -213,18 +220,18 @@ function Orders({ orders, open }: { orders: AccountOrder[]; open: number }) {
                   </div>
                   <div className="text-right">
                     <p className={cn("king-label text-[0.6rem]", cancelled ? "text-king-gray line-through" : o.returned ? "text-king-gray" : o.status === "delivered" ? "text-emerald-300" : "text-king-bright-red")}>
-                      {cancelled ? "Cancelled" : o.returned ? "Returned" : CUSTOMER_STEPS[step]?.label}
+                      {cancelled ? t("cancelled") : o.returned ? t("returned") : step >= 0 ? to(`step_${CUSTOMER_STEPS[step].key}`) : ""}
                     </p>
                     <p className="mt-1 text-sm text-king-white">{formatDA(o.total)}</p>
                   </div>
                 </div>
 
                 {!cancelled && (
-                  <ol className="mt-5 grid grid-cols-5 gap-1.5" aria-label="Delivery progress">
+                  <ol className="mt-5 grid grid-cols-3 gap-1.5" aria-label={t("progress")}>
                     {CUSTOMER_STEPS.map((s, i) => (
                       <li key={s.key} className="space-y-1.5">
                         <span className={cn("block h-1 rounded-full", i <= step ? "bg-king-bright-red" : "bg-white/10")} />
-                        <span className={cn("hidden text-[0.6rem] sm:block", i <= step ? "text-king-muted" : "text-king-gray/60")}>{s.label}</span>
+                        <span className={cn("hidden text-[0.6rem] sm:block", i <= step ? "text-king-muted" : "text-king-gray/60")}>{to(`step_${s.key}`)}</span>
                       </li>
                     ))}
                   </ol>
@@ -245,7 +252,7 @@ function Orders({ orders, open }: { orders: AccountOrder[]; open: number }) {
                     </li>
                   </ul>
                   <span className="king-label flex shrink-0 items-center gap-2 text-[0.6rem] text-king-muted group-hover:text-king-white">
-                    Details <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-1" aria-hidden />
+                    {t("details")} <ArrowRight className="size-3.5 rtl:rotate-180 transition-transform group-hover:translate-x-1" aria-hidden />
                   </span>
                 </div>
               </Link>
@@ -259,7 +266,7 @@ function Orders({ orders, open }: { orders: AccountOrder[]; open: number }) {
         })}
       </ul>
       <p className="pt-2 text-sm text-king-gray">
-        Ordered as a guest? <Link href="/track" className="text-king-white underline underline-offset-4">Track it here</Link>.
+        {t("guest")} <Link href="/track" className="text-king-white underline underline-offset-4">{t("trackHere")}</Link>.
       </p>
     </div>
   )

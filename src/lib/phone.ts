@@ -4,7 +4,7 @@
  * and returns E.164 (+2135XXXXXXXX), or null if invalid.
  */
 export function normalizePhone(input: string): string | null {
-  const digits = input.replace(/[\s.\-()]/g, "")
+  const digits = input.replace(/[\s.\-()\u2066-\u2069]/g, "")
   const match = digits.match(/^(?:\+213|00213|213|0)([5-7]\d{8})$/)
   return match ? `+213${match[1]}` : null
 }
@@ -12,7 +12,8 @@ export function normalizePhone(input: string): string | null {
 /** +213550123456 → 0550 12 34 56 (display). */
 export function formatPhone(e164: string): string {
   const local = e164.startsWith("+213") ? `0${e164.slice(4)}` : e164
-  return local.replace(/^(\d{4})(\d{2})(\d{2})(\d{2})$/, "$1 $2 $3 $4")
+  // Left-to-right isolate so the number keeps its order inside Arabic text.
+  return `\u2066${local.replace(/^(\d{4})(\d{2})(\d{2})(\d{2})$/, "$1 $2 $3 $4")}\u2069`
 }
 
 /** wa.me link with an optional prefilled message. Never sends anything by itself. */

@@ -1,5 +1,7 @@
 "use client"
 
+import { useTranslations } from "next-intl"
+
 import * as React from "react"
 import Link from "next/link"
 import { ArrowUpRight } from "lucide-react"
@@ -12,6 +14,7 @@ import { ProductImage, productSizes } from "@/components/shop/product-image"
 
 
 export function CategoryShowcase({ content }: { content: { eyebrow: string; title: string; crops: Record<string, Crop> } }) {
+  const t = useTranslations("home")
   const CATEGORY_CROPS = content.crops
   const mobileList = React.useRef<HTMLUListElement>(null)
   const [mobileActive, setMobileActive] = React.useState<string | null>(null)
@@ -93,7 +96,7 @@ export function CategoryShowcase({ content }: { content: { eyebrow: string; titl
                   >
                     <ProductImage
                       image={CATEGORY_CROPS[c.slug]}
-                      alt={`${c.name} from the KING 253 campaign`}
+                      alt={t("categoryAlt", { name: c.name })}
                       sizes={productSizes(CATEGORY_CROPS[c.slug], [100, 100, 36])}
                     />
                   </div>

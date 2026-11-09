@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useTranslations } from "next-intl"
 import Link from "next/link"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { ChevronDown, SlidersHorizontal, X } from "lucide-react"
@@ -14,14 +15,7 @@ import { ProductCard } from "@/components/shop/product-card"
 import { InteractiveCard } from "@/components/ui/3d-card"
 import { Sheet, SheetContent, SheetDescription, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 
-const SORT_LABELS: Record<Sort, string> = {
-  featured: "Featured",
-  newest: "Newest",
-  price_asc: "Price low to high",
-  price_desc: "Price high to low",
-  popular: "Most popular",
-  rating: "Best rated",
-}
+const SORTS: Sort[] = ["featured", "newest", "price_asc", "price_desc", "popular", "rating"]
 
 type Facets = {
   categories: { slug: string; name: string }[]
@@ -46,6 +40,7 @@ export function Catalog({
   facets: Facets
   filters: CatalogFilters
 }) {
+  const t = useTranslations("catalog")
   const router = useRouter()
   const pathname = usePathname()
   const params = useSearchParams()
@@ -81,13 +76,13 @@ export function Catalog({
       {/* FRZN-style header: big title + bracketed tags */}
       <div className="mx-auto flex max-w-[1600px] flex-col gap-8 px-4 pt-16 pb-10 sm:px-6 md:pt-24 lg:flex-row lg:items-end lg:justify-between lg:px-12">
         <h2 id="new-collection-title" className="king-display text-[clamp(2.75rem,6.5vw,6.5rem)] text-king-white">
-          New collection
+          {t("newCollection")}
         </h2>
         <div className="grid grid-cols-2 gap-x-10 gap-y-1 lg:pb-3">
           <ul className="king-label space-y-1.5 text-[0.55rem] text-king-gray">
-            <li>[ New collection ]</li>
-            <li>[ Studio series ]</li>
-            <li>[ Streetwear ]</li>
+            <li>{t("tagNew")}</li>
+            <li>{t("tagStudio")}</li>
+            <li>{t("tagStreet")}</li>
           </ul>
           <ul className="king-label space-y-1.5 text-[0.55rem] text-king-gray">
             {facets.categories.slice(0, 4).map((c) => (
@@ -100,8 +95,8 @@ export function Catalog({
       {/* Sticky filter bar */}
       <div className="sticky top-16 z-30 border-y border-white/[0.06] bg-king-black/95 transition-[top] duration-500 ease-king lg:top-[72px] [html[data-nav-hidden]_&]:top-0">
         <div className="mx-auto flex max-w-[1600px] flex-col gap-3 px-4 py-3 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-12">
-          <div role="group" aria-label="Filter by category" className="-mx-4 flex gap-1 overflow-x-auto px-4 [scrollbar-width:none] sm:mx-0 sm:px-0 [&::-webkit-scrollbar]:hidden">
-            {[{ slug: "", name: "All" }, ...facets.categories].map((c) => {
+          <div role="group" aria-label={t("filterByCategory")} className="-mx-4 flex gap-1 overflow-x-auto px-4 [scrollbar-width:none] sm:mx-0 sm:px-0 [&::-webkit-scrollbar]:hidden">
+            {[{ slug: "", name: t("all") }, ...facets.categories].map((c) => {
               const active = activeMain === c.slug
               return (
                 <button
@@ -123,20 +118,20 @@ export function Catalog({
 
           <div className="flex items-center justify-between gap-3 lg:justify-end">
             <p className="king-label shrink-0 text-[0.6rem] text-king-gray" aria-live="polite">
-              {total} {total === 1 ? "piece" : "pieces"}
+              {t("pieces", { count: total })}
             </p>
             <div className="flex min-w-0 items-center gap-2">
               <FilterSheet facets={facets} filters={filters} update={update} activeCount={activeCount} />
               <label className="relative flex min-w-0 items-center">
-                <span className="sr-only">Sort</span>
+                <span className="sr-only">{t("sort")}</span>
                 <select
                   value={filters.sort ?? "featured"}
                   onChange={(e) => update({ sort: e.target.value === "featured" ? null : e.target.value })}
                   className="king-label h-10 w-full min-w-0 appearance-none truncate border border-white/15 bg-king-black py-0 pr-9 pl-3 text-[0.65rem] text-king-white transition-colors hover:border-white/35 focus:border-king-bright-red focus:outline-none"
                 >
-                  {Object.entries(SORT_LABELS).map(([value, label]) => (
+                  {SORTS.map((value) => (
                     <option key={value} value={value}>
-                      {label}
+                      {t(`sort_${value}`)}
                     </option>
                   ))}
                 </select>
@@ -148,10 +143,10 @@ export function Catalog({
         {subs.length > 0 && (
           <div
             role="group"
-            aria-label={`Filter ${mainName}`}
+            aria-label={t("filterOf", { name: mainName })}
             className="mx-auto flex max-w-[1600px] gap-2 overflow-x-auto border-t border-white/[0.06] px-4 py-2.5 [scrollbar-width:none] sm:px-6 lg:px-12 [&::-webkit-scrollbar]:hidden"
           >
-            {[{ slug: activeMain, name: `All ${mainName}` }, ...subs].map((c) => {
+            {[{ slug: activeMain, name: t("allOf", { name: mainName }) }, ...subs].map((c) => {
               const on = (filters.category ?? "") === c.slug
               return (
                 <button
@@ -176,24 +171,24 @@ export function Catalog({
         {(filters.q || activeCount > 0) && (
           <div className="mb-8 flex flex-wrap gap-2">
             {filters.q && <Chip label={`“${filters.q}”`} onClear={() => update({ q: null })} />}
-            {filters.size && <Chip label={`Size ${filters.size}`} onClear={() => update({ size: null })} />}
+            {filters.size && <Chip label={t("size", { size: filters.size })} onClear={() => update({ size: null })} />}
             {filters.color && <Chip label={filters.color} onClear={() => update({ color: null })} />}
-            {filters.gender && <Chip label={filters.gender} onClear={() => update({ gender: null })} />}
-            {filters.inStock && <Chip label="In stock" onClear={() => update({ stock: null })} />}
-            {filters.minPrice !== undefined && <Chip label={`From ${formatDA(filters.minPrice)}`} onClear={() => update({ min: null })} />}
-            {filters.maxPrice !== undefined && <Chip label={`Up to ${formatDA(filters.maxPrice)}`} onClear={() => update({ max: null })} />}
+            {filters.gender && <Chip label={t(`gender_${filters.gender}`)} onClear={() => update({ gender: null })} />}
+            {filters.inStock && <Chip label={t("inStock")} onClear={() => update({ stock: null })} />}
+            {filters.minPrice !== undefined && <Chip label={t("from", { price: formatDA(filters.minPrice) })} onClear={() => update({ min: null })} />}
+            {filters.maxPrice !== undefined && <Chip label={t("upTo", { price: formatDA(filters.maxPrice) })} onClear={() => update({ max: null })} />}
             <button type="button" onClick={() => router.push(`${pathname}#catalog`, { scroll: false })} className="king-label h-9 px-3 text-[0.6rem] text-king-gray hover:text-king-white">
-              Clear all
+              {t("clearAll")}
             </button>
           </div>
         )}
 
         {products.length === 0 ? (
           <div className="py-32 text-center">
-            <p className="king-display text-5xl text-king-white md:text-7xl">Nothing here.</p>
-            <p className="mt-4 text-sm text-king-gray">No pieces match this selection yet.</p>
+            <p className="king-display text-5xl text-king-white md:text-7xl">{t("nothing")}</p>
+            <p className="mt-4 text-sm text-king-gray">{t("noMatch")}</p>
             <Link href="/clothes#catalog" className="king-label mt-8 inline-flex h-12 items-center border border-white/25 px-6 text-king-white hover:border-king-white">
-              View all clothes
+              {t("viewAll")}
             </Link>
           </div>
         ) : (
@@ -217,7 +212,7 @@ export function Catalog({
         )}
 
         {pages > 1 && (
-          <nav aria-label="Pages" className="mt-16 flex items-center justify-center gap-2">
+          <nav aria-label={t("pages")} className="mt-16 flex items-center justify-center gap-2">
             {Array.from({ length: pages }, (_, i) => i + 1).map((n) => (
               <button
                 key={n}
@@ -240,13 +235,14 @@ export function Catalog({
 }
 
 function Chip({ label, onClear }: { label: string; onClear: () => void }) {
+  const t = useTranslations("catalog")
   return (
     <button
       type="button"
       onClick={onClear}
       className="king-label inline-flex h-9 items-center gap-2 border border-white/15 px-3 text-[0.6rem] text-king-white hover:border-king-bright-red"
     >
-      {label} <X className="size-3" aria-label="Remove filter" />
+      {label} <X className="size-3" aria-label={t("removeFilter")} />
     </button>
   )
 }
@@ -262,6 +258,7 @@ function FilterSheet({
   update: (patch: Record<string, string | null>) => void
   activeCount: number
 }) {
+  const t = useTranslations("catalog")
   const [open, setOpen] = React.useState(false)
   const [min, setMin] = React.useState(filters.minPrice?.toString() ?? "")
   const [max, setMax] = React.useState(filters.maxPrice?.toString() ?? "")
@@ -275,22 +272,22 @@ function FilterSheet({
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
         <button type="button" className="king-label inline-flex h-10 shrink-0 items-center gap-2 border border-white/15 px-3 text-[0.65rem] text-king-white hover:border-white/35">
-          <SlidersHorizontal className="size-3.5" aria-hidden /> Filters{activeCount ? ` (${activeCount})` : ""}
+          <SlidersHorizontal className="size-3.5" aria-hidden /> {t("filters")}{activeCount ? ` (${activeCount})` : ""}
         </button>
       </SheetTrigger>
       <SheetContent side="right" data-lenis-prevent className="gap-0 overflow-y-auto border-white/10 bg-king-near-black p-0 data-[side=right]:w-full data-[side=right]:sm:max-w-sm">
         <div className="border-b border-white/10 px-6 py-6">
-          <SheetTitle className="king-label text-king-white">Filters</SheetTitle>
-          <SheetDescription className="sr-only">Narrow the collection by size, colour, price and availability.</SheetDescription>
+          <SheetTitle className="king-label text-king-white">{t("filters")}</SheetTitle>
+          <SheetDescription className="sr-only">{t("filtersHelp")}</SheetDescription>
         </div>
         <div className="space-y-8 px-6 py-6">
-          <FilterGroup title="Availability">
+          <FilterGroup title={t("availability")}>
             <button type="button" className={option(!!filters.inStock)} onClick={() => update({ stock: filters.inStock ? null : "1" })}>
               In stock only
             </button>
           </FilterGroup>
           {facets.sizes.length > 0 && (
-            <FilterGroup title="Size">
+            <FilterGroup title={t("sizeTitle")}>
               {facets.sizes.map((s) => (
                 <button key={s} type="button" className={option(filters.size === s)} onClick={() => update({ size: filters.size === s ? null : s })}>
                   {s}
@@ -299,7 +296,7 @@ function FilterSheet({
             </FilterGroup>
           )}
           {facets.colours.length > 0 && (
-            <FilterGroup title="Colour">
+            <FilterGroup title={t("colour")}>
               {facets.colours.map((c) => (
                 <button
                   key={c.name}
@@ -313,14 +310,14 @@ function FilterSheet({
               ))}
             </FilterGroup>
           )}
-          <FilterGroup title="Fit for">
+          <FilterGroup title={t("fitFor")}>
             {(["men", "women", "unisex"] as const).map((g) => (
               <button key={g} type="button" className={option(filters.gender === g)} onClick={() => update({ gender: filters.gender === g ? null : g })}>
-                {g}
+                {t(`gender_${g}`)}
               </button>
             ))}
           </FilterGroup>
-          <FilterGroup title={`Price (DA)${facets.priceRange.min !== null ? ` · ${formatDA(facets.priceRange.min)} – ${formatDA(facets.priceRange.max)}` : ""}`}>
+          <FilterGroup title={`${t("price")}${facets.priceRange.min !== null ? ` · ${formatDA(facets.priceRange.min)} – ${formatDA(facets.priceRange.max)}` : ""}`}>
             <form
               className="flex w-full items-center gap-2"
               onSubmit={(e) => {
@@ -329,11 +326,11 @@ function FilterSheet({
                 setOpen(false)
               }}
             >
-              <input inputMode="numeric" value={min} onChange={(e) => setMin(e.target.value.replace(/\D/g, ""))} placeholder="Min" aria-label="Minimum price" className="h-10 w-full border border-white/15 bg-black/40 px-3 text-sm text-king-white" />
+              <input inputMode="numeric" value={min} onChange={(e) => setMin(e.target.value.replace(/\D/g, ""))} placeholder={t("min")} aria-label={t("minPrice")} className="h-10 w-full border border-white/15 bg-black/40 px-3 text-sm text-king-white" />
               <span className="text-king-gray">–</span>
-              <input inputMode="numeric" value={max} onChange={(e) => setMax(e.target.value.replace(/\D/g, ""))} placeholder="Max" aria-label="Maximum price" className="h-10 w-full border border-white/15 bg-black/40 px-3 text-sm text-king-white" />
+              <input inputMode="numeric" value={max} onChange={(e) => setMax(e.target.value.replace(/\D/g, ""))} placeholder={t("max")} aria-label={t("maxPrice")} className="h-10 w-full border border-white/15 bg-black/40 px-3 text-sm text-king-white" />
               <button type="submit" className="king-label h-10 shrink-0 bg-king-red px-4 text-[0.6rem] text-king-white hover:bg-king-bright-red">
-                Apply
+                {t("apply")}
               </button>
             </form>
           </FilterGroup>
@@ -354,6 +351,8 @@ function FilterGroup({ title, children }: { title: string; children: React.React
 
 /** Wide campaign card leading the grid — full look, title on the image. */
 function FeatureCard({ product }: { product: ProductCardData }) {
+  const t = useTranslations("catalog")
+  const ts = useTranslations("stock")
   const { setQuickView } = useShop()
   const image = product.image
   return (
@@ -361,22 +360,22 @@ function FeatureCard({ product }: { product: ProductCardData }) {
       <InteractiveCard
         className="aspect-[4/5] sm:aspect-[8/5]"
         imageUrl={image?.url ?? "/images/hero/2.jpg"}
-        imageAlt={`${product.name} — KING 253 campaign`}
+        imageAlt={t("campaign", { name: product.name })}
         focus={{ x: image?.focusX ?? 50, y: 40 }}
         zoom={1}
         sizes="(min-width: 1280px) 40vw, (min-width: 1024px) 50vw, 100vw"
         title={product.name}
-        subtitle={`Featured — ${product.categoryName ?? ""}`}
+        subtitle={t("featured", { category: product.categoryName ?? "" })}
         href={`/product/${product.slug}`}
-        arrowLabel={`View ${product.name}`}
-        actionText={product.available > 0 ? `View details — ${formatDA(product.price)}` : "Out of stock"}
+        arrowLabel={t("view", { name: product.name })}
+        actionText={product.available > 0 ? t("viewDetailsPrice", { price: formatDA(product.price) }) : t("outOfStock")}
         actionDisabled={product.available <= 0}
         linkWholeCard
-        promo={promoBarText(product)}
+        promo={promoBarText(product, ts)}
       />
       <div className="mt-3 flex items-center justify-between gap-4 md:mt-4">
         <p className="king-label flex flex-wrap items-center gap-2 text-[0.55rem] text-king-gray">
-          [ Featured look ]
+          {t("featuredLook")}
           {product.compareAt ? <span className="line-through">{formatDA(product.compareAt)}</span> : null}
         </p>
         {product.colours[0] && (

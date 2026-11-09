@@ -1,5 +1,7 @@
 "use client"
 
+import { useTranslations } from "next-intl"
+
 import * as React from "react"
 import Link from "next/link"
 import { Eye, Plus } from "lucide-react"
@@ -13,6 +15,7 @@ import { productSizes } from "@/components/shop/product-image"
 const FALLBACK = { url: "/images/backgrounds/home-background.jpg", focusX: 50, focusY: 50, zoom: 1 }
 
 export function LatestDropFan({ products }: { products: ProductCardData[] }) {
+  const t = useTranslations("home")
   const { setQuickView } = useShop()
   const [center, setCenter] = React.useState(0)
 
@@ -28,7 +31,7 @@ export function LatestDropFan({ products }: { products: ProductCardData[] }) {
           sizes: productSizes(image, [40, 26, 19]),
           alt: p.name,
           title: p.name,
-          meta: `${p.categoryName ?? ""} · ${p.available > 0 ? formatDA(p.price) : "Out of stock"}`,
+          meta: `${p.categoryName ?? ""} · ${p.available > 0 ? formatDA(p.price) : t("outOfStock")}`,
           onSelect: () => setQuickView(p.slug),
         }
       }),
@@ -40,7 +43,7 @@ export function LatestDropFan({ products }: { products: ProductCardData[] }) {
 
   return (
     <div className="overflow-x-clip">
-      <CardFanCarousel cards={cards} label="The latest drop" onCenterChange={setCenter} />
+      <CardFanCarousel cards={cards} label={t("latestDrop")} onCenterChange={setCenter} />
 
       {current && (
         <div
@@ -63,7 +66,7 @@ export function LatestDropFan({ products }: { products: ProductCardData[] }) {
               href={`/product/${current.slug}`}
               className="king-label inline-flex h-11 items-center gap-2 border border-white/15 px-5 text-[0.625rem] text-king-white transition-colors hover:border-king-white"
             >
-              <Eye className="size-3.5" aria-hidden /> View piece
+              <Eye className="size-3.5" aria-hidden /> {t("viewPiece")}
             </Link>
             <button
               type="button"
@@ -71,7 +74,7 @@ export function LatestDropFan({ products }: { products: ProductCardData[] }) {
               onClick={() => setQuickView(current.slug)}
               className="king-label inline-flex h-11 items-center gap-2 bg-king-red px-5 text-[0.625rem] text-king-white transition-colors hover:bg-king-bright-red disabled:cursor-not-allowed disabled:opacity-40"
             >
-              <Plus className="size-3.5" aria-hidden /> {current.available <= 0 ? "Out of stock" : "Choose size"}
+              <Plus className="size-3.5" aria-hidden /> {current.available <= 0 ? t("outOfStock") : t("chooseSize")}
             </button>
           </div>
         </div>

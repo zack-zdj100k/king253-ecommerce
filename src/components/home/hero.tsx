@@ -1,5 +1,7 @@
 "use client"
 
+import { useTranslations } from "next-intl"
+
 import * as React from "react"
 import Image from "next/image"
 
@@ -23,6 +25,7 @@ export type HeroContent = {
 }
 
 export function Hero({ content }: { content: HeroContent }) {
+  const t = useTranslations("home")
   const headline = content.headline.split("\n").map((l) => l.trim()).filter(Boolean)
   const ref = React.useRef<HTMLElement>(null)
 
@@ -140,7 +143,7 @@ export function Hero({ content }: { content: HeroContent }) {
             <span className="relative block h-12 w-px overflow-hidden bg-white/15">
               <span className="absolute inset-x-0 top-0 h-1/2 animate-[king-scroll_2.4s_ease-in-out_infinite] bg-king-bright-red motion-reduce:animate-none" />
             </span>
-            <span className="king-label text-[0.625rem] text-king-gray">Scroll</span>
+            <span className="king-label text-[0.625rem] text-king-gray">{t("scroll")}</span>
           </div>
         </div>
       </ParallaxScrolling>

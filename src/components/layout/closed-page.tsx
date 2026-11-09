@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl"
 import Image from "next/image"
 import Link from "next/link"
 import { AtSign, Clock, MessageCircle, Phone } from "lucide-react"
@@ -13,6 +14,7 @@ import { TrackOrder } from "@/components/orders/track-order"
  * as the site; orders are paused but existing orders can still be tracked.
  */
 export function ClosedPage({ settings, until }: { settings: Settings; until: Date | null }) {
+  const t = useTranslations("pages")
   const whatsapp = settings.whatsapp ? normalizePhone(settings.whatsapp) : null
   const instagram = settings.instagram
     ? settings.instagram.startsWith("http")
@@ -35,21 +37,21 @@ export function ClosedPage({ settings, until }: { settings: Settings; until: Dat
           </p>
           <p className="king-label mt-14 flex items-center gap-3 text-[0.6rem] text-king-bright-red">
             <span className="size-1.5 animate-pulse rounded-full bg-king-bright-red motion-reduce:animate-none" aria-hidden />
-            Closed for now
+            {t("closedNow")}
           </p>
           <h1 className="king-display mt-5 text-[clamp(3.5rem,13vw,10rem)] text-king-white">
-            We&apos;ll be
+            {t("backSoon1")}
             <br />
-            back<span className="text-king-bright-red">.</span>
+            {t("backSoon2")}<span className="text-king-bright-red">.</span>
           </h1>
           <p className="mt-6 max-w-xl text-lg leading-relaxed text-king-muted">
-            {settings.closedMessage || "The shop is taking a short break. Orders are paused for now — thank you for your patience."}
+            {settings.closedMessage || t("closedDefault")}
           </p>
           {until && (
             <p className="mt-6 inline-flex items-center gap-3 border border-king-red-line bg-king-red/15 px-4 py-3 text-king-white">
               <Clock className="size-4 text-king-bright-red" aria-hidden />
               <span>
-                Back on <strong className="font-semibold">{formatClosureDate(until)}</strong>
+                {t("backOn")} <strong className="font-semibold">{formatClosureDate(until)}</strong>
               </span>
             </p>
           )}
@@ -78,9 +80,9 @@ export function ClosedPage({ settings, until }: { settings: Settings; until: Dat
 
       <section className="border-t border-white/10 px-4 py-20 sm:px-6 lg:px-12">
         <div className="mx-auto w-full max-w-5xl">
-          <p className="king-label text-[0.6rem] text-king-gray">[ Already ordered? ]</p>
-          <h2 className="king-display mt-4 text-[clamp(2.25rem,6vw,4.5rem)] text-king-white">Track your order.</h2>
-          <p className="mt-3 max-w-lg text-sm text-king-muted">Orders placed before the break are still on their way. Enter your order number and phone.</p>
+          <p className="king-label text-[0.6rem] text-king-gray">{t("alreadyOrdered")}</p>
+          <h2 className="king-display mt-4 text-[clamp(2.25rem,6vw,4.5rem)] text-king-white">{t("trackYour")}</h2>
+          <p className="mt-3 max-w-lg text-sm text-king-muted">{t("closedTrackText")}</p>
           <div className="mt-10">
             <TrackOrder initialNumber="" />
           </div>
@@ -88,7 +90,7 @@ export function ClosedPage({ settings, until }: { settings: Settings; until: Dat
       </section>
 
       <p className="king-label px-4 pb-10 text-center text-[0.55rem] text-king-gray">
-        © {new Date().getFullYear()} {settings.brandName} · <Link href="/admin/login" className="hover:text-king-white">Staff</Link>
+        © {new Date().getFullYear()} {settings.brandName} · <Link href="/admin/login" className="hover:text-king-white">{t("staff")}</Link>
       </p>
     </main>
   )

@@ -1,5 +1,7 @@
 "use client"
 
+import { useTranslations } from "next-intl"
+
 import * as React from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
@@ -11,6 +13,7 @@ import { formatDA } from "@/lib/money"
 import { formatPhone } from "@/lib/phone"
 import { placeOrderAction, quoteCheckoutAction, saveCheckoutDraftAction, type CheckoutQuote } from "@/app/actions/checkout"
 import { REFERRAL_SOURCES } from "@/lib/referral"
+import { useErrorText } from "@/i18n/errors"
 import type { CartLine } from "@/server/cart"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -49,6 +52,9 @@ export function CheckoutForm({
   /** Guests set a password (their account is created by phone); everyone answers the referral once. */
   account: { signedIn: boolean; needsReferral: boolean }
 }) {
+  const t = useTranslations("checkout")
+  const tr = useTranslations("referral")
+  const et = useErrorText()
   const router = useRouter()
   const { refreshCart } = useShop()
   const [values, setValues] = React.useState<CheckoutPrefill>(prefill)
@@ -114,7 +120,7 @@ export function CheckoutForm({
   const chosenDesk = chosen?.desks.find((d) => d.id === deskId) ?? null
   const courierFee = type === "desk" ? (chosenDesk?.price ?? null) : (chosen?.price ?? null)
   const deliveryFee = free ? 0 : (courierFee ?? 0)
-  const deliveryLabel = !chosen ? "—" : free ? "Free" : courierFee === null ? "Confirmed by phone" : formatDA(courierFee)
+  const deliveryLabel = !chosen ? "—" : free ? t("free") : courierFee === null ? t("byPhone") : formatDA(courierFee)
   const total = subtotal + deliveryFee
   const ready = Boolean(chosen && chosen.available && (type === "home" || chosenDesk))
 
@@ -137,7 +143,7 @@ export function CheckoutForm({
     setFormError(null)
     if (!ready) {
       setSubmitting(false)
-      setFormError(selectedWilaya ? "Choose how and from which shop your order is delivered." : "Choose your wilaya first.")
+      setFormError(selectedWilaya ? t("chooseHow") : t("chooseWilayaFirst"))
       return
     }
     const lang = document.documentElement.lang
@@ -158,10 +164,10 @@ export function CheckoutForm({
       return
     }
     setSubmitting(false)
-    setFormError(result.error)
+    setFormError(et(result.error))
     if (result.fields) {
       const mapped: Record<string, string> = {}
-      for (const [k, v] of Object.entries(result.fields)) mapped[k.replace(/^customer\./, "")] = v
+      for (const [k, v] of Object.entries(result.fields)) mapped[k.replace(/^customer\./, "")] = et(v)
       setErrors(mapped)
       if (mapped.password && !account.signedIn) setPhoneTaken(true)
       setEditing(true)
@@ -176,11 +182,11 @@ export function CheckoutForm({
         <section aria-labelledby="details-title">
           <div className="flex items-center justify-between">
             <h2 id="details-title" className="king-label text-king-white">
-              01 — Your details
+              {t("details")}
             </h2>
             {!editing && (
               <button type="button" onClick={() => setEditing(true)} className="king-label inline-flex items-center gap-2 text-[0.6rem] text-king-muted hover:text-king-white">
-                <Pencil className="size-3" aria-hidden /> Edit
+                <Pencil className="size-3" aria-hidden /> {t("edit")}
               </button>
             )}
           </div>
@@ -195,27 +201,27 @@ export function CheckoutForm({
                   {values.address}, {values.city}, {values.wilaya}
                 </span>
               </p>
-              <p className="king-label mt-3 text-[0.55rem] text-king-gray">Saved from your last order — edit anything before confirming.</p>
+              <p className="king-label mt-3 text-[0.55rem] text-king-gray">{t("savedNote")}</p>
             </div>
           ) : (
             <div className="mt-5 grid gap-5 sm:grid-cols-2">
-              <Field label="Full name" error={errors.fullName} className="sm:col-span-2">
+              <Field label={t("fullName")} error={errors.fullName} className="sm:col-span-2">
                 {(id) => <Input id={id} value={values.fullName} onChange={(e) => set({ fullName: e.target.value })} autoComplete="name" required className={fieldClass} />}
               </Field>
-              <Field label="Phone" error={errors.phone} hint="We'll call to confirm.">
+              <Field label={t("phone")} error={errors.phone} hint={t("phoneHint")}>
                 {(id) => <Input id={id} value={values.phone} onChange={(e) => set({ phone: e.target.value })} type="tel" inputMode="tel" autoComplete="tel" placeholder="05 / 06 / 07 …" required className={fieldClass} />}
               </Field>
-              <Field label="Email (optional)" error={errors.email} hint="For the delivery confirmation by email.">
+              <Field label={t("email")} error={errors.email} hint={t("emailHint")}>
                 {(id) => <Input id={id} value={values.email} onChange={(e) => set({ email: e.target.value })} type="email" autoComplete="email" className={fieldClass} />}
               </Field>
               {!account.signedIn && (
                 <Field
-                  label={phoneTaken ? "Password of your KING 253 account" : "Choose a password"}
+                  label={phoneTaken ? t("passwordExisting") : t("passwordNew")}
                   error={errors.password}
                   hint={
                     phoneTaken
-                      ? "This phone number already has an account."
-                      : "Your account is created with your phone number — sign in later with phone + password."
+                      ? t("phoneHasAccount")
+                      : t("accountNote")
                   }
                   className="sm:col-span-2"
                 >
@@ -245,19 +251,19 @@ export function CheckoutForm({
                 <label className="flex items-start gap-3 text-sm text-king-muted sm:col-span-2">
                   <input type="checkbox" checked={forgot} onChange={(e) => setForgot(e.target.checked)} className="mt-1 accent-[#d41414]" />
                   <span>
-                    I forgot my password — place the order anyway. It is added to the account of this phone number;{" "}
-                    <Link href="/sign-in" className="underline underline-offset-4">sign in</Link> later to see it.
+                    {t("forgot")}{" "}
+                    <Link href="/sign-in" className="underline underline-offset-4">{t("signIn")}</Link> {t("laterToSee")}
                   </span>
                 </label>
               )}
               {account.needsReferral && (
-                <Field label="Where did you hear about us?" error={errors.referralSource} className="sm:col-span-2">
+                <Field label={tr("question")} error={errors.referralSource} className="sm:col-span-2">
                   {(id) => (
                     <SelectBox id={id} value={referral} onChange={(v) => setReferral(v)} required={!account.signedIn}>
-                      <option value="">Choose…</option>
+                      <option value="">{tr("choose")}</option>
                       {REFERRAL_SOURCES.map((r) => (
                         <option key={r.key} value={r.key}>
-                          {r.label}
+                          {tr(r.key)}
                         </option>
                       ))}
                     </SelectBox>
@@ -265,7 +271,7 @@ export function CheckoutForm({
                 </Field>
               )}
 
-              <Field label="Wilaya" error={errors.wilaya}>
+              <Field label={t("wilaya")} error={errors.wilaya}>
                 {(id) => (
                   <SelectBox
                     id={id}
@@ -277,7 +283,7 @@ export function CheckoutForm({
                     }}
                     autoComplete="address-level1"
                   >
-                    <option value="">Choose your wilaya…</option>
+                    <option value="">{t("chooseWilaya")}</option>
                     {WILAYAS.map((w) => (
                       <option key={w.code} value={w.fr}>
                         {wilayaLabel(w)} · {w.ar}
@@ -286,7 +292,7 @@ export function CheckoutForm({
                   </SelectBox>
                 )}
               </Field>
-              <Field label="Commune" error={errors.city} hint={selectedWilaya ? `${selectedWilaya.communes.length} communes in ${selectedWilaya.fr}` : "Choose your wilaya first."}>
+              <Field label={t("commune")} error={errors.city} hint={selectedWilaya ? t("communesIn", { count: selectedWilaya.communes.length, wilaya: selectedWilaya.fr }) : t("chooseWilayaFirst")}>
                 {(id) => (
                   <SelectBox
                     id={id}
@@ -295,7 +301,7 @@ export function CheckoutForm({
                     disabled={!selectedWilaya}
                     autoComplete="address-level2"
                   >
-                    <option value="">{selectedWilaya ? "Choose your commune…" : "—"}</option>
+                    <option value="">{selectedWilaya ? t("chooseCommune") : "—"}</option>
                     {selectedWilaya?.communes.map(([fr, ar]) => (
                       <option key={fr} value={fr}>
                         {fr} · {ar}
@@ -304,10 +310,10 @@ export function CheckoutForm({
                   </SelectBox>
                 )}
               </Field>
-              <Field label="Street / address" error={errors.address} className="sm:col-span-2">
+              <Field label={t("address")} error={errors.address} className="sm:col-span-2">
                 {(id) => <Input id={id} value={values.address} onChange={(e) => set({ address: e.target.value })} autoComplete="street-address" required className={fieldClass} />}
               </Field>
-              <Field label="Delivery notes (optional)" error={errors.notes} className="sm:col-span-2">
+              <Field label={t("notes")} error={errors.notes} className="sm:col-span-2">
                 {(id) => (
                   <textarea
                     id={id}
@@ -324,13 +330,13 @@ export function CheckoutForm({
 
         <section aria-labelledby="delivery-title">
           <h2 id="delivery-title" className="king-label text-king-white">
-            02 — Delivery
+            {t("delivery")}
           </h2>
-          <div role="radiogroup" aria-label="Delivery type" className="mt-5 grid grid-cols-2 gap-3">
+          <div role="radiogroup" aria-label={t("deliveryType")} className="mt-5 grid grid-cols-2 gap-3">
             {(
               [
-                ["home", "Home delivery", "À domicile — to your address", Home],
-                ["desk", "Stop desk", "Pick it up at a courier desk", Building2],
+                ["home", t("home"), t("homeSub"), Home],
+                ["desk", t("desk"), t("deskSub"), Building2],
               ] as const
             ).map(([key, title, sub, Icon]) => (
               <button
@@ -355,21 +361,21 @@ export function CheckoutForm({
 
           <div className="mt-6" aria-live="polite">
             <p className="king-label flex items-center gap-2 text-[0.6rem] text-king-gray">
-              <Store className="size-3.5 text-king-bright-red" aria-hidden /> Ships from
-              {quoting && <Loader2 className="size-3 animate-spin" aria-label="Updating prices" />}
+              <Store className="size-3.5 text-king-bright-red" aria-hidden /> {t("shipsFrom")}
+              {quoting && <Loader2 className="size-3 animate-spin" aria-label={t("updatingPrices")} />}
             </p>
             {!selectedWilaya ? (
-              <p className="mt-3 text-sm text-king-gray">Choose your wilaya to see the shops and delivery prices.</p>
+              <p className="mt-3 text-sm text-king-gray">{t("chooseWilayaShops")}</p>
             ) : quote && !quote.ok ? (
               <p role="alert" className="mt-3 flex items-start gap-2 border border-king-red-line bg-king-red/10 p-3 text-sm text-king-white">
                 <AlertTriangle className="mt-0.5 size-4 shrink-0 text-king-bright-red" aria-hidden />
-                {quote.error}
+                {et(quote.error)}
               </p>
             ) : (
-              <ul role="radiogroup" aria-label="Departure shop" className="mt-3 space-y-2">
+              <ul role="radiogroup" aria-label={t("departureShop")} className="mt-3 space-y-2">
                 {shops.map((q, i) => {
                   const selected = q.storeId === storeId
-                  const price = free ? "Free" : q.price === null ? (q.available ? "Price by phone" : "") : formatDA(q.price)
+                  const price = free ? t("free") : q.price === null ? (q.available ? t("priceByPhone") : "") : formatDA(q.price)
                   return (
                     <li key={q.storeId}>
                       <button
@@ -393,7 +399,7 @@ export function CheckoutForm({
                           <span>
                             <span className="block text-sm font-semibold text-king-white">{q.storeName}</span>
                             <span className="block text-xs text-king-gray">
-                              {!q.available ? `No stop desk in ${selectedWilaya.fr}` : i === 0 && shops.length > 1 ? "Cheapest" : "Has your whole order"}
+                              {!q.available ? t("noDesk", { wilaya: selectedWilaya.fr }) : i === 0 && shops.length > 1 ? t("cheapest") : t("hasAll")}
                             </span>
                           </span>
                         </span>
@@ -408,14 +414,14 @@ export function CheckoutForm({
 
           {type === "desk" && chosen && chosen.available && (
             <div className="mt-5">
-              <Field label="Stop desk" error={errors["delivery.deskId"]} hint={chosenDesk?.address ? `${chosenDesk.address} · ${chosenDesk.commune}` : "Suggested: the desk closest to your commune."}>
+              <Field label={t("desk")} error={errors["delivery.deskId"]} hint={chosenDesk?.address ? `${chosenDesk.address} · ${chosenDesk.commune}` : t("deskSuggested")}>
                 {(id) => (
                   <SelectBox id={id} value={deskId ? String(deskId) : ""} onChange={(v) => setDeskId(Number(v) || null)}>
                     {chosen.desks.map((d) => (
                       <option key={d.id} value={d.id}>
                         {d.commune} — {d.name}
                         {d.price !== null ? ` · ${formatDA(d.price)}` : ""}
-                        {d.id === chosen.suggestedDeskId ? " (closest)" : ""}
+                        {d.id === chosen.suggestedDeskId ? t("closest") : ""}
                       </option>
                     ))}
                   </SelectBox>
@@ -423,18 +429,18 @@ export function CheckoutForm({
               </Field>
             </div>
           )}
-          {estimated && <p className="mt-4 text-xs text-king-gray">Delivery time: {estimated}.</p>}
+          {estimated && <p className="mt-4 text-xs text-king-gray">{t("deliveryTime", { time: estimated })}</p>}
         </section>
 
         <section aria-labelledby="payment-title">
           <h2 id="payment-title" className="king-label text-king-white">
-            03 — Payment
+            {t("payment")}
           </h2>
 
           <p className="mt-5 flex items-start gap-3 border border-white/10 bg-king-near-black p-5 text-sm text-king-muted">
             <Banknote className="mt-0.5 size-4 shrink-0 text-king-bright-red" aria-hidden />
             <span>
-              <span className="font-semibold text-king-white">Cash on delivery.</span> Pay when your order arrives. We call you first to confirm.
+              <span className="font-semibold text-king-white">{t("cod")}</span> {t("codText")}
             </span>
           </p>
         </section>
@@ -444,7 +450,7 @@ export function CheckoutForm({
       <aside aria-labelledby="summary-title" className="lg:sticky lg:top-24 lg:self-start">
         <div className="king-chamfer border border-white/10 bg-king-near-black p-6 [--cut:18px] md:p-8">
           <h2 id="summary-title" className="king-label text-king-white">
-            {mode === "buy_now" ? "Buy now" : `Your bag (${lines.reduce((s, l) => s + l.quantity, 0)})`}
+            {mode === "buy_now" ? t("buyNow") : t("yourBag", { count: lines.reduce((s, l) => s + l.quantity, 0) })}
           </h2>
           <ul className="mt-5 divide-y divide-white/5">
             {lines.map((l) => (
@@ -460,7 +466,7 @@ export function CheckoutForm({
                   {l.issue && (
                     <span className="mt-1 flex items-center gap-1 text-xs text-king-bright-red">
                       <AlertTriangle className="size-3" aria-hidden />
-                      {l.issue === "not_enough" ? `Only ${l.available} left` : "No longer available"}
+                      {l.issue === "not_enough" ? t("onlyLeft", { count: l.available }) : t("noLonger")}
                     </span>
                   )}
                 </span>
@@ -470,22 +476,22 @@ export function CheckoutForm({
           </ul>
           <dl className="mt-4 space-y-2 border-t border-white/10 pt-4 text-sm">
             <div className="flex justify-between text-king-gray">
-              <dt>Clothes</dt>
+              <dt>{t("clothes")}</dt>
               <dd className="text-king-white">{formatDA(subtotal)}</dd>
             </div>
             <div className="flex justify-between gap-4 text-king-gray">
               <dt>
-                {type === "desk" ? "Stop desk" : "Home delivery"}
-                {chosen ? <span className="block text-xs">from {chosen.storeName}</span> : null}
+                {type === "desk" ? t("desk") : t("home")}
+                {chosen ? <span className="block text-xs">{t("from", { shop: chosen.storeName })}</span> : null}
               </dt>
               <dd className="text-right text-king-white">{deliveryLabel}</dd>
             </div>
             <div className="flex justify-between border-t border-white/10 pt-3 text-base">
-              <dt className="font-semibold text-king-white">To pay on delivery</dt>
+              <dt className="font-semibold text-king-white">{t("toPay")}</dt>
               <dd className="font-semibold text-king-white">{formatDA(total)}</dd>
             </div>
             {missingForFree > 0 && (
-              <p className="text-xs text-king-bright-red">Add {formatDA(missingForFree)} more for free delivery.</p>
+              <p className="text-xs text-king-bright-red">{t("moreForFree", { amount: formatDA(missingForFree) })}</p>
             )}
           </dl>
 
@@ -497,15 +503,15 @@ export function CheckoutForm({
           )}
           {blocked && mode === "cart" && (
             <p className="mt-5 text-sm text-king-bright-red">
-              Some items changed. <Link href="/clothes" className="underline">Update your bag</Link> to continue.
+              {t("itemsChanged")} <Link href="/clothes" className="underline">{t("updateBag")}</Link> {t("toContinue")}
             </p>
           )}
 
           <Button type="submit" variant="king" size="xl" className="mt-6 w-full" disabled={submitting || !!blocked || !ready}>
             {submitting ? <Loader2 className="size-4 animate-spin" aria-hidden /> : null}
-            {submitting ? "Placing your order…" : `Confirm order — ${formatDA(total)}`}
+            {submitting ? t("placing") : t("confirm", { total: formatDA(total) })}
           </Button>
-          <p className="mt-3 text-center text-xs text-king-gray">Prices and stock are checked again when you confirm.</p>
+          <p className="mt-3 text-center text-xs text-king-gray">{t("checkedAgain")}</p>
         </div>
       </aside>
     </form>

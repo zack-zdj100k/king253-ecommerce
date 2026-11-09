@@ -1,5 +1,7 @@
 "use client"
 
+import { useTranslations } from "next-intl"
+
 import * as React from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
@@ -15,6 +17,7 @@ import { AvailabilityLabel, PriceTag, PromoBadge } from "@/components/shop/stock
 import { imagesForColour, useVariantSelection, VariantPicker } from "@/components/shop/variant-picker"
 
 export function QuickViewDialog() {
+  const t = useTranslations("product")
   const { quickView: slug, setQuickView } = useShop()
   const [data, setData] = React.useState<QuickViewData | null>(null)
   const [loading, setLoading] = React.useState(false)
@@ -38,9 +41,9 @@ export function QuickViewDialog() {
       <DialogContent className="max-h-[92svh] w-[calc(100%-2rem)] max-w-5xl gap-0 overflow-y-auto border-white/10 bg-king-near-black p-0 sm:max-w-5xl" data-lenis-prevent>
         {loading || !data || data.slug !== slug ? (
           <div className="grid min-h-80 place-items-center">
-            <DialogTitle className="sr-only">Loading product</DialogTitle>
-            <DialogDescription className="sr-only">Loading product details</DialogDescription>
-            {loading ? <Loader2 className="size-6 animate-spin text-king-gray" aria-hidden /> : <p className="text-sm text-king-gray">This product is no longer available.</p>}
+            <DialogTitle className="sr-only">{t("loading")}</DialogTitle>
+            <DialogDescription className="sr-only">{t("loadingDetails")}</DialogDescription>
+            {loading ? <Loader2 className="size-6 animate-spin text-king-gray" aria-hidden /> : <p className="text-sm text-king-gray">{t("unavailable")}</p>}
           </div>
         ) : (
           <QuickViewBody key={data.id} data={data} onClose={() => setQuickView(null)} />
@@ -51,6 +54,7 @@ export function QuickViewDialog() {
 }
 
 function QuickViewBody({ data, onClose }: { data: QuickViewData; onClose: () => void }) {
+  const t = useTranslations("product")
   const { addToCart, wishlist, toggleWishlist } = useShop()
   const router = useRouter()
   const selection = useVariantSelection(data.variants)
@@ -85,7 +89,7 @@ function QuickViewBody({ data, onClose }: { data: QuickViewData; onClose: () => 
         {data.variants.length > 0 ? (
           <VariantPicker variants={data.variants} selection={selection} colourImages={colourImages} compact />
         ) : (
-          <p className="text-sm text-king-gray">Sizes coming soon.</p>
+          <p className="text-sm text-king-gray">{t("sizesSoon")}</p>
         )}
         <AvailabilityLabel available={variant ? variant.available : totalAvailable} />
 
@@ -105,7 +109,7 @@ function QuickViewBody({ data, onClose }: { data: QuickViewData; onClose: () => 
               }}
             >
               {busy ? <Loader2 className="size-4 animate-spin" aria-hidden /> : null}
-              {variant && variant.available <= 0 ? "Out of stock" : "Add to bag"}
+              {variant && variant.available <= 0 ? t("outOfStock") : t("addToBag")}
             </Button>
             <Button
               variant="kingOutline"
@@ -113,7 +117,7 @@ function QuickViewBody({ data, onClose }: { data: QuickViewData; onClose: () => 
               className="w-12 px-0 md:w-14 md:px-0"
               onClick={() => toggleWishlist(data.id)}
               aria-pressed={saved}
-              aria-label={saved ? "Remove from wishlist" : "Save to wishlist"}
+              aria-label={saved ? t("unsave") : t("save")}
             >
               <Heart className={cn("size-4", saved && "fill-king-bright-red text-king-bright-red")} />
             </Button>
@@ -131,11 +135,11 @@ function QuickViewBody({ data, onClose }: { data: QuickViewData; onClose: () => 
               else router.push(`/checkout?buy=${variant.id}&qty=1`)
             }}
           >
-            {variant && variant.available <= 0 ? "Out of stock" : "Buy now"}
+            {variant && variant.available <= 0 ? t("outOfStock") : t("buyNow")}
           </Button>
           {needSize && !variant && (
             <p role="alert" className="text-center text-sm text-king-bright-red">
-              Choose your size first.
+              {t("chooseSize")}
             </p>
           )}
         </div>
@@ -161,7 +165,7 @@ function QuickViewBody({ data, onClose }: { data: QuickViewData; onClose: () => 
           onClick={onClose}
           className="king-label block text-center text-[0.6rem] text-king-muted underline-offset-4 hover:text-king-white hover:underline"
         >
-          Open the product page · reviews
+          {t("openPage")}
         </Link>
       </div>
     </div>
@@ -170,6 +174,7 @@ function QuickViewBody({ data, onClose }: { data: QuickViewData; onClose: () => 
 
 /** The chosen colour's photos: big frame + thumbnails. */
 function ColourPhotos({ photos, name, colour }: { photos: QuickViewData["images"]; name: string; colour: string | null }) {
+  const t = useTranslations("product")
   const [active, setActive] = React.useState(0)
   const main = photos[active] ?? null
   return (
@@ -187,7 +192,7 @@ function ColourPhotos({ photos, name, colour }: { photos: QuickViewData["images"
               key={`${p.url}-${i}`}
               type="button"
               onClick={() => setActive(i)}
-              aria-label={`Photo ${i + 1} of ${photos.length}`}
+              aria-label={t("photoOf", { n: i + 1, total: photos.length })}
               aria-current={i === active}
               className={cn("relative aspect-[4/5] w-14 shrink-0 overflow-hidden bg-king-card transition-opacity", i === active ? "ring-1 ring-king-bright-red" : "opacity-55 hover:opacity-100")}
             >

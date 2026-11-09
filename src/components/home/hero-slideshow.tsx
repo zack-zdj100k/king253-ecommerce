@@ -1,5 +1,7 @@
 "use client"
 
+import { useTranslations } from "next-intl"
+
 import * as React from "react"
 import Image from "next/image"
 import { Pause, Play } from "lucide-react"
@@ -48,6 +50,7 @@ function toSlides(urls: string[] | undefined) {
 }
 
 export function HeroSlideshow({ className, mediaClassName, slides }: { className?: string; mediaClassName?: string; slides?: string[] }) {
+  const t = useTranslations("home")
   const SLIDES = toSlides(slides)
   const [index, setIndex] = React.useState(0)
   // Highest slide allowed to load: the current one plus the next, so the
@@ -75,7 +78,7 @@ export function HeroSlideshow({ className, mediaClassName, slides }: { className
       <div
         className={cn("absolute inset-0", mediaClassName)}
         aria-roledescription="carousel"
-        aria-label="KING 253 campaign looks"
+        aria-label={t("looks")}
       >
         <div data-hero-media className="absolute inset-0">
           {SLIDES.map((slide, i) => {
@@ -98,7 +101,7 @@ export function HeroSlideshow({ className, mediaClassName, slides }: { className
                   {i <= loadUpTo && (
                     <Image
                       src={slide.src}
-                      alt={slide.alt}
+                      alt={t("lookAlt", { n: i + 1 })}
                       fill
                       quality={90}
                       preload={i === 0}
@@ -120,13 +123,13 @@ export function HeroSlideshow({ className, mediaClassName, slides }: { className
         data-hero-meta
         className="absolute right-4 bottom-6 z-20 flex items-center gap-4 sm:right-6 lg:right-12 lg:bottom-10"
       >
-        <ol className="flex items-center gap-2" aria-label="Choose look">
+        <ol className="flex items-center gap-2" aria-label={t("chooseLook")}>
           {SLIDES.map((slide, i) => (
             <li key={`${slide.src}-${i}`}>
               <button
                 type="button"
                 onClick={() => goTo(i)}
-                aria-label={`Look ${i + 1} of ${SLIDES.length}`}
+                aria-label={t("lookOf", { n: i + 1, total: SLIDES.length })}
                 aria-current={i === index}
                 className="group flex h-11 flex-col justify-center gap-2"
               >
@@ -157,7 +160,7 @@ export function HeroSlideshow({ className, mediaClassName, slides }: { className
         <button
           type="button"
           onClick={() => setUserPaused(!paused)}
-          aria-label={paused ? "Play slideshow" : "Pause slideshow"}
+          aria-label={paused ? t("play") : t("pause")}
           className="grid size-11 place-items-center border border-white/15 text-king-muted transition-colors duration-300 hover:border-white/40 hover:text-king-white"
         >
           {paused ? <Play className="size-3.5" /> : <Pause className="size-3.5" />}

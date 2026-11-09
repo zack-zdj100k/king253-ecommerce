@@ -2,6 +2,8 @@ import type { Metadata } from "next"
 import { connection } from "next/server"
 
 import { shopClosure } from "@/lib/closure"
+import { currentLocale } from "@/i18n/request"
+import { localeAlternates } from "@/i18n/seo"
 import { db } from "@/server/db"
 import { getSettings } from "@/server/settings"
 import { ClosedPage } from "@/components/layout/closed-page"
@@ -23,7 +25,9 @@ async function currentClosure() {
 
 export async function generateMetadata(): Promise<Metadata> {
   const { closure } = await currentClosure()
-  return closure.state === "closed" ? { title: "Back soon", robots: { index: false, follow: false } } : {}
+  if (closure.state === "closed") return { title: "Back soon", robots: { index: false, follow: false } }
+  const locale = await currentLocale()
+  return { alternates: await localeAlternates(locale), openGraph: { locale: locale === "ar" ? "ar_DZ" : locale === "fr" ? "fr_DZ" : "en_US" } }
 }
 
 /**

@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import { Heart } from "lucide-react"
+import { useTranslations } from "next-intl"
 
 import { cn } from "@/lib/utils"
 import { formatDA } from "@/lib/money"
@@ -23,6 +24,8 @@ export function ProductCard({
   sizes?: [number, number, number]
   className?: string
 }) {
+  const t = useTranslations("catalog")
+  const ts = useTranslations("stock")
   const { toggleWishlist, wishlist } = useShop()
   const saved = wishlist.includes(product.id)
   const soldOut = product.available <= 0
@@ -39,11 +42,11 @@ export function ProductCard({
         sizes={productSizes(image, sizes)}
         subtitle={product.categoryName ?? undefined}
         href={`/product/${product.slug}`}
-        arrowLabel={`View ${product.name}`}
-        actionText={soldOut ? "Out of stock" : "View details"}
+        arrowLabel={t("view", { name: product.name })}
+        actionText={soldOut ? t("outOfStock") : t("viewDetails")}
         actionDisabled={soldOut}
         linkWholeCard
-        promo={promoBarText(product)}
+        promo={promoBarText(product, ts)}
         topSlot={
           <div className="-mt-1 -ml-1 flex items-center gap-1">
             <span className="king-label px-1 text-[0.55rem] text-king-muted">{String(index + 1).padStart(2, "0")}</span>
@@ -51,7 +54,7 @@ export function ProductCard({
               type="button"
               onClick={() => toggleWishlist(product.id)}
               aria-pressed={saved}
-              aria-label={saved ? `Remove ${product.name} from wishlist` : `Save ${product.name} to wishlist`}
+              aria-label={saved ? t("unsave", { name: product.name }) : t("save", { name: product.name })}
               className="grid size-8 place-items-center text-king-white/80 transition-colors hover:text-king-white"
             >
               <Heart className={cn("size-3.5 transition-all duration-300", saved && "scale-110 fill-king-bright-red text-king-bright-red")} />
@@ -72,14 +75,14 @@ export function ProductCard({
                 <span key={c.name} className="size-2 rounded-full ring-1 ring-white/25" style={{ backgroundColor: c.hex ?? "#555" }} />
               ))}
             </span>
-            {product.colours.length === 1 ? product.colours[0].name : `${product.colours.length} colours`}
+            {product.colours.length === 1 ? product.colours[0].name : t("colours", { count: product.colours.length })}
           </p>
         )}
         <p className="king-label flex items-center gap-2 text-[0.6rem] text-king-muted">
           {formatDA(product.price)}
           {product.compareAt ? <span className="text-king-gray line-through">{formatDA(product.compareAt)}</span> : null}
-          {!product.compareAt && product.promo && <span className="text-king-bright-red">· Colours on promo</span>}
-          {soldOut && <span className="text-king-gray">· Out of stock</span>}
+          {!product.compareAt && product.promo && <span className="text-king-bright-red">{t("coloursPromo")}</span>}
+          {soldOut && <span className="text-king-gray">· {t("outOfStock")}</span>}
         </p>
       </Link>
     </article>

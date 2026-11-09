@@ -1,12 +1,14 @@
+import { useTranslations } from "next-intl"
 import { formatDA } from "@/lib/money"
 import type { CustomerOrderView } from "@/server/orders/view"
 import { ProductImage } from "@/components/shop/product-image"
 
 export function OrderSummary({ order }: { order: CustomerOrderView }) {
+  const t = useTranslations("order")
   return (
     <div className="grid gap-8 md:grid-cols-2">
       <div>
-        <h2 className="king-label text-[0.6rem] text-king-gray">Items</h2>
+        <h2 className="king-label text-[0.6rem] text-king-gray">{t("items")}</h2>
         <ul className="mt-3 divide-y divide-white/5">
           {order.items.map((i) => (
             <li key={i.id} className="flex gap-4 py-3">
@@ -27,44 +29,46 @@ export function OrderSummary({ order }: { order: CustomerOrderView }) {
       <div className="space-y-6">
         <dl className="space-y-2 text-sm">
           <div className="flex justify-between text-king-gray">
-            <dt>Clothes</dt>
+            <dt>{t("clothes")}</dt>
             <dd className="text-king-white">{formatDA(order.money.subtotal)}</dd>
           </div>
           {order.money.discount > 0 && (
             <div className="flex justify-between text-king-gray">
-              <dt>Discount</dt>
+              <dt>{t("discount")}</dt>
               <dd className="text-king-white">− {formatDA(order.money.discount)}</dd>
             </div>
           )}
           <div className="flex justify-between text-king-gray">
-            <dt>Delivery</dt>
+            <dt>{t("delivery")}</dt>
             <dd className="text-right text-king-white">
               {order.money.shipsWith
-                ? `Shared with ${order.money.shipsWith}`
+                ? t("sharedWith", { number: order.money.shipsWith })
                 : order.money.freeDelivery
-                  ? "Free"
+                  ? t("free")
                   : order.money.deliveryFee > 0 || !["pending", "contacting"].includes(order.status)
                     ? formatDA(order.money.deliveryFee)
-                    : "Confirmed by phone"}
+                    : t("byPhone")}
             </dd>
           </div>
           <div className="flex justify-between border-t border-white/10 pt-3 text-base font-semibold text-king-white">
-            <dt>To pay on delivery</dt>
+            <dt>{t("toPay")}</dt>
             <dd>{formatDA(order.money.total)}</dd>
           </div>
           {order.money.shipsWith && (
             <p className="text-xs leading-relaxed text-king-gray">
-              You ordered again before {order.money.shipsWith} was delivered — both come in one delivery, so you pay the delivery only once.
+              {t("sharedNote", { number: order.money.shipsWith })}
             </p>
           )}
         </dl>
         <div className="text-sm leading-relaxed text-king-muted">
-          <h2 className="king-label mb-2 text-[0.6rem] text-king-gray">Delivery</h2>
+          <h2 className="king-label mb-2 text-[0.6rem] text-king-gray">{t("delivery")}</h2>
           <p>{order.customerName}</p>
+          <p className="text-king-white">{order.delivery.type === "desk" ? t("stopDesk", { name: order.delivery.deskName ?? "—" }) : t("homeDelivery")}</p>
+          {order.delivery.type === "desk" && order.delivery.deskAddress ? <p>{order.delivery.deskAddress}</p> : null}
           <p>
             {order.delivery.address}, {order.delivery.city}, {order.delivery.wilaya}
           </p>
-          {order.delivery.estimatedDays ? <p className="text-king-gray">Estimated: {order.delivery.estimatedDays}</p> : null}
+          {order.delivery.estimatedDays ? <p className="text-king-gray">{t("estimated", { time: order.delivery.estimatedDays })}</p> : null}
         </div>
       </div>
     </div>

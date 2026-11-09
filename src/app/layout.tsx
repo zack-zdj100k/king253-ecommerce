@@ -28,13 +28,19 @@ const instrumentSerif = Instrument_Serif({
   display: "swap",
 })
 
-export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
-  title: {
-    default: "KING 253 — Men's Streetwear",
-    template: "%s — KING 253",
-  },
-  description: "Modern American-inspired streetwear for those who move differently. Built for the city.",
+const TITLES = {
+  en: { title: "KING 253 — Men's Streetwear", description: "Modern American-inspired streetwear for those who move differently. Built for the city." },
+  fr: { title: "KING 253 — Streetwear homme", description: "Streetwear moderne d'inspiration américaine pour ceux qui avancent autrement. Fait pour la ville." },
+  ar: { title: "KING 253 — ستريت وير رجالي", description: "ستريت وير عصري بروح أمريكية لمن يتحرك بطريقته الخاصة. صُنع للمدينة." },
+} as const
+
+export async function generateMetadata(): Promise<Metadata> {
+  const t = TITLES[await currentLocale()]
+  return {
+    metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
+    title: { default: t.title, template: "%s — KING 253" },
+    description: t.description,
+  }
 }
 
 export const viewport: Viewport = {

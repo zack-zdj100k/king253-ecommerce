@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server"
 import type { Metadata } from "next"
 import Link from "next/link"
 import { desc, eq } from "drizzle-orm"
@@ -17,12 +18,15 @@ import { readCartId, readProfileId, readSessionId } from "@/server/request"
 import { Button } from "@/components/ui/button"
 import { CheckoutForm, type CheckoutPrefill } from "@/components/checkout/checkout-form"
 
-export const metadata: Metadata = { title: "Checkout", robots: { index: false } }
+export async function generateMetadata(): Promise<Metadata> {
+  return { title: (await getTranslations("order"))("checkoutTitle"), robots: { index: false } }
+}
 export const dynamic = "force-dynamic"
 
 const UUID = /^[0-9a-f-]{36}$/i
 
 export default async function CheckoutPage({ searchParams }: PageProps<"/checkout">) {
+  const t = await getTranslations("order")
   const p = await searchParams
 
   // Guests can order directly: an account is created from their phone + password at confirmation.
@@ -36,10 +40,10 @@ export default async function CheckoutPage({ searchParams }: PageProps<"/checkou
   if (!lines.length) {
     return (
       <section className="flex min-h-[70svh] flex-col items-center justify-center bg-king-black px-4 pt-24 text-center">
-        <h1 className="king-display text-[clamp(3rem,8vw,6rem)] text-king-white">Nothing to check out.</h1>
-        <p className="mt-4 text-sm text-king-gray">Your bag is empty or this piece is no longer available.</p>
+        <h1 className="king-display text-[clamp(3rem,8vw,6rem)] text-king-white">{t("nothing")}</h1>
+        <p className="mt-4 text-sm text-king-gray">{t("nothingText")}</p>
         <Button asChild variant="king" size="xl" className="mt-10">
-          <Link href="/clothes">Shop the collection</Link>
+          <Link href="/clothes">{t("shop")}</Link>
         </Button>
       </section>
     )
@@ -80,8 +84,8 @@ export default async function CheckoutPage({ searchParams }: PageProps<"/checkou
       <div aria-hidden className="pointer-events-none absolute top-0 left-0 h-[50svh] w-full bg-[radial-gradient(ellipse_at_20%_0%,rgba(163,13,13,0.22),transparent_60%)]" />
       <div className="relative mx-auto max-w-[1600px] px-4 sm:px-6 lg:px-12">
         <BackButton fallback="/clothes" className="mb-4" />
-        <p className="king-label text-[0.6rem] text-king-gray">[ Checkout ] · Cash on delivery</p>
-        <h1 className="king-display mt-4 text-[clamp(2.75rem,6vw,5.5rem)] text-king-white">{mode === "buy_now" ? "Buy now." : "Buy all."}</h1>
+        <p className="king-label text-[0.6rem] text-king-gray">{t("checkoutEyebrow")}</p>
+        <h1 className="king-display mt-4 text-[clamp(2.75rem,6vw,5.5rem)] text-king-white">{mode === "buy_now" ? t("buyNow") : t("buyAll")}</h1>
         <div className="mt-12">
           <CheckoutForm
             mode={mode}

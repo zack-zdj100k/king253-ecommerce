@@ -1,5 +1,7 @@
 "use client"
 
+import { useTranslations } from "next-intl"
+
 import * as React from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
@@ -14,6 +16,7 @@ import { Input } from "@/components/ui/input"
 import { ProductImage } from "@/components/shop/product-image"
 
 export function SearchDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
+  const t = useTranslations("search")
   const [query, setQuery] = React.useState("")
   const [results, setResults] = React.useState<ProductCardData[]>([])
   const [loading, setLoading] = React.useState(false)
@@ -50,8 +53,8 @@ export function SearchDialog({ open, onOpenChange }: { open: boolean; onOpenChan
         showCloseButton={false}
         className="top-[12svh] w-[calc(100%-2rem)] max-w-2xl translate-y-0 gap-0 border-white/10 bg-king-near-black p-0 sm:max-w-2xl"
       >
-        <DialogTitle className="sr-only">Search KING 253</DialogTitle>
-        <DialogDescription className="sr-only">Search the collection by product or category.</DialogDescription>
+        <DialogTitle className="sr-only">{t("title")}</DialogTitle>
+        <DialogDescription className="sr-only">{t("help")}</DialogDescription>
         <form
           role="search"
           onSubmit={(e) => {
@@ -67,8 +70,8 @@ export function SearchDialog({ open, onOpenChange }: { open: boolean; onOpenChan
             autoFocus
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search hoodies, jackets, denim…"
-            aria-label="Search products"
+            placeholder={t("placeholder")}
+            aria-label={t("label")}
             className="h-16 rounded-none border-0 bg-transparent px-0 text-base text-king-white shadow-none placeholder:text-king-gray focus-visible:ring-0 dark:bg-transparent"
           />
           <kbd className="king-label hidden text-[0.6rem] text-king-gray sm:block">Esc</kbd>
@@ -77,7 +80,7 @@ export function SearchDialog({ open, onOpenChange }: { open: boolean; onOpenChan
         <div className="max-h-[60svh] overflow-y-auto p-5" data-lenis-prevent>
           {query.trim() === "" ? (
             <>
-              <p className="king-label text-king-gray">Shop by category</p>
+              <p className="king-label text-king-gray">{t("byCategory")}</p>
               <ul className="mt-4 flex flex-wrap gap-2">
                 {DEFAULT_CATEGORIES.map((c) => (
                   <li key={c.slug}>

@@ -1,3 +1,5 @@
+import { getTranslations } from "next-intl/server"
+import { useTranslations } from "next-intl"
 import type { Metadata } from "next"
 import Image from "next/image"
 import Link from "next/link"
@@ -11,9 +13,9 @@ import { Button } from "@/components/ui/button"
 import { PageHero, Placeholder, RedEnd } from "@/components/layout/editorial"
 import { TiltCard } from "@/components/ui/3d-card"
 
-export const metadata: Metadata = {
-  title: "Who Is King?",
-  description: "More than a store. A streetwear identity. Discover the atmosphere and vision behind KING 253.",
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("pages")
+  return { title: t("whoTitle"), description: t("whoDescription") }
 }
 
 export const dynamic = "force-dynamic"
@@ -58,11 +60,12 @@ function SectionIndex({ n, title }: { n: string; title: string }) {
 }
 
 function Origin({ content }: { content: ContentOf<"who.origin"> }) {
+  const t = useTranslations("pages")
   return (
     <section id="origin" aria-labelledby="origin-title" className="relative bg-king-black py-24 md:py-40">
       <div className="mx-auto grid max-w-[1600px] gap-12 px-4 sm:px-6 lg:grid-cols-12 lg:gap-16 lg:px-12">
         <div className="lg:col-span-5">
-          <SectionIndex n="01" title="The origin" />
+          <SectionIndex n="01" title={t("origin")} />
           <h2 id="origin-title" data-reveal className="king-display mt-8 text-[clamp(2.75rem,6vw,6rem)] text-king-white">
             {content.title}
             <span className="king-serif block text-king-muted">{content.accent}</span>
@@ -72,8 +75,8 @@ function Origin({ content }: { content: ContentOf<"who.origin"> }) {
               content.body.split(/\n{2,}/).map((para, i) => <p key={i}>{para}</p>)
             ) : (
               <>
-                <p>This is where the KING 253 story will be told — where it started, who built it and why.</p>
-                <Placeholder>Origin story to be supplied by KING 253</Placeholder>
+                <p>{t("originPlaceholder")}</p>
+                <Placeholder>{t("originSoon")}</Placeholder>
               </>
             )}
           </div>
@@ -97,14 +100,15 @@ function Origin({ content }: { content: ContentOf<"who.origin"> }) {
 }
 
 function Culture({ content }: { content: ContentOf<"who.culture"> }) {
+  const t = useTranslations("pages")
   const [w1 = "", w2 = "", w3 = ""] = lines(content.words)
   return (
     <section id="culture" aria-labelledby="culture-title" className="king-grain relative overflow-hidden border-y border-white/[0.06] bg-king-near-black py-24 md:py-40">
       <div aria-hidden className="pointer-events-none absolute top-1/2 left-1/2 h-[70%] w-[70%] -translate-1/2 king-glow [--glow:rgb(92_7_7_/_0.30)]" />
       <div className="relative mx-auto max-w-[1600px] px-4 sm:px-6 lg:px-12">
-        <SectionIndex n="02" title="The culture" />
+        <SectionIndex n="02" title={t("culture")} />
         <h2 id="culture-title" className="sr-only">
-          The culture
+          {t("culture")}
         </h2>
 
         <div className="relative mt-12" aria-hidden>
@@ -146,6 +150,7 @@ const LOOK_DEFAULTS = [
 ]
 
 function Style({ content }: { content: ContentOf<"who.style"> }) {
+  const t = useTranslations("pages")
   const title = lines(content.title)
   const LOOKS = [
     { src: content.look1, label: content.look1Label },
@@ -157,7 +162,7 @@ function Style({ content }: { content: ContentOf<"who.style"> }) {
       <div className="mx-auto max-w-[1600px] px-4 sm:px-6 lg:px-12">
         <div className="flex flex-col gap-8 md:flex-row md:items-end md:justify-between">
           <div>
-            <SectionIndex n="03" title="The style" />
+            <SectionIndex n="03" title={t("style")} />
             <h2 id="style-title" data-reveal className="king-display mt-8 text-[clamp(2.75rem,7vw,7.5rem)] text-king-white">
               {title.map((line, i) => (
                 <span key={`${line}-${i}`} className="block">
@@ -194,6 +199,7 @@ function Style({ content }: { content: ContentOf<"who.style"> }) {
 }
 
 function Experience({ content }: { content: ContentOf<"who.experience"> }) {
+  const t = useTranslations("pages")
   return (
     <section id="experience" aria-labelledby="experience-title" className="relative isolate flex min-h-svh items-end overflow-hidden bg-king-black">
       <div className="absolute inset-0 -z-10 overflow-hidden">
@@ -205,7 +211,7 @@ function Experience({ content }: { content: ContentOf<"who.experience"> }) {
       </div>
 
       <div className="mx-auto w-full max-w-[1600px] px-4 py-24 sm:px-6 md:py-32 lg:px-12">
-        <SectionIndex n="04" title="The KING 253 experience" />
+        <SectionIndex n="04" title={t("experience")} />
         <h2 id="experience-title" data-reveal className="king-display mt-8 max-w-5xl text-[clamp(3rem,9vw,9.5rem)] text-king-white">
           {content.title}
           <span className="king-serif block text-king-bright-red">{content.accent}</span>

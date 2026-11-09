@@ -323,3 +323,7 @@ html:lang(ar) .king-serif {
   font-style: normal;
   font-family: var(--font-arabic), serif;
 }
+/* Direction arrows point the reading way in Arabic. */
+html[dir="rtl"] :is(.lucide-arrow-right, .lucide-arrow-left, .lucide-arrow-up-right, .lucide-chevron-right, .lucide-chevron-left, .lucide-move-right) {
+  transform: scaleX(-1);
+}

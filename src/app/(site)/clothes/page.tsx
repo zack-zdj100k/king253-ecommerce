@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server"
 import type { Metadata } from "next"
 
 import { db } from "@/server/db"
@@ -9,10 +10,9 @@ import { CategoryTiles } from "@/components/shop/clothes/category-tiles"
 import { AssembleLook } from "@/components/shop/clothes/assemble-look"
 import { ClothesValues, JoinBand } from "@/components/shop/clothes/clothes-values"
 
-export const metadata: Metadata = {
-  title: "The Collection",
-  description: "Streetwear for the modern King. T-shirts, hoodies, jackets, pants, denim and accessories.",
-  alternates: { canonical: "/clothes" },
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("pages")
+  return { title: t("clothesTitle"), description: t("clothesDescription") }
 }
 
 const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v)

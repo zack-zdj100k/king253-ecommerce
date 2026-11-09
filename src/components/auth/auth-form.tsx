@@ -1,5 +1,9 @@
 "use client"
 
+import { useTranslations } from "next-intl"
+
+import { useErrorText } from "@/i18n/errors"
+
 import * as React from "react"
 import { AnimatePresence, MotionConfig, motion } from "framer-motion"
 import { Crown, Eye, EyeOff, Lock, Mail, User } from "lucide-react"
@@ -15,11 +19,10 @@ import { Label } from "@/components/ui/label"
 type Mode = "sign-in" | "sign-up"
 
 const TABS: { mode: Mode; label: string }[] = [
-  { mode: "sign-in", label: "Sign In" },
-  { mode: "sign-up", label: "Sign Up" },
+  { mode: "sign-in", label: "signInTab" },
+  { mode: "sign-up", label: "signUpTab" },
 ]
 
-const SOCIAL_SOON = "Google and Apple sign-in are not available yet — use your email for now."
 
 const fieldClass =
   "h-12 rounded-[6px] border-white/12 bg-black/40 pr-4 pl-11 text-base text-king-white placeholder:text-king-gray/80 focus-visible:border-king-bright-red focus-visible:ring-2 focus-visible:ring-king-bright-red/25 md:text-sm dark:bg-black/40"
@@ -27,6 +30,9 @@ const fieldClass =
 const iconClass = "pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-king-gray"
 
 export function AuthForm({ mode: initialMode, next }: { mode: Mode; next?: string }) {
+  const ta = useTranslations("auth")
+  const tr = useTranslations("referral")
+  const et = useErrorText()
   const [pending, startTransition] = React.useTransition()
   const [mode, setMode] = React.useState<Mode>(initialMode)
   const [showPassword, setShowPassword] = React.useState(false)
@@ -57,10 +63,10 @@ export function AuthForm({ mode: initialMode, next }: { mode: Mode; next?: strin
               King <span className="text-king-bright-red">253</span>
             </p>
           </div>
-          <h1 className="sr-only">{signIn ? "Sign in to KING 253" : "Create a KING 253 account"}</h1>
+          <h1 className="sr-only">{signIn ? ta("titleSignIn") : ta("titleSignUp")}</h1>
 
           {/* Tabs */}
-          <div role="tablist" aria-label="Account" className="mt-7 grid grid-cols-2 border-b border-white/10">
+          <div role="tablist" aria-label={ta("account")} className="mt-7 grid grid-cols-2 border-b border-white/10">
             {TABS.map((t) => {
               const active = t.mode === mode
               return (
@@ -77,7 +83,7 @@ export function AuthForm({ mode: initialMode, next }: { mode: Mode; next?: strin
                     active ? "text-king-white" : "text-king-gray hover:text-king-muted"
                   )}
                 >
-                  {t.label}
+                  {ta(t.label)}
                   {active && (
                     <motion.span
                       layoutId={`${id}-underline`}
@@ -92,7 +98,7 @@ export function AuthForm({ mode: initialMode, next }: { mode: Mode; next?: strin
 
           {next?.startsWith("/checkout") && (
             <p className="mt-6 border border-king-red-line bg-king-red/10 p-3 text-sm text-king-white" role="status">
-              Create an account (or sign in) to place your order — your bag is saved.
+              {ta("checkoutNote")}
             </p>
           )}
 
@@ -107,7 +113,7 @@ export function AuthForm({ mode: initialMode, next }: { mode: Mode; next?: strin
               const email = String(fd.get("email") ?? "")
               const password = String(fd.get("password") ?? "")
               setStatus(null)
-              if (!signIn && !referral) return setStatus("Tell us how you found KING 253.")
+              if (!signIn && !referral) return setStatus(ta("tellUs"))
               markAuthReturn(next)
               startTransition(async () => {
                 const result = signIn
@@ -116,7 +122,7 @@ export function AuthForm({ mode: initialMode, next }: { mode: Mode; next?: strin
                 // On success the action redirects; anything returned is an error.
                 if (result && !result.ok) {
                   clearAuthReturn()
-                  setStatus(result.error)
+                  setStatus(et(result.error))
                 }
               })
             }}
@@ -133,11 +139,11 @@ export function AuthForm({ mode: initialMode, next }: { mode: Mode; next?: strin
                 >
                   <div className="space-y-2 pb-0.5">
                     <Label htmlFor={`${id}-name`} className="text-sm font-medium text-king-white">
-                      Full name
+                      {ta("fullName")}
                     </Label>
                     <div className="relative">
                       <User className={iconClass} aria-hidden />
-                      <Input id={`${id}-name`} name="name" autoComplete="name" required placeholder="Your name" className={fieldClass} />
+                      <Input id={`${id}-name`} name="name" autoComplete="name" required placeholder={ta("yourName")} className={fieldClass} />
                     </div>
                   </div>
                 </motion.div>
@@ -146,7 +152,7 @@ export function AuthForm({ mode: initialMode, next }: { mode: Mode; next?: strin
 
             <div className="space-y-2">
               <Label htmlFor={`${id}-email`} className="text-sm font-medium text-king-white">
-                {signIn ? "Email or phone" : "Email"}
+                {signIn ? ta("emailOrPhone") : ta("email")}
               </Label>
               <div className="relative">
                 <Mail className={iconClass} aria-hidden />
@@ -158,7 +164,7 @@ export function AuthForm({ mode: initialMode, next }: { mode: Mode; next?: strin
                   inputMode={signIn ? "email" : undefined}
                   autoComplete={signIn ? "username" : "email"}
                   required
-                  placeholder={signIn ? "you@example.com or 05…" : "you@example.com"}
+                  placeholder={signIn ? ta("emailOrPhonePlaceholder") : "you@example.com"}
                   className={fieldClass}
                 />
               </div>
@@ -166,7 +172,7 @@ export function AuthForm({ mode: initialMode, next }: { mode: Mode; next?: strin
 
             <div className="space-y-2">
               <Label htmlFor={`${id}-password`} className="text-sm font-medium text-king-white">
-                Password
+                {ta("password")}
               </Label>
               <div className="relative">
                 <Lock className={iconClass} aria-hidden />
@@ -183,7 +189,7 @@ export function AuthForm({ mode: initialMode, next }: { mode: Mode; next?: strin
                 <button
                   type="button"
                   onClick={() => setShowPassword((v) => !v)}
-                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  aria-label={showPassword ? ta("hide") : ta("show")}
                   aria-pressed={showPassword}
                   className="absolute top-1/2 right-1.5 grid size-9 -translate-y-1/2 place-items-center text-king-gray transition-colors hover:text-king-white"
                 >
@@ -194,10 +200,10 @@ export function AuthForm({ mode: initialMode, next }: { mode: Mode; next?: strin
                 <div className="flex justify-end">
                   <button
                     type="button"
-                    onClick={() => setStatus("Password reset by email is not set up yet. Contact the store and we will reset it for you.")}
+                    onClick={() => setStatus(ta("resetNote"))}
                     className="text-xs text-king-muted underline decoration-white/30 underline-offset-4 transition-colors hover:text-king-white hover:decoration-king-bright-red"
                   >
-                    Forgot password?
+                    {ta("forgot")}
                   </button>
                 </div>
               )}
@@ -205,7 +211,7 @@ export function AuthForm({ mode: initialMode, next }: { mode: Mode; next?: strin
 
             {!signIn && (
               <fieldset className="space-y-2.5">
-                <legend className="text-sm font-medium text-king-white">How did you find KING 253?</legend>
+                <legend className="text-sm font-medium text-king-white">{ta("howFound")}</legend>
                 <div className="flex flex-wrap gap-2">
                   {REFERRAL_SOURCES.map((s) => (
                     <button
@@ -218,7 +224,7 @@ export function AuthForm({ mode: initialMode, next }: { mode: Mode; next?: strin
                         referral === s.key ? "border-king-bright-red bg-king-red/20 text-king-white" : "border-white/15 text-king-muted hover:border-white/35 hover:text-king-white"
                       )}
                     >
-                      {s.label}
+                      {tr(s.key)}
                     </button>
                   ))}
                 </div>
@@ -226,22 +232,22 @@ export function AuthForm({ mode: initialMode, next }: { mode: Mode; next?: strin
             )}
 
             <Button type="submit" disabled={pending} variant="king" className="h-12 w-full rounded-[6px] text-base font-semibold tracking-tight normal-case">
-              {signIn ? "Sign In" : "Create account"}
+              {signIn ? ta("submitSignIn") : ta("submitSignUp")}
             </Button>
           </form>
 
           {/* Divider */}
           <div className="my-6 flex items-center gap-4">
             <span className="h-px flex-1 bg-white/10" />
-            <span className="text-xs text-king-gray">or continue with</span>
+            <span className="text-xs text-king-gray">{ta("orContinue")}</span>
             <span className="h-px flex-1 bg-white/10" />
           </div>
 
           <div className="space-y-3">
-            <SocialButton label="Continue with Google" onClick={() => setStatus(SOCIAL_SOON)}>
+            <SocialButton label={ta("google")} onClick={() => setStatus(ta("socialSoon"))}>
               <GoogleMark className="size-4" />
             </SocialButton>
-            <SocialButton label="Continue with Apple" onClick={() => setStatus(SOCIAL_SOON)}>
+            <SocialButton label={ta("apple")} onClick={() => setStatus(ta("socialSoon"))}>
               <AppleMark className="size-4" />
             </SocialButton>
           </div>
@@ -251,13 +257,13 @@ export function AuthForm({ mode: initialMode, next }: { mode: Mode; next?: strin
           </p>
 
           <p className="mt-7 text-center text-sm text-king-gray">
-            {signIn ? "Don’t have an account?" : "Already have an account?"}{" "}
+            {signIn ? ta("noAccount") : ta("haveAccount")}{" "}
             <button
               type="button"
               onClick={() => switchTo(signIn ? "sign-up" : "sign-in")}
               className="font-semibold text-king-white transition-colors hover:text-king-bright-red"
             >
-              {signIn ? "Sign up" : "Sign in"}
+              {signIn ? ta("signUpLink") : ta("signInLink")}
             </button>
           </p>
         </div>

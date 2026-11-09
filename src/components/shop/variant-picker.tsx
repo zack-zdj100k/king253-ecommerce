@@ -1,5 +1,6 @@
 "use client"
 
+import { useTranslations } from "next-intl"
 import * as React from "react"
 
 import { cn } from "@/lib/utils"
@@ -87,14 +88,15 @@ export function VariantPicker<V extends PickerVariant>({
   /** First photo of each colour — shown inside the colour chips. */
   colourImages?: Record<string, Crop | null>
 }) {
+  const t = useTranslations("stock")
   const { colours, colour, setColour, sizes, size, setSize } = selection
   return (
     <div className="space-y-5">
       {colours.length > 0 && (
         <fieldset>
           <legend className="king-label mb-3 flex flex-wrap items-baseline gap-x-2 text-[0.6rem] text-king-gray">
-            Colour <span className="text-king-white">— {colour}</span>
-            {colours.length > 1 && <span className="tracking-normal normal-case">· {colours.length} colours available</span>}
+            {t("colourLegend")} <span className="text-king-white">— {colour}</span>
+            {colours.length > 1 && <span className="tracking-normal normal-case">{t("coloursAvailable", { count: colours.length })}</span>}
           </legend>
           <div className="flex flex-wrap gap-2">
             {colours.map((c) => {
@@ -106,7 +108,7 @@ export function VariantPicker<V extends PickerVariant>({
                   type="button"
                   onClick={() => setColour(c.name)}
                   aria-pressed={active}
-                  aria-label={`${c.name}${c.available ? "" : " — out of stock"}`}
+                  aria-label={c.available ? c.name : t("colourOut", { name: c.name })}
                   className={cn(
                     "group flex h-12 items-center gap-2.5 rounded-full border py-1 pr-4 pl-1 text-left transition-colors",
                     active ? "border-king-bright-red bg-king-red/15" : "border-white/15 hover:border-white/40",
@@ -119,7 +121,7 @@ export function VariantPicker<V extends PickerVariant>({
                   </span>
                   <span className="flex flex-col leading-tight">
                     <span className={cn("text-xs font-semibold tracking-wide uppercase", active ? "text-king-white" : "text-king-muted group-hover:text-king-white")}>{c.name}</span>
-                    {!c.available && <span className="text-[0.65rem] text-king-gray">Sold out</span>}
+                    {!c.available && <span className="text-[0.65rem] text-king-gray">{t("soldOut")}</span>}
                   </span>
                 </button>
               )
@@ -129,7 +131,7 @@ export function VariantPicker<V extends PickerVariant>({
       )}
       <fieldset>
         <legend className="king-label mb-3 text-[0.6rem] text-king-gray">
-          Size{size ? <span className="text-king-white"> — {size}</span> : null}
+          {t("sizeLegend")}{size ? <span className="text-king-white"> — {size}</span> : null}
         </legend>
         <div className="flex flex-wrap gap-2">
           {sizes.map((s) => {
@@ -142,7 +144,7 @@ export function VariantPicker<V extends PickerVariant>({
                 disabled={out}
                 onClick={() => setSize(s)}
                 aria-pressed={s === size}
-                aria-label={`Size ${s}${out ? " — out of stock" : ""}`}
+                aria-label={out ? t("sizeOut", { size: s }) : t("sizeLabel", { size: s })}
                 className={cn(
                   "king-label h-11 border px-4 text-[0.65rem] transition-colors",
                   compact ? "min-w-11" : "min-w-12",

@@ -1,5 +1,6 @@
 "use client"
 
+import { useTranslations } from "next-intl"
 import * as React from "react"
 
 import {
@@ -62,6 +63,7 @@ function write(key: string, value: unknown) {
 }
 
 export function ShopProvider({ children }: { children: React.ReactNode }) {
+  const t = useTranslations("product")
   const [cart, setCart] = React.useState<CartState>(EMPTY_CART)
   const [cartReady, setCartReady] = React.useState(false)
   const [pending, startTransition] = React.useTransition()
@@ -120,11 +122,11 @@ export function ShopProvider({ children }: { children: React.ReactNode }) {
 
   const addToCart = React.useCallback(
     async (variantId: string, quantity = 1) => {
-      const result = await run(() => addToCartAction(variantId, quantity), "Added to your bag")
+      const result = await run(() => addToCartAction(variantId, quantity), t("added"))
       if (result.ok) setCartOpen(true)
       return result
     },
-    [run]
+    [run, t]
   )
   const setQuantity = React.useCallback((variantId: string, quantity: number) => run(() => setCartQuantityAction(variantId, quantity)), [run])
   const removeFromCart = React.useCallback((variantId: string) => run(() => removeFromCartAction(variantId)), [run])
@@ -140,9 +142,9 @@ export function ShopProvider({ children }: { children: React.ReactNode }) {
       setWishlist(next)
       write(WISHLIST_KEY, next)
       if (signedIn) setWishlistItemAction(productId, saved).catch(() => {})
-      notify(saved ? "Saved to your wishlist" : "Removed from your wishlist")
+      notify(saved ? t("saved") : t("removed"))
     },
-    [wishlist, signedIn, notify]
+    [wishlist, signedIn, notify, t]
   )
 
   const pushRecentlyViewed = React.useCallback((slug: string) => {

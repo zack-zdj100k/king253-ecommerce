@@ -3,6 +3,7 @@
 import * as React from "react"
 import { usePathname, useRouter } from "next/navigation"
 import { ArrowLeft, ChevronLeft } from "lucide-react"
+import { useTranslations } from "next-intl"
 
 import { cn } from "@/lib/utils"
 
@@ -58,7 +59,8 @@ export function NavigationTracker() {
  * "Back" — returns to the previous page when the visitor came from this site,
  * otherwise goes to `fallback` (e.g. someone who opened a shared link).
  */
-export function BackButton({ fallback, label = "Back", variant = "site", className }: { fallback: string; label?: string; variant?: "site" | "admin"; className?: string }) {
+export function BackButton({ fallback, label, variant = "site", className }: { fallback: string; label?: string; variant?: "site" | "admin"; className?: string }) {
+  const t = useTranslations("nav")
   const router = useRouter()
   return (
     <button
@@ -79,7 +81,7 @@ export function BackButton({ fallback, label = "Back", variant = "site", classNa
       )}
     >
       {variant === "admin" ? <ChevronLeft className="size-6" strokeWidth={2.4} aria-hidden /> : <ArrowLeft className="size-3.5" aria-hidden />}
-      {label}
+      {label ?? t("back")}
     </button>
   )
 }

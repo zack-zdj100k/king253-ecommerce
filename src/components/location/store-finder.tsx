@@ -1,5 +1,7 @@
 "use client"
 
+import { useTranslations } from "next-intl"
+
 import * as React from "react"
 import { Clock, Crosshair, ExternalLink, Loader2, MapPin, Navigation, Phone } from "lucide-react"
 
@@ -37,7 +39,8 @@ const formatKm = (km: number) => (km < 1 ? `${Math.round(km * 1000)} m` : `${km 
 
 type Locate = { state: "idle" | "locating" | "done" | "error"; message?: string }
 
-export function StoreFinder({ stores, findLabel = "Find the closest shop" }: { stores: PublicStore[]; findLabel?: string }) {
+export function StoreFinder({ stores, findLabel }: { stores: PublicStore[]; findLabel?: string }) {
+  const t = useTranslations("finder")
   const [selectedId, setSelectedId] = React.useState(stores[0]?.id ?? null)
   const [distances, setDistances] = React.useState<Record<number, number> | null>(null)
   const [locate, setLocate] = React.useState<Locate>({ state: "idle" })
@@ -52,7 +55,7 @@ export function StoreFinder({ stores, findLabel = "Find the closest shop" }: { s
 
   function findClosest() {
     if (!("geolocation" in navigator)) {
-      setLocate({ state: "error", message: "Your browser can't share your location. Pick the shop in your wilaya below." })
+      setLocate({ state: "error", message: t("noGeo") })
       return
     }
     setLocate({ state: "locating" })
@@ -72,8 +75,8 @@ export function StoreFinder({ stores, findLabel = "Find the closest shop" }: { s
           state: "error",
           message:
             err.code === err.PERMISSION_DENIED
-              ? "Location permission was refused. Pick the shop in your wilaya below."
-              : "We couldn't get your location. Pick the shop in your wilaya below.",
+              ? t("refused")
+              : t("failed"),
         }),
       { enableHighAccuracy: false, timeout: 10000, maximumAge: 300000 }
     )
@@ -89,7 +92,7 @@ export function StoreFinder({ stores, findLabel = "Find the closest shop" }: { s
           {canLocate && (
             <Button type="button" variant="king" size="lg" onClick={findClosest} disabled={locate.state === "locating"}>
               {locate.state === "locating" ? <Loader2 className="size-4 animate-spin" aria-hidden /> : <Crosshair className="size-4" aria-hidden />}
-              {findLabel}
+              {findLabel ?? t("findClosest")}
             </Button>
           )}
         </div>
@@ -97,7 +100,7 @@ export function StoreFinder({ stores, findLabel = "Find the closest shop" }: { s
           {locate.state === "error"
             ? locate.message
             : locate.state === "done" && closestId
-              ? `Closest to you: ${stores.find((s) => s.id === closestId)?.name}.`
+              ? t("closestTo", { name: stores.find((s) => s.id === closestId)?.name ?? "" })
               : null}
         </p>
 
@@ -121,7 +124,7 @@ export function StoreFinder({ stores, findLabel = "Find the closest shop" }: { s
                     </h3>
                     <span className="flex shrink-0 flex-col items-end gap-1">
                       {s.id === closestId && (
-                        <span className="king-label bg-king-red px-2 py-1 text-[0.5rem] text-king-white">Closest</span>
+                        <span className="king-label bg-king-red px-2 py-1 text-[0.5rem] text-king-white">{t("closest")}</span>
                       )}
                       {distances?.[s.id] !== undefined && (
                         <span className="king-label text-[0.55rem] text-king-muted">≈ {formatKm(distances[s.id])}</span>
@@ -155,7 +158,7 @@ export function StoreFinder({ stores, findLabel = "Find the closest shop" }: { s
                   {/* Links sit above the card-wide select button. */}
                   <div className="relative z-10 mt-5 flex flex-wrap items-center gap-x-5 gap-y-2">
                     <a href={directionsUrl(s)} target="_blank" rel="noreferrer" className="king-label inline-flex items-center gap-2 text-[0.6rem] text-king-white hover:text-king-bright-red">
-                      <Navigation className="size-3.5" aria-hidden /> Directions
+                      <Navigation className="size-3.5" aria-hidden /> {t("directions")}
                     </a>
                     {s.phone && (
                       <a href={`tel:${s.phone.replace(/\s/g, "")}`} className="king-label inline-flex items-center gap-2 text-[0.6rem] text-king-muted hover:text-king-white">
@@ -180,7 +183,7 @@ export function StoreFinder({ stores, findLabel = "Find the closest shop" }: { s
           <div className="relative aspect-[4/3] overflow-hidden border border-white/10 bg-king-near-black lg:aspect-[16/11]">
             <iframe
               key={selected.id}
-              title={`Map showing ${selected.name}, ${fullAddress(selected)}`}
+              title={t("mapOf", { name: selected.name, address: fullAddress(selected) })}
               src={embedUrl(selected)}
               className="absolute inset-0 size-full grayscale invert-[0.92] contrast-[0.9]"
               loading="lazy"
@@ -194,7 +197,7 @@ export function StoreFinder({ stores, findLabel = "Find the closest shop" }: { s
             </p>
             <Button asChild variant="king" size="xl">
               <a href={directionsUrl(selected)} target="_blank" rel="noreferrer">
-                <Navigation className="size-4" aria-hidden /> Get directions
+                <Navigation className="size-4" aria-hidden /> {t("getDirections")}
               </a>
             </Button>
           </div>

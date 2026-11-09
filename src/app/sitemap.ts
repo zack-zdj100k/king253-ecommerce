@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next"
 import { desc, eq } from "drizzle-orm"
 
+import { LOCALES, localePath } from "@/i18n/config"
 import { db } from "@/server/db"
 import { products } from "@/server/db/schema"
 
@@ -13,13 +14,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     .from(products)
     .where(eq(products.status, "published"))
     .orderBy(desc(products.updatedAt))
-  const pages = ["", "/clothes", "/who-is-king", "/location", "/track"].map((path) => ({
-    url: `${base}${path}`,
-    changeFrequency: "weekly" as const,
-    priority: path === "" ? 1 : 0.7,
-  }))
+  // One entry per page and language, each listing its other languages (hreflang).
+  const entry = (path: string, extra: { priority: number; lastModified?: Date }) =>
+    LOCALES.map((l) => ({
+      url: `${base}${localePath(l, path || "/")}`,
+      changeFrequency: "weekly" as const,
+      ...extra,
+      alternates: { languages: Object.fromEntries(LOCALES.map((x) => [x, `${base}${localePath(x, path || "/")}`])) },
+    }))
   return [
-    ...pages,
-    ...items.map((p) => ({ url: `${base}/product/${p.slug}`, lastModified: p.updatedAt, changeFrequency: "weekly" as const, priority: 0.8 })),
+    ...["", "/clothes", "/who-is-king", "/location", "/track"].flatMap((path) => entry(path, { priority: path === "" ? 1 : 0.7 })),
+    ...items.flatMap((p) => entry(`/product/${p.slug}`, { priority: 0.8, lastModified: p.updatedAt })),
   ]
 }

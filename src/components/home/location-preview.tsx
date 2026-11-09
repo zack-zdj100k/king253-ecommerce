@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server"
 import Image from "next/image"
 import Link from "next/link"
 import { MapPin } from "lucide-react"
@@ -10,6 +11,7 @@ import { Eyebrow, Placeholder, RedEnd } from "@/components/layout/editorial"
 type ShopsContent = { eyebrow: string; title: string; description: string; button: string; image: string }
 
 export async function LocationPreview({ content }: { content: ShopsContent }) {
+  const t = await getTranslations("home")
   const stores = await listStores(db, { publicOnly: true })
   const title = content.title.split("\n").map((l) => l.trim()).filter(Boolean)
   return (
@@ -56,7 +58,7 @@ export async function LocationPreview({ content }: { content: ShopsContent }) {
         ) : (
           <div data-reveal className="mt-8 flex items-center gap-3 text-sm text-king-muted">
             <MapPin className="size-4 text-king-bright-red" aria-hidden />
-            <Placeholder>Shop addresses to be announced</Placeholder>
+            <Placeholder>{t("shopsSoon")}</Placeholder>
           </div>
         )}
         <div data-reveal className="mt-10">

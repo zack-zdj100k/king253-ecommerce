@@ -1,5 +1,9 @@
 "use client"
 
+import { useTranslations } from "next-intl"
+
+import { useErrorText } from "@/i18n/errors"
+
 import * as React from "react"
 import { useRouter } from "next/navigation"
 import { Check, ChevronDown, Loader2, MapPin, Trash2 } from "lucide-react"
@@ -32,14 +36,15 @@ function useAccountAction() {
 }
 
 function Message({ result }: { result: AccountResult | null }) {
+  const et = useErrorText()
   if (!result) return null
   return result.ok ? (
     <p role="status" className="flex items-center gap-2 text-sm text-emerald-300">
-      <Check className="size-4" aria-hidden /> {result.message}
+      <Check className="size-4" aria-hidden /> {et(result.message)}
     </p>
   ) : (
     <p role="alert" className="text-sm text-king-bright-red">
-      {result.error}
+      {et(result.error)}
     </p>
   )
 }
@@ -62,6 +67,7 @@ function Select({ value, onChange, disabled, children, id }: { value: string; on
 export type AccountDetails = { name: string; email: string; phone: string; wilaya: string; city: string; address: string }
 
 export function DetailsForm({ initial }: { initial: AccountDetails }) {
+  const t = useTranslations("account")
   const { pending, result, run } = useAccountAction()
   const [v, setV] = React.useState(initial)
   const wilaya = findWilaya(v.wilaya)
@@ -78,13 +84,13 @@ export function DetailsForm({ initial }: { initial: AccountDetails }) {
       <div className="grid gap-5 sm:grid-cols-2">
         <div>
           <label htmlFor="acc-name" className={label}>
-            Full name
+            {t("fullName")}
           </label>
           <input id="acc-name" value={v.name} onChange={(e) => setV({ ...v, name: e.target.value })} autoComplete="name" className={field} />
         </div>
         <div>
           <label htmlFor="acc-email" className={label}>
-            Email <span className="font-normal text-king-gray">· sign in and order updates</span>
+            {t("email")} <span className="font-normal text-king-gray">{t("emailHint")}</span>
           </label>
           <input
             id="acc-email"
@@ -98,7 +104,7 @@ export function DetailsForm({ initial }: { initial: AccountDetails }) {
         </div>
         <div className="sm:col-span-2">
           <label htmlFor="acc-phone" className={label}>
-            Phone <span className="font-normal text-king-gray">· you can also sign in with it</span>
+            {t("phone")} <span className="font-normal text-king-gray">{t("phoneHint")}</span>
           </label>
           <input id="acc-phone" type="tel" inputMode="tel" value={v.phone} onChange={(e) => setV({ ...v, phone: e.target.value })} placeholder="05 / 06 / 07 …" autoComplete="tel" className={field} />
         </div>
@@ -106,12 +112,12 @@ export function DetailsForm({ initial }: { initial: AccountDetails }) {
 
       <fieldset className="space-y-5 border-t border-white/10 pt-6">
         <legend className="king-label flex items-center gap-2 text-[0.6rem] text-king-gray">
-          <MapPin className="size-3.5 text-king-bright-red" aria-hidden /> Delivery address
+          <MapPin className="size-3.5 text-king-bright-red" aria-hidden /> {t("deliveryAddress")}
         </legend>
         <div className="grid gap-5 sm:grid-cols-2">
           <div>
             <label htmlFor="acc-wilaya" className={label}>
-              Wilaya
+              {t("wilaya")}
             </label>
             <Select
               id="acc-wilaya"
@@ -121,7 +127,7 @@ export function DetailsForm({ initial }: { initial: AccountDetails }) {
                 setV({ ...v, wilaya: fr, city: next && findCommune(next, v.city) ? v.city : "" })
               }}
             >
-              <option value="">Choose your wilaya…</option>
+              <option value="">{t("chooseWilaya")}</option>
               {WILAYAS.map((w) => (
                 <option key={w.code} value={w.fr}>
                   {wilayaLabel(w)} · {w.ar}
@@ -131,10 +137,10 @@ export function DetailsForm({ initial }: { initial: AccountDetails }) {
           </div>
           <div>
             <label htmlFor="acc-city" className={label}>
-              Commune
+              {t("commune")}
             </label>
             <Select id="acc-city" value={wilaya ? (findCommune(wilaya, v.city) ?? "") : ""} onChange={(city) => setV({ ...v, city })} disabled={!wilaya}>
-              <option value="">{wilaya ? "Choose your commune…" : "Choose your wilaya first"}</option>
+              <option value="">{wilaya ? t("chooseCommune") : t("chooseWilayaFirst")}</option>
               {wilaya?.communes.map(([fr, ar]) => (
                 <option key={fr} value={fr}>
                   {fr} · {ar}
@@ -144,17 +150,17 @@ export function DetailsForm({ initial }: { initial: AccountDetails }) {
           </div>
           <div className="sm:col-span-2">
             <label htmlFor="acc-address" className={label}>
-              Street / address
+              {t("address")}
             </label>
             <input id="acc-address" value={v.address} onChange={(e) => setV({ ...v, address: e.target.value })} autoComplete="street-address" className={field} />
           </div>
         </div>
-        <p className="text-xs text-king-gray">Saved details fill in checkout for you — you can still change them on each order.</p>
+        <p className="text-xs text-king-gray">{t("savedNote")}</p>
       </fieldset>
 
       <div className="flex flex-wrap items-center gap-3">
         <Button type="submit" variant="king" size="xl" disabled={pending || !dirty}>
-          {pending ? <Loader2 className="size-4 animate-spin" aria-hidden /> : null} Save changes
+          {pending ? <Loader2 className="size-4 animate-spin" aria-hidden /> : null} {t("save")}
         </Button>
         {(initial.wilaya || initial.address) && <RemoveAddress />}
         <Message result={result} />
@@ -164,23 +170,24 @@ export function DetailsForm({ initial }: { initial: AccountDetails }) {
 }
 
 function RemoveAddress() {
+  const t = useTranslations("account")
   const { pending, result, run } = useAccountAction()
   const [asking, setAsking] = React.useState(false)
   if (!asking) {
     return (
       <Button type="button" variant="kingOutline" size="xl" onClick={() => setAsking(true)}>
-        <Trash2 className="size-4" aria-hidden /> Remove address
+        <Trash2 className="size-4" aria-hidden /> {t("removeAddress")}
       </Button>
     )
   }
   return (
     <span className="inline-flex flex-wrap items-center gap-2">
-      <span className="text-sm text-king-white">Remove your saved address?</span>
+      <span className="text-sm text-king-white">{t("removeAddressQ")}</span>
       <Button type="button" variant="king" size="lg" disabled={pending} onClick={() => run(removeAddressAction, () => setAsking(false))}>
-        Yes, remove
+        {t("yesRemove")}
       </Button>
       <Button type="button" variant="kingOutline" size="lg" onClick={() => setAsking(false)}>
-        Cancel
+        {t("cancel")}
       </Button>
       <Message result={result} />
     </span>
@@ -192,6 +199,7 @@ function RemoveAddress() {
 /* ------------------------------------------------------------------ */
 
 export function PasswordForm() {
+  const t = useTranslations("account")
   const { pending, result, run } = useAccountAction()
   const [v, setV] = React.useState({ current: "", next: "", repeat: "" })
   const mismatch = v.repeat !== "" && v.next !== v.repeat
@@ -207,9 +215,9 @@ export function PasswordForm() {
       <div className="grid gap-5 sm:grid-cols-3">
         {(
           [
-            ["current", "Current password", "current-password"],
-            ["next", "New password", "new-password"],
-            ["repeat", "Repeat new password", "new-password"],
+            ["current", t("currentPassword"), "current-password"],
+            ["next", t("newPassword"), "new-password"],
+            ["repeat", t("repeatPassword"), "new-password"],
           ] as const
         ).map(([key, text, auto]) => (
           <div key={key}>
@@ -220,11 +228,11 @@ export function PasswordForm() {
           </div>
         ))}
       </div>
-      <p className="text-xs text-king-gray">At least 10 characters, with letters and a number. Other devices are signed out.</p>
-      {mismatch && <p className="text-sm text-king-bright-red">The new passwords don&apos;t match.</p>}
+      <p className="text-xs text-king-gray">{t("passwordRule")}</p>
+      {mismatch && <p className="text-sm text-king-bright-red">{t("mismatch")}</p>}
       <div className="flex flex-wrap items-center gap-3">
         <Button type="submit" variant="king" size="xl" disabled={pending || !v.current || !v.next || mismatch}>
-          {pending ? <Loader2 className="size-4 animate-spin" aria-hidden /> : null} Change password
+          {pending ? <Loader2 className="size-4 animate-spin" aria-hidden /> : null} {t("changePassword")}
         </Button>
         <Message result={result} />
       </div>
@@ -233,13 +241,14 @@ export function PasswordForm() {
 }
 
 export function DeleteAccount() {
+  const t = useTranslations("account")
   const { pending, result, run } = useAccountAction()
   const [open, setOpen] = React.useState(false)
   const [password, setPassword] = React.useState("")
   if (!open) {
     return (
       <Button type="button" variant="kingOutline" size="xl" onClick={() => setOpen(true)} className="border-king-red-line text-king-bright-red hover:bg-king-red hover:text-king-white">
-        <Trash2 className="size-4" aria-hidden /> Delete my account
+        <Trash2 className="size-4" aria-hidden /> {t("deleteMine")}
       </Button>
     )
   }
@@ -252,20 +261,20 @@ export function DeleteAccount() {
       }}
     >
       <p className="text-sm leading-relaxed text-king-white">
-        This deletes your account, saved details and wishlist. Orders you placed stay with KING 253 so they can still be delivered or returned.
+        {t("deleteWarning")}
       </p>
       <div className="max-w-sm">
         <label htmlFor="del-password" className={label}>
-          Your password, to confirm
+          {t("confirmPassword")}
         </label>
         <input id="del-password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" className={field} />
       </div>
       <div className="flex flex-wrap items-center gap-3">
         <Button type="submit" variant="king" size="xl" disabled={pending || !password}>
-          {pending ? <Loader2 className="size-4 animate-spin" aria-hidden /> : null} Delete permanently
+          {pending ? <Loader2 className="size-4 animate-spin" aria-hidden /> : null} {t("deleteForever")}
         </Button>
         <Button type="button" variant="kingOutline" size="xl" onClick={() => setOpen(false)}>
-          Cancel
+          {t("cancel")}
         </Button>
         <Message result={result} />
       </div>
@@ -279,6 +288,7 @@ export function DeleteAccount() {
 
 /** Hides a cancelled or returned order from "My orders" (the shop keeps it). */
 export function RemoveFromMyOrders({ orderId, kind }: { orderId: string; kind: "cancelled" | "returned" }) {
+  const t = useTranslations("account")
   const { pending, result, run } = useAccountAction()
   const [asking, setAsking] = React.useState(false)
   return (
@@ -290,16 +300,16 @@ export function RemoveFromMyOrders({ orderId, kind }: { orderId: string; kind: "
           onClick={() => setAsking(true)}
           className="king-label inline-flex h-9 items-center gap-2 px-3 text-[0.6rem] text-king-gray transition-colors hover:text-king-bright-red"
         >
-          <Trash2 className="size-3.5" aria-hidden /> Remove from my orders
+          <Trash2 className="size-3.5" aria-hidden /> {t("removeFromOrders")}
         </button>
       ) : (
         <span className="inline-flex flex-wrap items-center gap-2">
-          <span className="text-xs text-king-white">Remove this {kind} order from your list?</span>
+          <span className="text-xs text-king-white">{t(kind === "cancelled" ? "removeOrderQ_cancelled" : "removeOrderQ_returned")}</span>
           <Button type="button" variant="king" size="lg" disabled={pending} onClick={() => run(() => removeCancelledOrderAction(orderId))}>
-            {pending ? <Loader2 className="size-3.5 animate-spin" aria-hidden /> : null} Yes, remove
+            {pending ? <Loader2 className="size-3.5 animate-spin" aria-hidden /> : null} {t("yesRemove")}
           </Button>
           <Button type="button" variant="kingOutline" size="lg" onClick={() => setAsking(false)}>
-            Cancel
+            {t("cancel")}
           </Button>
         </span>
       )}

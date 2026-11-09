@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl"
 import { Check, X } from "lucide-react"
 
 import { cn } from "@/lib/utils"
@@ -7,6 +8,7 @@ const fmt = (d: Date | string) => new Date(d).toLocaleString("en-GB", { day: "nu
 
 /** Simplified customer timeline. */
 export function OrderTimeline({ order }: { order: CustomerOrderView }) {
+  const t = useTranslations("order")
   if (order.status === "cancelled") {
     return (
       <p className="flex items-center gap-3 border border-white/10 p-4 text-sm text-king-muted">
@@ -25,7 +27,7 @@ export function OrderTimeline({ order }: { order: CustomerOrderView }) {
               {done ? <Check className="size-4" aria-hidden /> : <span className="text-xs">{i + 1}</span>}
             </span>
             <span>
-              <span className={cn("king-label block text-[0.6rem]", done ? "text-king-white" : "text-king-gray")}>{step.label}</span>
+              <span className={cn("king-label block text-[0.6rem]", done ? "text-king-white" : "text-king-gray")}>{t(`step_${step.key}`)}</span>
               {step.at && <span className="mt-1 block text-xs text-king-gray">{fmt(step.at)}</span>}
             </span>
           </li>

@@ -1,3 +1,5 @@
+import { useTranslations } from "next-intl"
+import { getTranslations } from "next-intl/server"
 import type { Metadata } from "next"
 import { AtSign, Globe, Mail, MessageCircle, Music2, Phone } from "lucide-react"
 
@@ -10,14 +12,15 @@ import { getContent } from "@/server/content"
 import { StoreFinder } from "@/components/location/store-finder"
 import { PageHero, Placeholder, RedEnd } from "@/components/layout/editorial"
 
-export const metadata: Metadata = {
-  title: "Find the King",
-  description: "KING 253 shops in Algeria — addresses, opening hours, directions. Find the shop closest to you.",
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("pages")
+  return { title: t("locTitle"), description: t("locDescription") }
 }
 
 export const dynamic = "force-dynamic"
 
 export default async function LocationPage() {
+  const t = await getTranslations("pages")
   const [settings, stores, hero, body] = await Promise.all([
     getSettings(db),
     listStores(db, { publicOnly: true }),
@@ -58,7 +61,7 @@ export default async function LocationPage() {
         imagePosition="40% 50%"
       />
 
-      <section id="shops" aria-label="Shops" className="relative bg-king-black py-20 md:py-32">
+      <section id="shops" aria-label={t("shops")} className="relative bg-king-black py-20 md:py-32">
         <div className="mx-auto max-w-[1600px] px-4 sm:px-6 lg:px-12">
           {stores.length ? (
             <StoreFinder
@@ -128,8 +131,9 @@ function InfoRow({
 }
 
 function MapPlaceholder() {
+  const t = useTranslations("pages")
   return (
-    <div className="absolute inset-0" role="img" aria-label="Map placeholder — shop locations will appear here once confirmed">
+    <div className="absolute inset-0" role="img" aria-label={t("mapPlaceholder")}>
       <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.05)_1px,transparent_1px)] bg-[size:48px_48px]" />
       <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:12px_12px]" />
       <div className="absolute top-[38%] -left-[10%] h-px w-[120%] -rotate-12 bg-white/15" />
@@ -141,7 +145,7 @@ function MapPlaceholder() {
       </div>
       <div className="absolute inset-x-6 bottom-6 flex items-end justify-between gap-4">
         <p className="king-display text-3xl text-king-white md:text-5xl">KING 253</p>
-        <Placeholder>Map pending address</Placeholder>
+        <Placeholder>{t("mapPending")}</Placeholder>
       </div>
     </div>
   )

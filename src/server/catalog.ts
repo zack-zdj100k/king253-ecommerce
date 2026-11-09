@@ -281,17 +281,37 @@ export async function getProductPage(db: DbOrTx, slug: string, opts: { includeDr
   }
 }
 /** The product's written details as titled sections (empty ones left out). */
-export function productDetails(product: typeof products.$inferSelect, brandName: string) {
+type DetailKey = "d_description" | "d_material" | "d_fitStyle" | "d_fit" | "d_style" | "d_collection" | "d_care" | "d_story"
+const DETAIL_EN: Record<DetailKey, string> = {
+  d_description: "Description",
+  d_material: "Material & fabric",
+  d_fitStyle: "Fit & style",
+  d_fit: "Fit",
+  d_style: "Style",
+  d_collection: "Collection",
+  d_care: "Care",
+  d_story: "The story",
+}
+
+/** Product page accordion. `label` translates the headings (English by default). */
+export function productDetails(product: typeof products.$inferSelect, brandName: string, label: (key: DetailKey) => string = (k) => DETAIL_EN[k]) {
   const join = (parts: (string | null | false)[], sep: string) => parts.filter(Boolean).join(sep) || null
   return [
-    { title: "Description", body: product.description },
-    { title: "Material & fabric", body: join([product.material, product.quality], "\n\n") },
+    { title: label("d_description"), body: product.description },
+    { title: label("d_material"), body: join([product.material, product.quality], "\n\n") },
     {
-      title: "Fit & style",
-      body: join([product.fit && `Fit: ${product.fit}`, product.style && `Style: ${product.style}`, product.collection && `Collection: ${product.collection}`], "\n"),
+      title: label("d_fitStyle"),
+      body: join(
+        [
+          product.fit && `${label("d_fit")}: ${product.fit}`,
+          product.style && `${label("d_style")}: ${product.style}`,
+          product.collection && `${label("d_collection")}: ${product.collection}`,
+        ],
+        "\n"
+      ),
     },
-    { title: "Care", body: product.care },
-    { title: "The story", body: join([product.story, product.inspiration], "\n\n") },
+    { title: label("d_care"), body: product.care },
+    { title: label("d_story"), body: join([product.story, product.inspiration], "\n\n") },
     { title: brandName, body: product.brandNote },
   ].filter((d): d is { title: string; body: string } => !!d.body)
 }

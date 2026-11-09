@@ -1,3 +1,6 @@
+import { getTranslations } from "next-intl/server"
+import { currentLocale } from "@/i18n/request"
+import { localeAlternates } from "@/i18n/seo"
 import type { Metadata } from "next"
 import { cache } from "react"
 import Link from "next/link"
@@ -25,7 +28,7 @@ const siteUrl = () => (process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:300
 export async function generateMetadata({ params }: PageProps<"/product/[slug]">): Promise<Metadata> {
   const { slug } = await params
   const data = await load(slug)
-  if (!data) return { title: "Not found" }
+  if (!data) return { title: (await getTranslations("product"))("notFound") }
   const { product, images } = data
   const title = product.seoTitle || product.name
   const description = product.seoDescription || product.shortDescription || `${product.name} — KING 253 streetwear. Cash on delivery.`
@@ -33,7 +36,7 @@ export async function generateMetadata({ params }: PageProps<"/product/[slug]">)
   return {
     title,
     description,
-    alternates: { canonical: `/product/${product.slug}` },
+    alternates: await localeAlternates(await currentLocale(), `/product/${product.slug}`),
     openGraph: {
       title,
       description,
@@ -51,6 +54,7 @@ export async function generateMetadata({ params }: PageProps<"/product/[slug]">)
 }
 
 export default async function ProductPage({ params, searchParams }: PageProps<"/product/[slug]">) {
+  const t = await getTranslations("product")
   const { slug } = await params
   const colourParam = (await searchParams).colour
   const initialColour = typeof colourParam === "string" ? colourParam.slice(0, 60) : null
@@ -79,7 +83,7 @@ export default async function ProductPage({ params, searchParams }: PageProps<"/
   // First photo of each colour, for the colour chips.
   const colourImages = Object.fromEntries([...new Set(variants.map((v) => v.color))].map((c) => [c, crops.find((i) => i.color === c) ?? null]))
 
-  const details = productDetails(product, settings.brandName)
+  const details = productDetails(product, settings.brandName, (k) => t(k))
 
   // Product structured data — only facts that exist in the database.
   const jsonLd = {
@@ -127,9 +131,9 @@ export default async function ProductPage({ params, searchParams }: PageProps<"/
         />
         <div className="relative mx-auto max-w-[1600px] px-4 sm:px-6 lg:px-12">
           <BackButton fallback="/clothes" className="mb-2 -ml-0.5" />
-          <nav aria-label="Breadcrumb" className="king-label mb-6 flex flex-wrap items-center gap-2 text-[0.55rem] text-king-gray">
+          <nav aria-label={t("breadcrumb")} className="king-label mb-6 flex flex-wrap items-center gap-2 text-[0.55rem] text-king-gray">
             <Link href="/clothes" className="hover:text-king-white">
-              Clothes
+              {t("clothes")}
             </Link>
             {parentCategory && (
               <>
@@ -160,7 +164,7 @@ export default async function ProductPage({ params, searchParams }: PageProps<"/
                 <h1 className="king-display mt-4 text-[clamp(2.5rem,4.5vw,4.75rem)] text-king-white">{product.name}</h1>
                 {rating.total > 0 && (
                   <a href="#reviews-title" className="mt-4 inline-flex items-center gap-2 text-xs text-king-gray hover:text-king-white">
-                    <Stars value={rating.average ?? 0} /> {rating.average?.toFixed(1)} · {rating.total} {rating.total === 1 ? "review" : "reviews"}
+                    <Stars value={rating.average ?? 0} /> {rating.average?.toFixed(1)} · {t("reviewsCount", { count: rating.total })}
                   </a>
                 )}
                 {product.shortDescription && <p className="mt-5 max-w-md text-base leading-relaxed text-king-muted">{product.shortDescription}</p>}
@@ -197,7 +201,7 @@ export default async function ProductPage({ params, searchParams }: PageProps<"/
                 )}
 
                 {product.tags.length > 0 && (
-                  <ul className="mt-6 flex flex-wrap gap-2" aria-label="Tags">
+                  <ul className="mt-6 flex flex-wrap gap-2" aria-label={t("tags")}>
                     {product.tags.map((t) => (
                       <li key={t}>
                         <Link
@@ -220,7 +224,7 @@ export default async function ProductPage({ params, searchParams }: PageProps<"/
             {related.length > 0 && (
               <section aria-labelledby="related-title" className="border-t border-white/10 pt-16">
                 <h2 id="related-title" className="king-display text-[clamp(2rem,3.5vw,3.25rem)] text-king-white">
-                  Wear it with
+                  {t("wearWith")}
                 </h2>
                 <div className="mt-10 grid grid-cols-2 gap-x-3 gap-y-10 md:gap-x-5 lg:grid-cols-4">
                   {related.map((p, i) => (

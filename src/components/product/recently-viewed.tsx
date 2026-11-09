@@ -1,5 +1,7 @@
 "use client"
 
+import { useTranslations } from "next-intl"
+
 import * as React from "react"
 
 import { getCardsBySlugsAction } from "@/app/actions/shop"
@@ -8,7 +10,8 @@ import { useShop } from "@/components/providers/shop-provider"
 import { ProductCard } from "@/components/shop/product-card"
 
 /** Recently viewed pieces (stored locally, max 12), excluding the current one. */
-export function RecentlyViewed({ exclude, title = "Recently viewed" }: { exclude?: string; title?: string }) {
+export function RecentlyViewed({ exclude, title }: { exclude?: string; title?: string }) {
+  const t = useTranslations("product")
   const { recentlyViewed } = useShop()
   const [cards, setCards] = React.useState<ProductCardData[]>([])
   const slugs = React.useMemo(() => recentlyViewed.filter((s) => s !== exclude).slice(0, 4), [recentlyViewed, exclude])
@@ -28,7 +31,7 @@ export function RecentlyViewed({ exclude, title = "Recently viewed" }: { exclude
   return (
     <section aria-labelledby="recent-title" className="border-t border-white/10 pt-16">
       <h2 id="recent-title" className="king-display text-[clamp(2rem,3.5vw,3.25rem)] text-king-white">
-        {title}
+        {title ?? t("recentlyViewed")}
       </h2>
       <div className="mt-10 grid grid-cols-2 gap-x-3 gap-y-10 md:gap-x-5 lg:grid-cols-4">
         {visible.map((p, i) => (
