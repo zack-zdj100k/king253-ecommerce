@@ -9,6 +9,9 @@ const securityHeaders = [
 ]
 
 const nextConfig: NextConfig = {
+  // Production runs on DZSecurity (cPanel + Passenger): `next build` emits a
+  // self-contained server in .next/standalone that `app.js` starts.
+  output: "standalone",
   // Development only: lets the site be opened at 127.0.0.1 as well as localhost
   // (useful to test as a signed-out visitor, since cookies are per host).
   allowedDevOrigins: ["127.0.0.1"],

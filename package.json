@@ -14,7 +14,8 @@
     "admin:create": "node --env-file=.env.local scripts/create-admin.mjs",
     "test": "vitest run",
     "db:demo": "node --env-file=.env.local scripts/demo.mjs",
-    "db:reset": "node --env-file=.env.local scripts/reset.mjs"
+    "db:reset": "node --env-file=.env.local scripts/reset.mjs",
+    "package:dzsecurity": "bash scripts/package-dzsecurity.sh"
   },
   "dependencies": {
     "class-variance-authority": "^0.7.1",
