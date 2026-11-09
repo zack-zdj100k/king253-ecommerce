@@ -62,13 +62,13 @@ export async function deleteCartAction(cartId: string) {
 
 /* CMS ------------------------------------------------------------- */
 
-export async function saveContentAction(key: string, data: Record<string, string>) {
+export async function saveContentAction(key: string, data: Record<string, string>, locale: "en" | "fr" | "ar" = "en") {
   return adminAction(
     async ({ actor }) => {
       if (!(key in CONTENT_SECTIONS)) throw new AppError("UNKNOWN", "Unknown section.")
       const clean = z.record(z.string(), z.string().max(5000)).parse(data)
-      await saveContent(db, key as ContentKey, clean)
-      await audit(db, actor, "content.save", "content", key, {})
+      await saveContent(db, key as ContentKey, clean, z.enum(["en", "fr", "ar"]).parse(locale))
+      await audit(db, actor, "content.save", "content", key, { locale })
     },
     { revalidate: ["/", "/who-is-king", "/clothes", "/location", "/admin/content"], message: "Saved — live on the website now." }
   )

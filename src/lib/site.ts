@@ -1,12 +1,15 @@
+/** `key` = translation key in messages/*.json → nav.* */
 export const NAV_LINKS = [
-  { href: "/", label: "Home" },
-  { href: "/clothes", label: "Clothes" },
-  { href: "/who-is-king", label: "Who Is King" },
-  { href: "/location", label: "Location" },
+  { href: "/", key: "home" },
+  { href: "/clothes", key: "clothes" },
+  { href: "/who-is-king", key: "whoIsKing" },
+  { href: "/location", key: "location" },
 ] as const
 
+/** Works with or without the /ar /fr /en prefix in the browser URL. */
 export function isActivePath(pathname: string, href: string) {
-  return href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`)
+  const path = pathname.replace(/^\/(ar|fr|en)(?=\/|$)/, "") || "/"
+  return href === "/" ? path === "/" : path === href || path.startsWith(`${href}/`)
 }
 
 export const IMAGES = {

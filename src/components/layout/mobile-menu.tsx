@@ -3,11 +3,13 @@
 import * as React from "react"
 import Link from "next/link"
 import { ArrowUpRight, Menu, Search, User } from "lucide-react"
+import { useTranslations } from "next-intl"
 
 import { cn } from "@/lib/utils"
 import { NAV_LINKS, isActivePath } from "@/lib/site"
 import { Sheet, SheetContent, SheetDescription, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { Logo } from "@/components/layout/logo"
+import { LanguageSwitcher } from "@/components/layout/language-switcher"
 
 export function MobileMenu({
   pathname,
@@ -20,6 +22,7 @@ export function MobileMenu({
   showOnDesktop?: boolean
 }) {
   const [open, setOpen] = React.useState(false)
+  const t = useTranslations("nav")
   const close = () => setOpen(false)
 
   return (
@@ -27,7 +30,7 @@ export function MobileMenu({
       <SheetTrigger asChild>
         <button
           type="button"
-          aria-label="Open menu"
+          aria-label={t("openMenu")}
           className={cn("grid size-11 place-items-center text-king-white", !showOnDesktop && "lg:hidden")}
         >
           <Menu className="size-5" aria-hidden />
@@ -38,8 +41,8 @@ export function MobileMenu({
         data-lenis-prevent
         className="king-grain gap-0 overflow-hidden border-0 bg-king-black p-0 data-[side=right]:w-full data-[side=right]:sm:max-w-none"
       >
-        <SheetTitle className="sr-only">Menu</SheetTitle>
-        <SheetDescription className="sr-only">Site navigation</SheetDescription>
+        <SheetTitle className="sr-only">{t("menu")}</SheetTitle>
+        <SheetDescription className="sr-only">{t("siteNavigation")}</SheetDescription>
 
         {/* Red studio light */}
         <div aria-hidden className="pointer-events-none absolute -top-1/4 -right-1/3 h-2/3 w-[120%] king-glow [--glow:rgb(92_7_7_/_0.50)]" />
@@ -48,7 +51,7 @@ export function MobileMenu({
           <Logo onClick={close} />
         </div>
 
-        <nav aria-label="Mobile" className="relative flex flex-1 flex-col justify-center px-4 sm:px-6">
+        <nav aria-label={t("menu")} className="relative flex flex-1 flex-col justify-center px-4 sm:px-6">
           <ul className="space-y-1">
             {NAV_LINKS.map((link, i) => {
               const active = isActivePath(pathname, link.href)
@@ -69,7 +72,7 @@ export function MobileMenu({
                         active ? "text-king-white" : "text-king-muted/70 group-hover:text-king-white"
                       )}
                     >
-                      {link.label}
+                      {t(link.key)}
                     </span>
                   </Link>
                 </li>
@@ -87,14 +90,14 @@ export function MobileMenu({
             }}
             className="king-label flex h-16 items-center justify-center gap-2 border-r border-white/10 text-king-muted hover:text-king-white"
           >
-            <Search className="size-4" aria-hidden /> Search
+            <Search className="size-4" aria-hidden /> {t("search")}
           </button>
           <Link
             href="/account"
             onClick={close}
             className="king-label flex h-16 items-center justify-center gap-2 text-king-muted hover:text-king-white"
           >
-            <User className="size-4" aria-hidden /> Account
+            <User className="size-4" aria-hidden /> {t("account")}
           </Link>
         </div>
         <Link
@@ -102,8 +105,11 @@ export function MobileMenu({
           onClick={close}
           className="king-label relative flex h-16 items-center justify-between bg-king-red px-4 text-king-white sm:px-6"
         >
-          Shop the collection <ArrowUpRight className="size-4" aria-hidden />
+          {t("shopCollection")} <ArrowUpRight className="size-4" aria-hidden />
         </Link>
+        <div className="flex justify-center border-t border-white/10 py-3">
+          <LanguageSwitcher />
+        </div>
       </SheetContent>
     </Sheet>
   )

@@ -1,0 +1,37 @@
+{
+  "footer": {
+    "account": "Compte",
+    "allClothes": "Tous les vêtements",
+    "developedBy": "Développé par",
+    "findClosest": "Trouver la boutique la plus proche",
+    "findShop": "Trouver la boutique",
+    "home": "KING 253 — accueil",
+    "instagramSoon": "Instagram — bientôt",
+    "join": "Rejoindre le club",
+    "language": "Langue",
+    "phoneSoon": "Téléphone bientôt annoncé",
+    "rights": "Tous droits réservés.",
+    "shop": "Boutique",
+    "shopsSoon": "Boutiques bientôt annoncées",
+    "socials": "Réseaux",
+    "tagline": "Streetwear moderne d'inspiration américaine pour ceux qui avancent autrement.",
+    "theDeveloper": "le développeur",
+    "track": "Suivre une commande",
+    "visit": "Nous trouver",
+    "wishlist": "Favoris"
+  },
+  "nav": {
+    "account": "Compte",
+    "clothes": "Vêtements",
+    "home": "Accueil",
+    "location": "Boutiques",
+    "main": "Principal",
+    "menu": "Menu",
+    "openBag": "Ouvrir le panier, {count, plural, one {# article} other {# articles}}",
+    "openMenu": "Ouvrir le menu",
+    "search": "Rechercher",
+    "shopCollection": "Voir la collection",
+    "siteNavigation": "Navigation du site",
+    "whoIsKing": "Who Is King"
+  }
+}

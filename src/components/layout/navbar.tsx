@@ -4,6 +4,7 @@ import * as React from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { Search, ShoppingBag, User } from "lucide-react"
+import { useTranslations } from "next-intl"
 
 import { cn } from "@/lib/utils"
 import { gsap, MOTION_OK } from "@/lib/gsap"
@@ -14,6 +15,7 @@ import { MobileMenu } from "@/components/layout/mobile-menu"
 import { SearchDialog } from "@/components/shop/search-dialog"
 
 export function Navbar() {
+  const t = useTranslations("nav")
   const pathname = usePathname()
   const { cart, setCartOpen } = useShop()
   const cartCount = cart.count
@@ -64,7 +66,7 @@ export function Navbar() {
         className="pointer-events-none fixed inset-x-0 top-0 z-50"
       >
         <nav
-          aria-label="Main"
+          aria-label={t("main")}
           // Keyboard users tabbing into a hidden header bring it back.
           onFocusCapture={() => setHidden(false)}
           className={cn(
@@ -96,7 +98,7 @@ export function Navbar() {
                         : "text-king-muted after:scale-x-0 hover:text-king-white hover:after:scale-x-100"
                     )}
                   >
-                    {link.label}
+                    {t(link.key)}
                   </Link>
                 </li>
               )
@@ -113,12 +115,12 @@ export function Navbar() {
               )}
             >
               <Search className="size-4" aria-hidden />
-              Search
+              {t("search")}
             </button>
             <Link
               href="/account"
-              aria-label="Account"
-              aria-current={pathname.startsWith("/account") || pathname === "/sign-in" || pathname === "/sign-up" ? "page" : undefined}
+              aria-label={t("account")}
+              aria-current={isActivePath(pathname, "/account") || isActivePath(pathname, "/sign-in") || isActivePath(pathname, "/sign-up") ? "page" : undefined}
               className="grid size-11 place-items-center text-king-white/85 transition-colors hover:text-king-white aria-[current=page]:text-king-bright-red"
             >
               <User className="size-[1.1rem]" aria-hidden />
@@ -126,7 +128,7 @@ export function Navbar() {
             <button
               type="button"
               onClick={() => setCartOpen(true)}
-              aria-label={`Open bag, ${cartCount} ${cartCount === 1 ? "item" : "items"}`}
+              aria-label={t("openBag", { count: cartCount })}
               className="relative grid size-11 place-items-center text-king-white/85 transition-colors hover:text-king-white"
             >
               <ShoppingBag className="size-[1.1rem]" aria-hidden />

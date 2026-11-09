@@ -1,7 +1,8 @@
-import { eq } from "drizzle-orm"
+import { eq, inArray } from "drizzle-orm"
 
 import type { DbOrTx } from "./db/client"
 import { contentBlocks } from "./db/schema"
+import { CONTENT_DEFAULTS_I18N } from "./content-i18n"
 import { IMAGES } from "@/lib/site"
 import { CATEGORY_CROPS, DEFAULT_CATEGORIES } from "@/lib/products"
 
@@ -357,26 +358,69 @@ export const CONTENT_SECTIONS = {
 export type ContentKey = keyof typeof CONTENT_SECTIONS
 export type ContentOf<K extends ContentKey> = (typeof CONTENT_SECTIONS)[K]["defaults"]
 
-export async function getContent<K extends ContentKey>(db: DbOrTx, key: K): Promise<ContentOf<K>> {
-  const defaults = CONTENT_SECTIONS[key].defaults as Record<string, string>
-  const [row] = await db.select().from(contentBlocks).where(eq(contentBlocks.key, key))
-  const stored = (row?.data ?? {}) as Record<string, unknown>
+export type ContentLocale = "en" | "fr" | "ar"
+
+/** The visitor's language when called during a request; English otherwise (scripts, tests). */
+async function requestLocale(): Promise<ContentLocale> {
+  try {
+    const { currentLocale } = await import("@/i18n/request")
+    return await currentLocale()
+  } catch {
+    return "en"
+  }
+}
+
+const rowKey = (key: string, locale: ContentLocale) => (locale === "en" ? key : `${key}@${locale}`)
+
+/**
+ * Text of a section in a language. For each text field:
+ *   the admin's text for that language → (English page: the admin's English text)
+ *   → the built-in translation (content-i18n.ts), unless the admin rewrote the English text
+ *   → the admin's English text → the built-in English text.
+ * Images are shared by every language.
+ */
+export async function getContent<K extends ContentKey>(db: DbOrTx, key: K, locale?: ContentLocale): Promise<ContentOf<K>> {
+  const lang = locale ?? (await requestLocale())
+  const section = CONTENT_SECTIONS[key]
+  const defaults = section.defaults as Record<string, string>
+  const images = new Set(section.fields.filter((f) => f.type === "image").map((f) => f.name))
+  const rows = await db
+    .select()
+    .from(contentBlocks)
+    .where(lang === "en" ? eq(contentBlocks.key, key) : inArray(contentBlocks.key, [key, rowKey(key, lang)]))
+  const base = (rows.find((r) => r.key === key)?.data ?? {}) as Record<string, unknown>
+  const own = (rows.find((r) => r.key === rowKey(key, lang))?.data ?? {}) as Record<string, unknown>
+  const translated = lang === "en" ? {} : (CONTENT_DEFAULTS_I18N[lang][key] ?? {})
+  const filled = (v: unknown): v is string => typeof v === "string" && v.trim() !== ""
+
   const merged: Record<string, string> = { ...defaults }
   for (const field of Object.keys(defaults)) {
-    const value = stored[field]
-    if (typeof value === "string" && value.trim() !== "") merged[field] = value
+    if (images.has(field) || lang === "en") {
+      if (filled(base[field])) merged[field] = base[field]
+      continue
+    }
+    const customised = filled(base[field]) && base[field] !== defaults[field]
+    if (filled(own[field])) merged[field] = own[field]
+    else if (!customised && filled(translated[field])) merged[field] = translated[field]
+    else if (filled(base[field])) merged[field] = base[field]
   }
   // The origin story is intentionally allowed to be empty.
-  if (key === "who.origin" && typeof stored.body === "string") merged.body = stored.body
+  if (key === "who.origin") {
+    const body = lang !== "en" && typeof own.body === "string" ? own.body : base.body
+    if (typeof body === "string") merged.body = body
+  }
   return merged as ContentOf<K>
 }
 
-export async function saveContent(db: DbOrTx, key: ContentKey, data: Record<string, string>) {
-  const allowed = new Set(CONTENT_SECTIONS[key].fields.map((f) => f.name))
+/** Saves a section's texts for one language (English also holds the shared images). */
+export async function saveContent(db: DbOrTx, key: ContentKey, data: Record<string, string>, locale: ContentLocale = "en") {
+  const fields = CONTENT_SECTIONS[key].fields.filter((f) => locale === "en" || f.type !== "image")
+  const allowed = new Set(fields.map((f) => f.name))
   const clean = Object.fromEntries(Object.entries(data).filter(([k]) => allowed.has(k)).map(([k, v]) => [k, v.slice(0, 5000)]))
+  const id = rowKey(key, locale)
   await db
     .insert(contentBlocks)
-    .values({ key, data: clean })
+    .values({ key: id, data: clean })
     .onConflictDoUpdate({ target: contentBlocks.key, set: { data: clean, updatedAt: new Date() } })
 }
 

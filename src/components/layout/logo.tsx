@@ -8,6 +8,7 @@ export function Logo({ className, onClick }: { className?: string; onClick?: () 
       href="/"
       onClick={onClick}
       aria-label="KING 253 — home"
+      dir="ltr"
       className={cn("group inline-flex items-baseline gap-1.5 text-king-white", className)}
     >
       <span className="text-[1.05rem] font-black tracking-[-0.04em] uppercase">King</span>

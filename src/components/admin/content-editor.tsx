@@ -25,7 +25,9 @@ export function ContentEditor({
   fields,
   values,
   defaults,
+  locale = "en",
 }: {
+  locale?: "en" | "fr" | "ar"
   sectionKey: string
   label: string
   help?: string
@@ -37,7 +39,8 @@ export function ContentEditor({
   const { run, pending, feedback, setFeedback } = useAdminAction()
   const [v, setV] = React.useState(values)
   const textFields = fields.filter((f) => f.type !== "image")
-  const imageFields = fields.filter((f) => f.type === "image")
+  // Images are shared by every language: edited on the English tab only.
+  const imageFields = locale === "en" ? fields.filter((f) => f.type === "image") : []
   const edited = Object.values(values).some((x) => x.trim() !== "")
   const dirty = fields.some((f) => (v[f.name] ?? "") !== (values[f.name] ?? ""))
   const set = (name: string, value: string) => setV((prev) => ({ ...prev, [name]: value }))
@@ -47,7 +50,7 @@ export function ContentEditor({
       className="overflow-hidden rounded-2xl border border-white/[0.08] bg-white/[0.025]"
       onSubmit={(e) => {
         e.preventDefault()
-        run(() => saveContentAction(sectionKey, v))
+        run(() => saveContentAction(sectionKey, v, locale))
       }}
     >
       <header className="flex flex-wrap items-center justify-between gap-3 border-b border-white/[0.06] px-5 py-4">
@@ -74,9 +77,10 @@ export function ContentEditor({
               <label key={f.name} className={cn("block", f.type !== "text" && "md:col-span-2")}>
                 <span className={labelClass}>{f.label}</span>
                 {f.type === "text" ? (
-                  <input value={v[f.name] ?? ""} onChange={(e) => set(f.name, e.target.value)} placeholder={defaults[f.name]} className={inputClass} />
+                  <input dir={locale === "ar" ? "rtl" : undefined} value={v[f.name] ?? ""} onChange={(e) => set(f.name, e.target.value)} placeholder={defaults[f.name]} className={inputClass} />
                 ) : (
                   <textarea
+                    dir={locale === "ar" ? "rtl" : undefined}
                     value={v[f.name] ?? ""}
                     onChange={(e) => set(f.name, e.target.value)}
                     rows={Math.min(6, Math.max(3, (defaults[f.name] ?? "").split("\n").length + 1))}

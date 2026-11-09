@@ -4,6 +4,7 @@ import Link from "next/link"
 import { db } from "@/server/db"
 import { contentBlocks } from "@/server/db/schema"
 import { CONTENT_PAGES, CONTENT_SECTIONS, SECTION_ANCHORS, type ContentPage } from "@/server/content"
+import { CONTENT_DEFAULTS_I18N } from "@/server/content-i18n"
 import { ContentEditor } from "@/components/admin/content-editor"
 import { PageHeader, pill } from "@/components/admin/ui"
 
@@ -17,7 +18,9 @@ const PAGE_INFO: Record<ContentPage, { slug: string; href: string; intro: string
 }
 
 export default async function ContentPage({ searchParams }: PageProps<"/admin/content">) {
-  const requested = (await searchParams).page
+  const sp = await searchParams
+  const requested = sp.page
+  const lang = sp.lang === "fr" || sp.lang === "ar" ? sp.lang : "en"
   const page = CONTENT_PAGES.find((p) => PAGE_INFO[p].slug === requested) ?? "Home"
   const info = PAGE_INFO[page]
   const rows = await db.select().from(contentBlocks)
@@ -39,19 +42,34 @@ export default async function ContentPage({ searchParams }: PageProps<"/admin/co
           </Link>
         ))}
       </nav>
-      <p className="text-sm text-king-gray">{info.intro}</p>
+      <nav aria-label="Language" className="flex flex-wrap items-center gap-2">
+        {(["en", "fr", "ar"] as const).map((l) => (
+          <Link key={l} href={`/admin/content?page=${info.slug}&lang=${l}`} className={pill(l === lang)}>
+            {l === "en" ? "English (+ images)" : l === "fr" ? "Français" : "العربية"}
+          </Link>
+        ))}
+      </nav>
+      <p className="text-sm text-king-gray">
+        {info.intro}
+        {lang !== "en" && " Empty fields show the built-in translation (in grey)."}
+      </p>
 
       <div className="space-y-5">
         {sections.map(([key, s]) => (
           <ContentEditor
-            key={key}
+            key={`${key}-${lang}`}
+            locale={lang}
             sectionKey={key}
             label={s.label}
             help={"help" in s ? s.help : undefined}
             previewHref={SECTION_ANCHORS[key] ? `${info.href}#${SECTION_ANCHORS[key]}` : info.href}
             fields={[...s.fields]}
-            defaults={s.defaults as Record<string, string>}
-            values={Object.fromEntries(s.fields.map((f) => [f.name, stored.get(key)?.[f.name] ?? ""]))}
+            defaults={
+              lang === "en"
+                ? (s.defaults as Record<string, string>)
+                : { ...(s.defaults as Record<string, string>), ...(CONTENT_DEFAULTS_I18N[lang][key] ?? {}) }
+            }
+            values={Object.fromEntries(s.fields.map((f) => [f.name, stored.get(lang === "en" ? key : `${key}@${lang}`)?.[f.name] ?? ""]))}
           />
         ))}
       </div>

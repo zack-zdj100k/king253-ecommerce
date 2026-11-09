@@ -1,5 +1,6 @@
 import Link from "next/link"
 import { ArrowRight, Crown } from "lucide-react"
+import { getTranslations } from "next-intl/server"
 
 import { NAV_LINKS } from "@/lib/site"
 import { db } from "@/server/db"
@@ -9,6 +10,7 @@ import { listStores } from "@/server/stores"
 import { formatPhone, normalizePhone, whatsappLink } from "@/lib/phone"
 import { Button } from "@/components/ui/button"
 import { GraffitiWordmark } from "@/components/ui/graffiti-wordmark"
+import { LanguageSwitcher } from "@/components/layout/language-switcher"
 
 const linkClass = "text-sm text-king-gray transition-colors duration-300 hover:text-king-white"
 
@@ -17,6 +19,8 @@ const linkClass = "text-sm text-king-gray transition-colors duration-300 hover:t
  * KING 253 piece. Store details come from STORE and stay marked until supplied.
  */
 async function Footer() {
+  const t = await getTranslations("footer")
+  const nav = await getTranslations("nav")
   const [settings, facets, stores] = await Promise.all([getSettings(db), getCatalogFacets(db).catch(() => null), listStores(db, { publicOnly: true })])
   const categories = facets?.categories ?? []
   const phone = settings.contactPhone ? normalizePhone(settings.contactPhone) : null
@@ -29,7 +33,7 @@ async function Footer() {
         <div className="flex flex-col justify-between gap-12 md:flex-row">
           {/* Brand block */}
           <div className="max-w-sm">
-            <Link href="/" className="group inline-flex items-center gap-2.5" aria-label="KING 253 — home">
+            <Link href="/" className="group inline-flex items-center gap-2.5" aria-label={t("home")}>
               <Crown className="size-6 -rotate-6 text-king-bright-red transition-transform duration-500 group-hover:rotate-0" aria-hidden />
               <span className="text-lg font-black tracking-[-0.04em] text-king-white uppercase">
                 King <span className="text-king-bright-red">253</span>
@@ -37,26 +41,27 @@ async function Footer() {
             </Link>
 
             <p className="mt-4 text-sm leading-relaxed text-king-muted">
-              Modern American-inspired streetwear for those who move differently.
+              {t("tagline")}
             </p>
             <div className="mt-5">
               <Button asChild variant="kingOutline" size="xl">
                 <Link href="/sign-up">
-                  Join the club <ArrowRight className="size-4" aria-hidden />
+                  {t("join")} <ArrowRight className="size-4 rtl:rotate-180" aria-hidden />
                 </Link>
               </Button>
             </div>
             <p className="mt-6 text-xs text-king-gray">
-              &copy; {new Date().getFullYear()} KING 253. All rights reserved.
+              &copy; {new Date().getFullYear()} KING 253. {t("rights")}
             </p>
+            <LanguageSwitcher className="mt-4 -ms-3" />
           </div>
 
           {/* Link columns */}
           <div className="grid grid-cols-2 gap-x-8 gap-y-10 md:grid-cols-4 lg:gap-x-14">
-            <FooterColumn title="Shop">
+            <FooterColumn title={t("shop")}>
               <li>
                 <Link href="/clothes" className={linkClass}>
-                  All clothes
+                  {t("allClothes")}
                 </Link>
               </li>
               {categories.slice(0, 4).map((c) => (
@@ -72,23 +77,23 @@ async function Footer() {
               {NAV_LINKS.slice(2).map((l) => (
                 <li key={l.href}>
                   <Link href={l.href} className={linkClass}>
-                    {l.label}
+                    {nav(l.key)}
                   </Link>
                 </li>
               ))}
               <li>
                 <Link href="/account" className={linkClass}>
-                  Account
+                  {t("account")}
                 </Link>
               </li>
               <li>
                 <Link href="/wishlist" className={linkClass}>
-                  Wishlist
+                  {t("wishlist")}
                 </Link>
               </li>
             </FooterColumn>
 
-            <FooterColumn title="Visit">
+            <FooterColumn title={t("visit")}>
               {stores.length ? (
                 stores.map((s) => (
                   <li key={s.id} className="text-sm text-king-gray">
@@ -96,9 +101,9 @@ async function Footer() {
                   </li>
                 ))
               ) : (
-                <li className="text-sm text-king-gray">Shops to be announced</li>
+                <li className="text-sm text-king-gray">{t("shopsSoon")}</li>
               )}
-              <li className="text-sm text-king-gray">{phone ? <a href={`tel:${phone}`} className="hover:text-king-white">{formatPhone(phone)}</a> : settings.contactPhone || "Phone to be announced"}</li>
+              <li className="text-sm text-king-gray">{phone ? <a href={`tel:${phone}`} className="hover:text-king-white">{formatPhone(phone)}</a> : settings.contactPhone || t("phoneSoon")}</li>
               {settings.contactEmail && (
                 <li className="text-sm text-king-gray">
                   <a href={`mailto:${settings.contactEmail}`} className="hover:text-king-white">
@@ -108,12 +113,12 @@ async function Footer() {
               )}
               <li>
                 <Link href="/location" className={linkClass}>
-                  {stores.length > 1 ? "Find the closest shop" : "Find the shop"}
+                  {stores.length > 1 ? t("findClosest") : t("findShop")}
                 </Link>
               </li>
             </FooterColumn>
 
-            <FooterColumn title="Socials">
+            <FooterColumn title={t("socials")}>
               <li>
                 {settings.instagram ? (
                   <a
@@ -125,7 +130,7 @@ async function Footer() {
                     Instagram
                   </a>
                 ) : (
-                  <span className="text-sm text-king-gray">Instagram — soon</span>
+                  <span className="text-sm text-king-gray">{t("instagramSoon")}</span>
                 )}
               </li>
               {settings.tiktok && (
@@ -151,7 +156,7 @@ async function Footer() {
               )}
               <li>
                 <Link href="/track" className={linkClass}>
-                  Track an order
+                  {t("track")}
                 </Link>
               </li>
             </FooterColumn>
@@ -163,7 +168,7 @@ async function Footer() {
           <GraffitiWordmark />
         </div>
 
-        <DeveloperCredit settings={settings} />
+        <DeveloperCredit settings={settings} labels={{ by: t("developedBy"), fallback: t("theDeveloper") }} />
       </div>
     </footer>
   )
@@ -181,7 +186,13 @@ function FooterColumn({ title, children }: { title: string; children: React.Reac
 export { Footer }
 
 /** "Developed by" line — from Admin → Settings; hidden while nothing is filled in. */
-function DeveloperCredit({ settings }: { settings: { developerName: string; developerPhone: string; developerEmail: string; developerGithub: string } }) {
+function DeveloperCredit({
+  settings,
+  labels,
+}: {
+  settings: { developerName: string; developerPhone: string; developerEmail: string; developerGithub: string }
+  labels: { by: string; fallback: string }
+}) {
   const { developerName: name, developerPhone: phoneRaw, developerEmail: email, developerGithub: githubRaw } = settings
   if (!name && !phoneRaw && !email && !githubRaw) return null
   const phone = phoneRaw ? normalizePhone(phoneRaw) : null
@@ -194,7 +205,7 @@ function DeveloperCredit({ settings }: { settings: { developerName: string; deve
   return (
     <p className="mt-10 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 border-t border-white/[0.06] pt-6 text-xs text-king-gray">
       <span>
-        Developed by <span className="text-king-muted">{name || "the developer"}</span>
+        {labels.by} <span className="text-king-muted">{name || labels.fallback}</span>
       </span>
       {phoneRaw && (
         <a href={phone ? `tel:${phone}` : undefined} className={link}>
