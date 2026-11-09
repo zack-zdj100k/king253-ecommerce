@@ -2,7 +2,7 @@ import { config } from "dotenv"
 import { sql } from "drizzle-orm"
 
 import { createDb } from "@/server/db/client"
-import { categories, productImages, productVariants, products } from "@/server/db/schema"
+import { categories, productImages, productStores, productVariants, products, storeStock, stores } from "@/server/db/schema"
 import { saveSettings } from "@/server/settings"
 
 config({ path: ".env.local" })
@@ -24,12 +24,26 @@ export async function seedDelivery(fee = 500) {
   return { wilaya: "Alger" }
 }
 
+/** A fake shop (created once per wiped database). Default: the main test shop. */
+export async function testShop(slug = "test-shop-a") {
+  const [existing] = await testDb.select().from(stores).where(sql`${stores.slug} = ${slug}`)
+  if (existing) return existing
+  const [shop] = await testDb
+    .insert(stores)
+    .values({ name: `Test ${slug}`, slug, wilaya: "Test Wilaya", city: "Test City", address: "1 Test Street", notificationEmail: `${slug}@example.test` })
+    .returning()
+  return shop
+}
+
+/** Product whose stock sits in `shop` (default: the main test shop). */
 export async function seedProduct(opts: {
   slug: string
   price: number
   variants: { size: string; color: string; physical: number; reserved?: number }[]
   status?: "draft" | "published"
+  shopSlug?: string
 }) {
+  const shop = await testShop(opts.shopSlug)
   const [category] = await testDb
     .insert(categories)
     .values({ slug: `cat-${opts.slug}`, name: "Test" })
@@ -52,7 +66,9 @@ export async function seedProduct(opts: {
       }))
     )
     .returning()
-  return { product, variants }
+  await testDb.insert(productStores).values({ productId: product.id, storeId: shop.id })
+  await testDb.insert(storeStock).values(variants.map((v) => ({ variantId: v.id, storeId: shop.id, physical: v.physical, reserved: v.reserved })))
+  return { product, variants, shop }
 }
 
 export async function stockOf(variantId: string) {

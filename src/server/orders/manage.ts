@@ -17,6 +17,13 @@ import { activeReservationsForItem, consumeReservation, releaseReservation, rese
 import { computeTotals, unitPriceOf, type DiscountInput } from "../pricing"
 import { handOverDelivery } from "./delivery"
 
+
+/** Departure shop of an order (every order has one since migration 0013). */
+export function shopOf(order: { storeId: number | null; number: string }) {
+  if (order.storeId === null) throw new AppError("NO_SHOP", `Order ${order.number} has no departure shop.`)
+  return order.storeId
+}
+
 export const ORDER_STATUSES = [
   "pending",
   "contacting",
@@ -215,6 +222,7 @@ export async function updateOrderItem(
     const next = variantChanged ? await loadVariantForOrder(tx, input.variantId) : null
     await reserveStock(tx, {
       variantId: input.variantId,
+      storeId: shopOf(order),
       quantity: input.quantity,
       orderItemId: item.id,
       label: next ? `${next.productName} — ${next.color} / ${next.size}` : `${item.productName} — ${item.color} / ${item.size}`,
@@ -272,6 +280,7 @@ export async function addOrderItem(db: Db, input: { orderId: string; variantId: 
       .returning({ id: orderItems.id })
     await reserveStock(tx, {
       variantId: v.variantId,
+      storeId: shopOf(order),
       quantity: input.quantity,
       orderItemId: item.id,
       label: `${v.productName} — ${v.color} / ${v.size}`,

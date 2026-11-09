@@ -2,10 +2,10 @@ import { and, asc, eq, inArray, ne, sql } from "drizzle-orm"
 import { z } from "zod"
 
 import type { Db } from "./db/client"
-import { categories, orderItems, productImages, productVariants, products, stockReservations } from "./db/schema"
+import { categories, orderItems, productImages, productStores, productVariants, products, stockReservations, stores } from "./db/schema"
 import { audit, type Actor } from "./audit"
 import { AppError, NotFoundError } from "./errors"
-import { adjustPhysicalStock } from "./inventory"
+import { addVariantToProductShops, adjustPhysicalStock, setProductStores } from "./inventory"
 
 /* ------------------------------------------------------------------ */
 /* Products                                                           */
@@ -117,12 +117,28 @@ export async function saveProduct(db: Db, id: string | null, raw: ProductInput, 
     })
     return updated
   }
-  const [created] = await db
-    .insert(products)
-    .values({ ...values, publishedAt: input.status === "published" ? new Date() : null })
-    .returning()
-  await audit(db, actor, "product.create", "product", created.id, { name: created.name })
-  return created
+  return db.transaction(async (tx) => {
+    const [created] = await tx
+      .insert(products)
+      .values({ ...values, publishedAt: input.status === "published" ? new Date() : null })
+      .returning()
+    // A new product is sold in every active shop until the admin unticks some.
+    const active = await tx.select({ id: stores.id }).from(stores).where(eq(stores.active, true))
+    await setProductStores(tx, created.id, active.map((s) => s.id))
+    await audit(tx, actor, "product.create", "product", created.id, { name: created.name })
+    return created
+  })
+}
+
+/** Shops this product is sold in (each then has its own stock per size). */
+export async function saveProductStores(db: Db, productId: string, storeIds: number[], actor: Actor) {
+  const ids = z.array(z.number().int().positive()).parse(storeIds)
+  return db.transaction(async (tx) => {
+    const [product] = await tx.select({ id: products.id }).from(products).where(eq(products.id, productId))
+    if (!product) throw new NotFoundError("This product")
+    await setProductStores(tx, productId, ids)
+    await audit(tx, actor, "product.stores", "product", productId, { storeIds: ids })
+  })
 }
 
 /* ------------------------------------------------------------------ */
@@ -176,7 +192,12 @@ function friendlyUnique(error: unknown): never {
 }
 
 /** Creates a variant. Opening stock is recorded through the stock ledger, never written silently. */
-export async function createVariant(db: Db, productId: string, raw: VariantInput & { initialStock?: number }, actor: Actor) {
+export async function createVariant(
+  db: Db,
+  productId: string,
+  raw: VariantInput & { initialStock?: number; initialStoreId?: number | null },
+  actor: Actor
+) {
   const parsed = variantInput.safeParse(raw)
   if (!parsed.success) throw new AppError("VALIDATION", parsed.error.issues[0]?.message ?? "Check the variant.")
   const initial = Number(raw.initialStock ?? 0)
@@ -184,8 +205,12 @@ export async function createVariant(db: Db, productId: string, raw: VariantInput
   try {
     return await db.transaction(async (tx) => {
       const [variant] = await tx.insert(productVariants).values({ ...parsed.data, productId }).returning()
+      await addVariantToProductShops(tx, productId, variant.id)
       if (initial > 0 && actor.userId) {
-        await adjustPhysicalStock(tx, { variantId: variant.id, newPhysical: initial, reason: "Opening stock", actorUserId: actor.userId })
+        const shops = await tx.select({ storeId: productStores.storeId }).from(productStores).where(eq(productStores.productId, productId))
+        const storeId = raw.initialStoreId ?? shops[0]?.storeId
+        if (!storeId) throw new AppError("NO_SHOP", "Choose the shops that sell this product before adding stock.")
+        await adjustPhysicalStock(tx, { variantId: variant.id, storeId, newPhysical: initial, reason: "Opening stock", actorUserId: actor.userId })
       }
       await audit(tx, actor, "variant.create", "product", productId, { sku: variant.sku, initial })
       return variant

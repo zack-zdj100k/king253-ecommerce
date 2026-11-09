@@ -5,7 +5,7 @@ import { createOrder } from "@/server/orders/create"
 import { createVariant, deleteVariant, saveProduct, updateVariant } from "@/server/products-admin"
 import { saveSettings, getSettings } from "@/server/settings"
 
-import { customer, key, resetDb, seedDelivery, seedProduct, stockOf, testDb } from "./support/db"
+import { customer, key, resetDb, seedDelivery, seedProduct, stockOf, testDb, testShop } from "./support/db"
 
 let actor: { userId: string; label: string }
 
@@ -29,6 +29,7 @@ describe("Product admin", () => {
   })
 
   it("opening stock goes through the ledger; duplicate SKU is a friendly error", async () => {
+    await testShop()
     const p = await saveProduct(testDb, null, { ...base, name: "Tee", status: "draft", price: 2000 }, actor)
     const v = await createVariant(testDb, p.id, { sku: "king-tee-blk-m-001", size: "M", color: "Black", initialStock: 8 }, actor)
     expect(v!.sku).toBe("KING-TEE-BLK-M-001")

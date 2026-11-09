@@ -3,7 +3,7 @@ import { and, asc, eq, inArray, isNull, sql } from "drizzle-orm"
 import type { DbOrTx } from "./db/client"
 import { cartItems, carts, checkoutProfiles, productImages, productVariants, products } from "./db/schema"
 import { AppError } from "./errors"
-import { availableOf } from "./inventory"
+import { availableOf, storefrontStock } from "./inventory"
 import { unitPriceOf } from "./pricing"
 
 /*
@@ -21,8 +21,7 @@ function lineSelect(db: DbOrTx) {
       color: productVariants.color,
       colorHex: productVariants.colorHex,
       sku: productVariants.sku,
-      physical: productVariants.physical,
-      reserved: productVariants.reserved,
+      ...storefrontStock(),
       variantActive: productVariants.active,
       priceOverride: productVariants.priceOverride,
       salePriceOverride: productVariants.salePriceOverride,
@@ -108,8 +107,7 @@ export async function ensureCart(db: DbOrTx, cartId: string | null, userId?: str
 async function loadPurchasable(db: DbOrTx, variantId: string) {
   const [row] = await db
     .select({
-      physical: productVariants.physical,
-      reserved: productVariants.reserved,
+      ...storefrontStock(),
       active: productVariants.active,
       status: products.status,
       price: products.price,

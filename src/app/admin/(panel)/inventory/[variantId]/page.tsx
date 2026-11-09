@@ -5,7 +5,7 @@ import { notFound } from "next/navigation"
 
 import { db } from "@/server/db"
 import { productVariants, products } from "@/server/db/schema"
-import { variantMovements } from "@/server/admin/queries"
+import { variantMovements, variantShopStock } from "@/server/admin/queries"
 import { StockAdjust } from "@/components/admin/product/stock-adjust"
 import { deleteInventoryVariantAction } from "@/app/admin/actions/products"
 import { DeleteButton } from "@/components/admin/delete-button"
@@ -31,7 +31,7 @@ export default async function LedgerPage({ params }: PageProps<"/admin/inventory
     .innerJoin(products, eq(products.id, productVariants.productId))
     .where(eq(productVariants.id, variantId))
   if (!row) notFound()
-  const moves = await variantMovements(db, variantId, 200)
+  const [moves, shopStock] = await Promise.all([variantMovements(db, variantId, 200), variantShopStock(db, variantId)])
   const { v } = row
 
   return (
@@ -44,15 +44,36 @@ export default async function LedgerPage({ params }: PageProps<"/admin/inventory
         <Link href={`/admin/products/${row.productId}`} className="mt-3 inline-block text-xs font-medium text-king-gray hover:text-king-white">← Product</Link>
       </PageHeader>
       <div className="grid grid-cols-3 gap-3">
-        <Stat label="Physical" value={v.physical} hint={<StockAdjust variantId={v.id} physical={v.physical} reserved={v.reserved} />} />
+        <Stat label="Physical · all shops" value={v.physical} />
         <Stat label="Reserved" value={v.reserved} hint="Held by open orders" />
         <Stat label="Available" value={v.physical - v.reserved} tone="red" />
       </div>
+      <Panel title="Per shop">
+        {shopStock.length === 0 ? (
+          <p className="text-sm text-king-gray">This product is not sold in any shop. Tick its shops on the product page.</p>
+        ) : (
+          <ul className="grid gap-3 md:grid-cols-2">
+            {shopStock.map((s) => (
+              <li key={s.storeId} className="rounded-xl border border-white/10 p-3">
+                <p className="text-sm font-semibold text-king-white">
+                  {s.storeName}
+                  {!s.shopActive && <span className="font-normal text-king-gray"> · inactive</span>}
+                </p>
+                <p className="mt-1 text-xs tabular-nums text-king-gray">
+                  Physical {s.physical} · reserved {s.reserved} · available <span className="text-king-white">{s.physical - s.reserved}</span>
+                </p>
+                <StockAdjust variantId={v.id} storeId={s.storeId} physical={s.physical} reserved={s.reserved} />
+              </li>
+            ))}
+          </ul>
+        )}
+      </Panel>
       <Panel title="Every movement">
         <Table className="-m-5 w-[calc(100%+2.5rem)] max-w-none border-0 bg-transparent">
           <thead>
             <tr>
               <th className={th}>When</th>
+              <th className={th}>Shop</th>
               <th className={th}>Type</th>
               <th className={`${th} text-right`}>Physical</th>
               <th className={`${th} text-right`}>Reserved</th>
@@ -63,6 +84,7 @@ export default async function LedgerPage({ params }: PageProps<"/admin/inventory
             {moves.map((m) => (
               <tr key={m.id}>
                 <td className={td}>{m.createdAt.toLocaleString("en-GB")}</td>
+                <td className={td}>{m.shop ?? "—"}</td>
                 <td className={td}>{TYPE[m.type] ?? m.type}</td>
                 <td className={`${td} text-right tabular-nums`}>{m.physicalBefore} → <span className="text-king-white">{m.physicalAfter}</span></td>
                 <td className={`${td} text-right tabular-nums`}>{m.reservedBefore} → <span className="text-king-white">{m.reservedAfter}</span></td>

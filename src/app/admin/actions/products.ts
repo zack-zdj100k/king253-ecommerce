@@ -23,6 +23,7 @@ import {
   updateImage,
   updateVariant,
   type CategoryInput,
+  saveProductStores,
   type ColourInput,
   type ProductInput,
   type VariantInput,
@@ -44,7 +45,7 @@ export async function saveProductAction(productId: string | null, input: Product
   return result
 }
 
-export async function createVariantAction(productId: string, input: VariantInput & { initialStock?: number }) {
+export async function createVariantAction(productId: string, input: VariantInput & { initialStock?: number; initialStoreId?: number | null }) {
   return adminAction(
     async ({ actor }) => {
       await createVariant(db, id.parse(productId), input, actor)
@@ -90,12 +91,26 @@ export async function deleteProductAction(productId: string) {
   )
 }
 
-/** Physical stock change with a mandatory reason (recorded in the stock ledger). */
-export async function adjustStockAction(variantId: string, newPhysical: number, reason: string) {
+const shopId = z.number().int().positive()
+
+/** Shops that sell this product. */
+export async function saveProductStoresAction(productId: string, storeIds: number[]) {
+  return adminAction(
+    async ({ actor }) => {
+      await saveProductStores(db, id.parse(productId), z.array(shopId).parse(storeIds), actor)
+    },
+    { revalidate: productPaths(productId), message: "Shops saved." }
+  )
+}
+
+/** Physical stock change in one shop, with a mandatory reason (recorded in the stock ledger). */
+export async function adjustStockAction(variantId: string, storeId: number, newPhysical: number, reason: string) {
   return adminAction(
     async ({ user }) => {
       const vid = id.parse(variantId)
-      await db.transaction((tx) => adjustPhysicalStock(tx, { variantId: vid, newPhysical: z.number().int().parse(newPhysical), reason: String(reason), actorUserId: user.id }))
+      await db.transaction((tx) =>
+        adjustPhysicalStock(tx, { variantId: vid, storeId: shopId.parse(storeId), newPhysical: z.number().int().parse(newPhysical), reason: String(reason), actorUserId: user.id })
+      )
       const [v] = await db.select({ productId: productVariants.productId }).from(productVariants).where(eq(productVariants.id, vid))
       return v?.productId
     },
@@ -180,12 +195,12 @@ export async function setImageColourAction(productId: string, imageId: string, c
 }
 
 /** Add newly received units on top of the current stock. */
-export async function receiveStockAction(variantId: string, quantity: number, note: string) {
+export async function receiveStockAction(variantId: string, storeId: number, quantity: number, note: string) {
   return adminAction(
     async ({ user }) => {
       const vid = id.parse(variantId)
       await db.transaction((tx) =>
-        receiveStock(tx, { variantId: vid, quantity: z.number().int().parse(quantity), note: String(note ?? ""), actorUserId: user.id })
+        receiveStock(tx, { variantId: vid, storeId: shopId.parse(storeId), quantity: z.number().int().parse(quantity), note: String(note ?? ""), actorUserId: user.id })
       )
     },
     { revalidate: ["/admin/inventory", "/admin/products", "/clothes", "/"], message: "Stock added." }

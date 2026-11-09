@@ -307,6 +307,47 @@ export const productVariants = pgTable(
   ]
 )
 
+/** Shops where a product is sold. Each variant then has a stock row per selected shop. */
+export const productStores = pgTable(
+  "product_stores",
+  {
+    productId: uuid("product_id")
+      .notNull()
+      .references(() => products.id, { onDelete: "cascade" }),
+    storeId: integer("store_id")
+      .notNull()
+      .references(() => stores.id),
+  },
+  (t) => [primaryKey({ columns: [t.productId, t.storeId] })]
+)
+
+/**
+ * Stock per variant (size + colour) per shop — the source of truth.
+ * product_variants.physical / reserved hold the totals over all shops,
+ * updated in the same transaction (see src/server/inventory.ts).
+ */
+export const storeStock = pgTable(
+  "store_stock",
+  {
+    variantId: uuid("variant_id")
+      .notNull()
+      .references(() => productVariants.id, { onDelete: "cascade" }),
+    storeId: integer("store_id")
+      .notNull()
+      .references(() => stores.id),
+    physical: integer("physical").notNull().default(0),
+    reserved: integer("reserved").notNull().default(0),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.variantId, t.storeId] }),
+    index("store_stock_store_idx").on(t.storeId),
+    check("store_stock_physical_non_negative", sql`${t.physical} >= 0`),
+    check("store_stock_reserved_non_negative", sql`${t.reserved} >= 0`),
+    check("store_stock_reserved_within_physical", sql`${t.reserved} <= ${t.physical}`),
+  ]
+)
+
 /* ------------------------------------------------------------------ */
 /* Cart, checkout session                                             */
 /* ------------------------------------------------------------------ */
@@ -383,6 +424,8 @@ export const orders = pgTable(
     /** Null if the customer profile was removed — the order keeps its own snapshot. */
     customerId: uuid("customer_id").references(() => customers.id, { onDelete: "set null" }),
     userId: uuid("user_id").references(() => users.id, { onDelete: "set null" }),
+    /** Departure shop: its stock is reserved and it receives the new-order email. */
+    storeId: integer("store_id").references(() => stores.id),
     status: orderStatus("status").notNull().default("pending"),
     paymentMethod: paymentMethod("payment_method").notNull().default("cod"),
     // Customer snapshot at order time
@@ -489,6 +532,8 @@ export const stockReservations = pgTable(
     variantId: uuid("variant_id")
       .notNull()
       .references(() => productVariants.id, { onDelete: "cascade" }),
+    /** Shop whose stock is held. */
+    storeId: integer("store_id").references(() => stores.id),
     orderItemId: uuid("order_item_id").references(() => orderItems.id, { onDelete: "cascade" }),
     returnRequestId: uuid("return_request_id"),
     quantity: integer("quantity").notNull(),
@@ -512,6 +557,8 @@ export const stockMovements = pgTable(
       .notNull()
       .references(() => productVariants.id, { onDelete: "cascade" }),
     type: movementType("type").notNull(),
+    /** Shop whose stock changed; before/after values are that shop's. */
+    storeId: integer("store_id").references(() => stores.id),
     physicalBefore: integer("physical_before").notNull(),
     physicalAfter: integer("physical_after").notNull(),
     reservedBefore: integer("reserved_before").notNull(),

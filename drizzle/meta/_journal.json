@@ -92,6 +92,13 @@
       "when": 1794245047201,
       "tag": "0012_shops_and_wilayas",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1794245249050,
+      "tag": "0013_stock_per_shop",
+      "breakpoints": true
     }
   ]
 }

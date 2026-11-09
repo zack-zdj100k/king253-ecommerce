@@ -29,6 +29,30 @@ type Variant = {
   active: boolean
   physical: number
   reserved: number
+  /** One row per shop that sells the product. */
+  stock: { storeId: number; storeName: string; shopActive: boolean; physical: number; reserved: number }[]
+}
+
+type Shop = { id: number; name: string }
+/** Shops that sell this product (opening stock goes to the one picked). */
+const ShopsContext = React.createContext<Shop[]>([])
+
+/** "Opening stock in" picker — only shown when the product is sold in several shops. */
+function ShopSelect({ value, onChange }: { value: number | null; onChange: (id: number) => void }) {
+  const shops = React.useContext(ShopsContext)
+  if (shops.length < 2) return null
+  return (
+    <label className="block w-44">
+      <span className={labelClass}>Stock goes to</span>
+      <select value={value ?? shops[0].id} onChange={(e) => onChange(Number(e.target.value))} className={inputClass}>
+        {shops.map((s) => (
+          <option key={s.id} value={s.id}>
+            {s.name}
+          </option>
+        ))}
+      </select>
+    </label>
+  )
 }
 
 type Colour = { name: string; hex: string | null; price: number | null; promo: number | null; mixedPrice: boolean; variants: Variant[] }
@@ -72,12 +96,14 @@ export function VariantsEditor({
   variants,
   images,
   threshold,
+  shops,
 }: {
   productId: string
   product: { slug: string; categorySlug: string | null; pricing: ProductPricing }
   variants: Variant[]
   images: Img[]
   threshold: number
+  shops: Shop[]
 }) {
   const colours = groupColours(variants)
   const names = colours.map((c) => c.name)
@@ -85,7 +111,13 @@ export function VariantsEditor({
   const next = nextNumber(variants)
 
   return (
+    <ShopsContext.Provider value={shops}>
     <div className="space-y-6">
+      {shops.length === 0 && (
+        <p className="rounded-2xl border border-king-red/40 bg-king-red/10 p-4 text-sm text-king-white">
+          This product is not sold in any shop yet — tick at least one shop in “Shops” above, then add stock.
+        </p>
+      )}
       {colours.length === 0 ? (
         <p className="rounded-2xl border border-dashed border-white/15 p-6 text-center text-sm text-king-gray">
           No colours yet — the product shows &ldquo;sizes coming soon&rdquo; until you add one below.
@@ -107,6 +139,7 @@ export function VariantsEditor({
       )}
       <AddColour productId={productId} base={base} next={next} offset={variants.length} pricing={product.pricing} />
     </div>
+    </ShopsContext.Provider>
   )
 }
 
@@ -268,19 +301,26 @@ function SizeRow({ productId, variant, threshold }: { productId: string; variant
       <div>
         <span className={cn(labelClass, "md:sr-only")}>Stock</span>
         <div className="flex flex-wrap items-center gap-2 text-sm tabular-nums">
-          <span className="rounded-full bg-white/5 px-3 py-1.5 text-king-white" title="Physical">{variant.physical}</span>
-          <span className="text-king-gray">·</span>
-          <span className="rounded-full bg-white/5 px-3 py-1.5 text-king-muted" title="Reserved">{variant.reserved}</span>
-          <span className="text-king-gray">·</span>
-          <span
-            className={cn("rounded-full px-3 py-1.5 font-semibold", available <= 0 ? "bg-white/5 text-king-gray" : low ? "bg-king-red/20 text-king-bright-red" : "bg-emerald-500/10 text-emerald-300")}
-            title="Available"
-          >
-            {available <= 0 ? "Out" : available}
-          </span>
-          {low && <span className="text-xs text-king-bright-red">Low</span>}
+          <span className="text-xs text-king-gray">All shops</span>
+          <StockBadges physical={variant.physical} reserved={variant.reserved} low={low} />
         </div>
-        <StockAdjust variantId={variant.id} physical={variant.physical} reserved={variant.reserved} />
+        <ul className="mt-2 space-y-2">
+          {variant.stock.map((s) => {
+            const avail = s.physical - s.reserved
+            return (
+              <li key={s.storeId} className="rounded-xl border border-white/5 bg-white/[0.02] p-2">
+                <div className="flex flex-wrap items-center gap-2 text-sm tabular-nums">
+                  <span className="min-w-24 text-xs font-medium text-king-white">
+                    {s.storeName}
+                    {!s.shopActive && <span className="text-king-gray"> · inactive</span>}
+                  </span>
+                  <StockBadges physical={s.physical} reserved={s.reserved} low={avail > 0 && avail <= (variant.lowStockThreshold ?? threshold)} />
+                </div>
+                <StockAdjust variantId={variant.id} storeId={s.storeId} physical={s.physical} reserved={s.reserved} />
+              </li>
+            )
+          })}
+        </ul>
       </div>
       <div className="flex flex-wrap items-start gap-1 md:justify-end">
         <button
@@ -321,10 +361,31 @@ function SizeRow({ productId, variant, threshold }: { productId: string; variant
   )
 }
 
+/** physical · reserved · available */
+function StockBadges({ physical, reserved, low }: { physical: number; reserved: number; low: boolean }) {
+  const available = physical - reserved
+  return (
+    <>
+      <span className="rounded-full bg-white/5 px-3 py-1.5 text-king-white" title="Physical">{physical}</span>
+      <span className="text-king-gray">·</span>
+      <span className="rounded-full bg-white/5 px-3 py-1.5 text-king-muted" title="Reserved">{reserved}</span>
+      <span className="text-king-gray">·</span>
+      <span
+        className={cn("rounded-full px-3 py-1.5 font-semibold", available <= 0 ? "bg-white/5 text-king-gray" : low ? "bg-king-red/20 text-king-bright-red" : "bg-emerald-500/10 text-emerald-300")}
+        title="Available"
+      >
+        {available <= 0 ? "Out" : available}
+      </span>
+      {low && <span className="text-xs text-king-bright-red">Low</span>}
+    </>
+  )
+}
+
 function AddSizes({ productId, colour, base, next, existing }: { productId: string; colour: Colour; base: string; next: number; existing: string[] }) {
   const { run, pending, feedback, setFeedback } = useAdminAction()
   const [sizes, setSizes] = React.useState("")
   const [stock, setStock] = React.useState("0")
+  const [storeId, setStoreId] = React.useState<number | null>(null)
   const list = sizes
     .split(",")
     .map((s) => s.trim())
@@ -348,6 +409,7 @@ function AddSizes({ productId, colour, base, next, existing }: { productId: stri
               sortOrder: 0,
               active: true,
               initialStock: Number(stock) || 0,
+              initialStoreId: storeId,
             })
             if (!r.ok) return r
           }
@@ -363,6 +425,7 @@ function AddSizes({ productId, colour, base, next, existing }: { productId: stri
         <span className={labelClass}>Stock each</span>
         <input value={stock} onChange={(e) => setStock(digits(e.target.value))} inputMode="numeric" className={inputClass} />
       </label>
+      <ShopSelect value={storeId} onChange={setStoreId} />
       <button type="submit" disabled={pending} className={btnOutline}>
         <Plus className="size-3.5" aria-hidden /> Add
       </button>
@@ -382,6 +445,7 @@ function AddColour({ productId, base, next, offset, pricing }: { productId: stri
   const [promo, setPromo] = React.useState("")
   const [sizes, setSizes] = React.useState("S, M, L, XL")
   const [stock, setStock] = React.useState("0")
+  const [storeId, setStoreId] = React.useState<number | null>(null)
   const list = sizes.split(",").map((s) => s.trim()).filter(Boolean)
 
   return (
@@ -402,6 +466,7 @@ function AddColour({ productId, base, next, offset, pricing }: { productId: stri
               sortOrder: offset + i,
               active: true,
               initialStock: Number(stock) || 0,
+              initialStoreId: storeId,
             })
             if (!r.ok) return r
           }
@@ -458,6 +523,7 @@ function AddColour({ productId, base, next, offset, pricing }: { productId: stri
           <span className={labelClass}>Opening stock each</span>
           <input value={stock} onChange={(e) => setStock(digits(e.target.value))} inputMode="numeric" className={inputClass} />
         </label>
+        <ShopSelect value={storeId} onChange={setStoreId} />
         <button type="submit" disabled={pending} className={btnRed}>
           Add colour{list.length ? ` · ${list.length} size${list.length > 1 ? "s" : ""}` : ""}
         </button>

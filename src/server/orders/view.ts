@@ -4,7 +4,7 @@ import { and, asc, eq, inArray, isNull, ne } from "drizzle-orm"
 
 import type { Db, DbOrTx } from "../db/client"
 import { orderItems, orderStatusHistory, orders, productVariants, products, returnRequests } from "../db/schema"
-import { availableOf } from "../inventory"
+import { availableOf, storefrontStock } from "../inventory"
 import { CUSTOMER_ACTOR } from "../audit"
 import { AppError, NotFoundError } from "../errors"
 import { changeOrderStatus, type OrderStatus } from "./manage"
@@ -37,8 +37,7 @@ async function buildView(db: DbOrTx, order: typeof orders.$inferSelect) {
           productId: productVariants.productId,
           size: productVariants.size,
           color: productVariants.color,
-          physical: productVariants.physical,
-          reserved: productVariants.reserved,
+          ...storefrontStock(),
           active: productVariants.active,
           status: products.status,
         })

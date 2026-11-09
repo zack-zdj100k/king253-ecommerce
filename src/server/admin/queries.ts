@@ -10,11 +10,14 @@ import {
   orderStatusHistory,
   orders,
   productImages,
+  productStores,
   productVariants,
   products,
   returnRequests,
   reviews,
   stockMovements,
+  storeStock,
+  stores,
   users,
 } from "../db/schema"
 import type { Range } from "../analytics"
@@ -260,25 +263,49 @@ export async function listProductsAdmin(db: DbOrTx, f: { q?: string; status?: st
 export async function getProductAdmin(db: DbOrTx, id: string) {
   const [product] = await db.select().from(products).where(eq(products.id, id))
   if (!product) return null
-  const [images, variants, cats] = await Promise.all([
+  const [images, variants, cats, shops, productShops, stock] = await Promise.all([
     db.select().from(productImages).where(eq(productImages.productId, id)).orderBy(desc(productImages.isMain), asc(productImages.sortOrder)),
     db.select().from(productVariants).where(eq(productVariants.productId, id)).orderBy(asc(productVariants.sortOrder), asc(productVariants.color)),
     db.select().from(categories).orderBy(asc(categories.sortOrder), asc(categories.name)),
+    db.select({ id: stores.id, name: stores.name, active: stores.active }).from(stores).orderBy(asc(stores.sortOrder), asc(stores.name)),
+    db.select({ storeId: productStores.storeId }).from(productStores).where(eq(productStores.productId, id)),
+    db
+      .select({ variantId: storeStock.variantId, storeId: storeStock.storeId, physical: storeStock.physical, reserved: storeStock.reserved })
+      .from(storeStock)
+      .innerJoin(productVariants, eq(productVariants.id, storeStock.variantId))
+      .where(eq(productVariants.productId, id)),
   ])
-  return { product, images, variants, categories: cats }
+  const shopIds = productShops.map((p) => p.storeId)
+  const sold = shops.filter((s) => shopIds.includes(s.id))
+  return {
+    product,
+    images,
+    categories: cats,
+    shops,
+    shopIds,
+    variants: variants.map((v) => ({
+      ...v,
+      stock: sold.map((shop) => {
+        const row = stock.find((r) => r.variantId === v.id && r.storeId === shop.id)
+        return { storeId: shop.id, storeName: shop.name, shopActive: shop.active, physical: row?.physical ?? 0, reserved: row?.reserved ?? 0 }
+      }),
+    })),
+  }
 }
 
-export async function listInventory(db: DbOrTx, f: { q?: string; filter?: string; threshold: number; page?: number }) {
-  const where: SQL[] = [eq(productVariants.active, true)]
+/** Stock rows of ONE shop (variant × shop), worst first. Filters: instock | low | out | reserved. */
+export async function listInventory(db: DbOrTx, f: { storeId: number; q?: string; filter: string; threshold: number; page?: number }) {
+  const where: SQL[] = [eq(productVariants.active, true), eq(storeStock.storeId, f.storeId)]
   if (f.q) {
     const pat = `%${escapeLike(f.q)}%`
     where.push(or(ilike(products.name, pat), ilike(productVariants.sku, pat), ilike(productVariants.barcode, pat))!)
   }
-  const available = sql`(${productVariants.physical} - ${productVariants.reserved})`
+  const available = sql`(${storeStock.physical} - ${storeStock.reserved})`
   const threshold = sql`coalesce(${productVariants.lowStockThreshold}, ${f.threshold})`
+  if (f.filter === "instock") where.push(sql`${available} > 0`)
   if (f.filter === "low") where.push(sql`${available} <= ${threshold} and ${available} > 0`)
   if (f.filter === "out") where.push(sql`${available} <= 0`)
-  if (f.filter === "reserved") where.push(sql`${productVariants.reserved} > 0`)
+  if (f.filter === "reserved") where.push(sql`${storeStock.reserved} > 0`)
   const page = Math.max(1, f.page ?? 1)
   const rows = await db
     .select({
@@ -287,15 +314,18 @@ export async function listInventory(db: DbOrTx, f: { q?: string; filter?: string
       barcode: productVariants.barcode,
       size: productVariants.size,
       color: productVariants.color,
-      physical: productVariants.physical,
-      reserved: productVariants.reserved,
+      physical: storeStock.physical,
+      reserved: storeStock.reserved,
+      totalPhysical: productVariants.physical,
+      totalReserved: productVariants.reserved,
       threshold: sql<number>`${threshold}::int`,
       productId: products.id,
       productName: products.name,
       productStatus: products.status,
       count: sql<number>`count(*) over()::int`,
     })
-    .from(productVariants)
+    .from(storeStock)
+    .innerJoin(productVariants, eq(productVariants.id, storeStock.variantId))
     .innerJoin(products, eq(products.id, productVariants.productId))
     .where(and(...where))
     .orderBy(sql`${available} asc`, asc(products.name))
@@ -304,8 +334,28 @@ export async function listInventory(db: DbOrTx, f: { q?: string; filter?: string
   return { rows, total: rows[0]?.count ?? 0, page, pages: Math.max(1, Math.ceil((rows[0]?.count ?? 0) / 50)) }
 }
 
+/** Low-stock variants per active shop (for alerts and the overview). */
+export async function lowStockByShop(db: DbOrTx, threshold: number) {
+  return db
+    .select({
+      storeId: stores.id,
+      storeName: stores.name,
+      low: sql<number>`count(*) filter (where ${storeStock.physical} - ${storeStock.reserved} > 0
+        and ${storeStock.physical} - ${storeStock.reserved} <= coalesce(${productVariants.lowStockThreshold}, ${threshold}))::int`,
+      out: sql<number>`count(*) filter (where ${storeStock.physical} - ${storeStock.reserved} <= 0)::int`,
+    })
+    .from(storeStock)
+    .innerJoin(stores, eq(stores.id, storeStock.storeId))
+    .innerJoin(productVariants, eq(productVariants.id, storeStock.variantId))
+    .innerJoin(products, eq(products.id, productVariants.productId))
+    .where(and(eq(stores.active, true), eq(productVariants.active, true), eq(products.status, "published")))
+    .groupBy(stores.id, stores.name, stores.sortOrder)
+    .orderBy(asc(stores.sortOrder), asc(stores.name))
+}
+
+/** Variants at or under their low-stock alert, per active shop, worst first. */
 export async function lowStockVariants(db: DbOrTx, threshold: number, limit = 8) {
-  const available = sql`(${productVariants.physical} - ${productVariants.reserved})`
+  const available = sql`(${storeStock.physical} - ${storeStock.reserved})`
   return db
     .select({
       id: productVariants.id,
@@ -315,12 +365,33 @@ export async function lowStockVariants(db: DbOrTx, threshold: number, limit = 8)
       available: sql<number>`${available}::int`,
       productId: products.id,
       productName: products.name,
+      storeId: stores.id,
+      storeName: stores.name,
     })
-    .from(productVariants)
+    .from(storeStock)
+    .innerJoin(stores, eq(stores.id, storeStock.storeId))
+    .innerJoin(productVariants, eq(productVariants.id, storeStock.variantId))
     .innerJoin(products, eq(products.id, productVariants.productId))
-    .where(and(eq(productVariants.active, true), eq(products.status, "published"), sql`${available} <= coalesce(${productVariants.lowStockThreshold}, ${threshold})`))
+    .where(
+      and(
+        eq(stores.active, true),
+        eq(productVariants.active, true),
+        eq(products.status, "published"),
+        sql`${available} <= coalesce(${productVariants.lowStockThreshold}, ${threshold})`
+      )
+    )
     .orderBy(sql`${available} asc`)
     .limit(limit)
+}
+
+/** Each shop's stock of one variant. */
+export async function variantShopStock(db: DbOrTx, variantId: string) {
+  return db
+    .select({ storeId: stores.id, storeName: stores.name, shopActive: stores.active, physical: storeStock.physical, reserved: storeStock.reserved })
+    .from(storeStock)
+    .innerJoin(stores, eq(stores.id, storeStock.storeId))
+    .where(eq(storeStock.variantId, variantId))
+    .orderBy(asc(stores.sortOrder), asc(stores.name))
 }
 
 export async function variantMovements(db: DbOrTx, variantId: string, limit = 50) {
@@ -336,10 +407,12 @@ export async function variantMovements(db: DbOrTx, variantId: string, limit = 50
       refType: stockMovements.refType,
       refId: stockMovements.refId,
       actor: users.name,
+      shop: stores.name,
       createdAt: stockMovements.createdAt,
     })
     .from(stockMovements)
     .leftJoin(users, eq(users.id, stockMovements.actorUserId))
+    .leftJoin(stores, eq(stores.id, stockMovements.storeId))
     .where(eq(stockMovements.variantId, variantId))
     .orderBy(desc(stockMovements.createdAt))
     .limit(limit)

@@ -8,7 +8,7 @@ import { createOrder, ValidationError } from "@/server/orders/create"
 import { applyOrderDiscount, changeOrderStatus, removeOrderItem, updateOrderItem } from "@/server/orders/manage"
 import { approveReturn, completeReturn, createReturnByAdmin, createReturnRequest, markReturnReceived, rejectReturn } from "@/server/returns"
 
-import { customer, key, resetDb, seedDelivery, seedProduct, stockOf, testDb } from "./support/db"
+import { customer, key, resetDb, seedDelivery, seedProduct, stockOf, testDb, testShop } from "./support/db"
 
 const admin = { userId: null, label: "Test admin" }
 
@@ -254,10 +254,11 @@ describe("Discounts are validated server-side", () => {
 describe("Manual stock adjustments", () => {
   it("are recorded with a reason and cannot go below reserved stock", async () => {
     const { wilaya, blackM } = await setup()
+    const shop = await testShop()
     await createOrder(testDb, { customer: customer({ wilaya }), lines: [{ variantId: blackM.id, quantity: 4 }], idempotencyKey: key() })
     const actorUserId = null as unknown as string
-    await expect(testDb.transaction((tx) => adjustPhysicalStock(tx, { variantId: blackM.id, newPhysical: 3, reason: "Recount", actorUserId }))).rejects.toThrow(/reserved/)
-    await testDb.transaction((tx) => adjustPhysicalStock(tx, { variantId: blackM.id, newPhysical: 12, reason: "New delivery from workshop", actorUserId }))
+    await expect(testDb.transaction((tx) => adjustPhysicalStock(tx, { variantId: blackM.id, storeId: shop.id, newPhysical: 3, reason: "Recount", actorUserId }))).rejects.toThrow(/reserved/)
+    await testDb.transaction((tx) => adjustPhysicalStock(tx, { variantId: blackM.id, storeId: shop.id, newPhysical: 12, reason: "New delivery from workshop", actorUserId }))
     expect(await stockOf(blackM.id)).toEqual({ physical: 12, reserved: 4, available: 8 })
     const [adjustment] = (await testDb.select().from(stockMovements)).filter((m) => m.type === "adjustment")
     expect(adjustment).toMatchObject({ physicalBefore: 10, physicalAfter: 12, reason: "New delivery from workshop" })
@@ -324,16 +325,17 @@ describe("TEST 9 — Size exchange after delivery", () => {
 describe("Restock any time", () => {
   it("adds received units on top of current stock, keeps reservations, and logs it", async () => {
     const { wilaya, blackM } = await setup(2)
+    const shop = await testShop()
     await createOrder(testDb, { customer: customer({ wilaya }), lines: [{ variantId: blackM.id, quantity: 2 }], idempotencyKey: key() })
     expect(await stockOf(blackM.id)).toEqual({ physical: 2, reserved: 2, available: 0 })
 
     const [u] = await testDb.execute<{ id: string }>(sql`insert into users (email, name, password_hash, role) values ('a@test.local', 'A', 'x', 'admin') returning id`)
-    await testDb.transaction((tx) => receiveStock(tx, { variantId: blackM.id, quantity: 20, note: "Workshop batch", actorUserId: u.id }))
+    await testDb.transaction((tx) => receiveStock(tx, { variantId: blackM.id, storeId: shop.id, quantity: 20, note: "Workshop batch", actorUserId: u.id }))
     expect(await stockOf(blackM.id)).toEqual({ physical: 22, reserved: 2, available: 20 })
 
     const moves = await testDb.select().from(stockMovements).where(eq(stockMovements.variantId, blackM.id))
     expect(moves.at(-1)).toMatchObject({ type: "adjustment", physicalBefore: 2, physicalAfter: 22, reason: "New stock received: +20 — Workshop batch" })
-    await expect(testDb.transaction((tx) => receiveStock(tx, { variantId: blackM.id, quantity: 0, actorUserId: u.id }))).rejects.toThrow(/how many units/)
+    await expect(testDb.transaction((tx) => receiveStock(tx, { variantId: blackM.id, storeId: shop.id, quantity: 0, actorUserId: u.id }))).rejects.toThrow(/how many units/)
   })
 })
 

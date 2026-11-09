@@ -15,8 +15,8 @@ import {
   products,
 } from "../db/schema"
 import { upsertCustomerByPhone } from "../customers"
-import { AppError } from "../errors"
-import { reserveStock } from "../inventory"
+import { AppError, OutOfStockError } from "../errors"
+import { reserveStock, shopAvailability, shopsThatCanFulfil } from "../inventory"
 import { computeTotals, qualifiesForFreeDelivery, unitPriceOf } from "../pricing"
 import { applyFreeDeliveryPromo, findOpenDelivery } from "./delivery"
 import { getSettings } from "../settings"
@@ -95,6 +95,24 @@ export async function createOrder(db: Db, input: CreateOrderInput, ctx: CreateOr
     return { ...row, quantity, unitPrice, lineTotal: unitPrice * quantity, label: `${row.productName} — ${row.color} / ${row.size}` }
   })
 
+  // Departure shop: must hold the whole order (orders are never split between shops).
+  const eligible = await shopsThatCanFulfil(db, lines)
+  const shop = parsed.data.storeId ? eligible.find((s) => s.id === parsed.data.storeId) : eligible[0]
+  if (!shop) {
+    // A line that no shop has in that quantity gets the precise "only N left" message.
+    const perShop = await shopAvailability(db, lines.map((l) => l.variantId))
+    for (const l of lines) {
+      const best = Math.max(0, ...(perShop.get(l.variantId)?.values() ?? []))
+      if (best < l.quantity) throw new OutOfStockError(l.variantId, best, l.label)
+    }
+    throw new AppError(
+      "NO_SHOP",
+      parsed.data.storeId
+        ? "The shop you chose no longer has everything in your order. Please choose another shop."
+        : "No single shop has every item of your order in stock. Remove an item or lower a quantity."
+    )
+  }
+
   // One delivery fee for all of Algeria (admin can still adjust per order).
   const settings = await getSettings(db)
   const { deliveryEstimate, orderPrefix: prefix } = settings
@@ -119,6 +137,7 @@ export async function createOrder(db: Db, input: CreateOrderInput, ctx: CreateOr
           accessToken: randomBytes(24).toString("base64url"),
           customerId,
           userId: ctx.userId ?? null,
+          storeId: shop.id,
           status: "pending",
           paymentMethod: "cod",
           customerName: customer.fullName,
@@ -160,6 +179,7 @@ export async function createOrder(db: Db, input: CreateOrderInput, ctx: CreateOr
 
         await reserveStock(tx, {
           variantId: line.variantId,
+          storeId: shop.id,
           quantity: line.quantity,
           orderItemId: item.id,
           label: line.label,

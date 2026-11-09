@@ -1,4 +1,4 @@
-import { and, asc, eq, ne } from "drizzle-orm"
+import { and, asc, eq, ne, sql } from "drizzle-orm"
 import { z } from "zod"
 
 import type { Db, DbOrTx } from "./db/client"
@@ -116,6 +116,14 @@ export async function saveStore(db: Db, id: number | null, raw: StoreInput, acto
 }
 
 export async function deleteStore(db: Db, id: number, actor: Actor) {
+  const used = await db.execute<{ used: boolean }>(sql`select
+      exists(select 1 from orders where store_id = ${id})
+      or exists(select 1 from product_stores where store_id = ${id})
+      or exists(select 1 from store_stock where store_id = ${id})
+      or exists(select 1 from stock_movements where store_id = ${id}) as used`)
+  if (used[0]?.used) {
+    throw new RuleError("This shop has products, stock or orders, so it cannot be deleted. Untick “Active” to stop using it — its history is kept.")
+  }
   const [removed] = await db.delete(stores).where(eq(stores.id, id)).returning()
   if (!removed) throw new NotFoundError("This shop")
   await audit(db, actor, "store.delete", "store", String(id), { name: removed.name, address: removed.address })

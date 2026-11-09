@@ -105,9 +105,9 @@ export default async function AdminDashboard({ searchParams }: PageProps<"/admin
           {low.length ? (
             <ul className="space-y-3">
               {low.map((v) => (
-                <li key={v.id} className="flex items-center justify-between gap-3 text-sm">
+                <li key={`${v.id}-${v.storeId}`} className="flex items-center justify-between gap-3 text-sm">
                   <Link href={`/admin/products/${v.productId}`} className="min-w-0 truncate text-king-muted hover:text-king-white">
-                    {v.productName} <span className="text-king-gray">· {v.color} / {v.size}</span>
+                    {v.productName} <span className="text-king-gray">· {v.color} / {v.size} · {v.storeName}</span>
                   </Link>
                   <span className="inline-flex shrink-0 items-center gap-1 text-xs font-medium text-king-bright-red">
                     <AlertTriangle className="size-3" aria-hidden />

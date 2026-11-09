@@ -17,8 +17,9 @@ const chip =
  * Stock can be changed at any time, two ways — both recorded in the stock ledger:
  *   • Add stock: units that just arrived are added on top (e.g. +20).
  *   • Set count: physical stock is set to what was counted on the shelf.
+ * Always for ONE shop: each shop counts its own shelves.
  */
-export function StockAdjust({ variantId, physical, reserved }: { variantId: string; physical: number; reserved: number }) {
+export function StockAdjust({ variantId, storeId, physical, reserved }: { variantId: string; storeId: number; physical: number; reserved: number }) {
   const [mode, setMode] = React.useState<"add" | "set" | null>(null)
 
   if (!mode) {
@@ -34,13 +35,13 @@ export function StockAdjust({ variantId, physical, reserved }: { variantId: stri
     )
   }
   return mode === "add" ? (
-    <AddStock variantId={variantId} physical={physical} onDone={() => setMode(null)} />
+    <AddStock variantId={variantId} storeId={storeId} physical={physical} onDone={() => setMode(null)} />
   ) : (
-    <SetCount variantId={variantId} physical={physical} reserved={reserved} onDone={() => setMode(null)} />
+    <SetCount variantId={variantId} storeId={storeId} physical={physical} reserved={reserved} onDone={() => setMode(null)} />
   )
 }
 
-function AddStock({ variantId, physical, onDone }: { variantId: string; physical: number; onDone: () => void }) {
+function AddStock({ variantId, storeId, physical, onDone }: { variantId: string; storeId: number; physical: number; onDone: () => void }) {
   const { run, pending, feedback } = useAdminAction()
   const [qty, setQty] = React.useState("")
   const [note, setNote] = React.useState("")
@@ -52,7 +53,7 @@ function AddStock({ variantId, physical, onDone }: { variantId: string; physical
       className="mt-2 space-y-2 rounded-xl border border-emerald-400/20 bg-emerald-400/[0.04] p-3"
       onSubmit={(e) => {
         e.preventDefault()
-        if (valid) run(() => receiveStockAction(variantId, n, note), onDone)
+        if (valid) run(() => receiveStockAction(variantId, storeId, n, note), onDone)
       }}
     >
       <p className="text-xs font-medium text-emerald-200">Units received</p>
@@ -90,7 +91,19 @@ function AddStock({ variantId, physical, onDone }: { variantId: string; physical
   )
 }
 
-function SetCount({ variantId, physical, reserved, onDone }: { variantId: string; physical: number; reserved: number; onDone: () => void }) {
+function SetCount({
+  variantId,
+  storeId,
+  physical,
+  reserved,
+  onDone,
+}: {
+  variantId: string
+  storeId: number
+  physical: number
+  reserved: number
+  onDone: () => void
+}) {
   const { run, pending, feedback } = useAdminAction()
   const [value, setValue] = React.useState(String(physical))
   const [reason, setReason] = React.useState(REASONS[0])
@@ -103,7 +116,7 @@ function SetCount({ variantId, physical, reserved, onDone }: { variantId: string
       className="mt-2 space-y-2 rounded-xl border border-white/10 bg-white/[0.03] p-3"
       onSubmit={(e) => {
         e.preventDefault()
-        run(() => adjustStockAction(variantId, next, detail ? `${reason}: ${detail}` : reason), onDone)
+        run(() => adjustStockAction(variantId, storeId, next, detail ? `${reason}: ${detail}` : reason), onDone)
       }}
     >
       <p className="text-xs font-medium text-king-muted">Counted on the shelf</p>

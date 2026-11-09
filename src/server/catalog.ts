@@ -2,7 +2,7 @@ import { and, asc, desc, eq, sql, type SQL } from "drizzle-orm"
 
 import type { DbOrTx } from "./db/client"
 import { categories, productImages, productVariants, products, reviews } from "./db/schema"
-import { availableOf } from "./inventory"
+import { availableOf, SELLABLE_V, storefrontStock } from "./inventory"
 import { effectivePriceSql, offerOf } from "./pricing"
 import { sortSizes } from "@/lib/sizes"
 
@@ -111,7 +111,7 @@ async function cardQuery(db: DbOrTx, where: SQL[], orderBy: SQL, limit: number, 
     from products p
     left join categories c on c.id = p.category_id
     left join lateral (
-      select coalesce(sum(greatest(v.physical - v.reserved, 0)), 0)::int as available,
+      select coalesce(sum(${SELLABLE_V}), 0)::int as available,
         min(${EFFECTIVE})::int as min_price,
         bool_or(${EFFECTIVE} < coalesce(v.price_override, p.price)) as any_promo,
         jsonb_agg(distinct jsonb_build_object('name', v.color, 'hex', v.color_hex)) as colours,
@@ -160,7 +160,7 @@ export async function listProducts(db: DbOrTx, f: CatalogFilters = {}) {
   // A main category also shows the products of its subcategories.
   if (f.category) where.push(sql`(c.slug = ${f.category} or c.parent_id = (select pc.id from categories pc where pc.slug = ${f.category}))`)
   if (f.gender) where.push(sql`p.gender in (${f.gender}, 'unisex')`)
-  const stockClause = f.inStock ? sql`and v.physical - v.reserved > 0` : sql``
+  const stockClause = f.inStock ? sql`and ${SELLABLE_V} > 0` : sql``
   if (f.size) where.push(sql`exists (select 1 from product_variants v where v.product_id = p.id and v.active and v.size = ${f.size} ${stockClause})`)
   if (f.color) where.push(sql`exists (select 1 from product_variants v where v.product_id = p.id and v.active and v.color = ${f.color} ${stockClause})`)
   if (f.inStock) where.push(sql`agg.available > 0`)
@@ -232,7 +232,16 @@ export async function getProductPage(db: DbOrTx, slug: string, opts: { includeDr
       : null,
     db.select().from(productImages).where(eq(productImages.productId, product.id)).orderBy(desc(productImages.isMain), asc(productImages.sortOrder)),
     db
-      .select()
+      .select({
+        id: productVariants.id,
+        sku: productVariants.sku,
+        size: productVariants.size,
+        color: productVariants.color,
+        colorHex: productVariants.colorHex,
+        priceOverride: productVariants.priceOverride,
+        salePriceOverride: productVariants.salePriceOverride,
+        ...storefrontStock(),
+      })
       .from(productVariants)
       .where(and(eq(productVariants.productId, product.id), eq(productVariants.active, true)))
       .orderBy(asc(productVariants.sortOrder), asc(productVariants.color)),

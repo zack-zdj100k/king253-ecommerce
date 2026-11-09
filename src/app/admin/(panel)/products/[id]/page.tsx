@@ -10,6 +10,7 @@ import { DeleteButton } from "@/components/admin/delete-button"
 import { Badge, PageHeader, Panel } from "@/components/admin/ui"
 import { ImagesManager } from "@/components/admin/product/images-manager"
 import { ProductForm } from "@/components/admin/product/product-form"
+import { ProductShops } from "@/components/admin/product/product-shops"
 import { VariantsEditor } from "@/components/admin/product/variants-editor"
 
 export const metadata: Metadata = { title: "Edit product" }
@@ -19,7 +20,7 @@ export default async function EditProductPage({ params }: PageProps<"/admin/prod
   if (!/^[0-9a-f-]{36}$/i.test(id)) notFound()
   const [data, threshold] = await Promise.all([getProductAdmin(db, id), getSetting(db, "lowStockThreshold")])
   if (!data) notFound()
-  const { product, images, variants, categories } = data
+  const { product, images, variants, categories, shops, shopIds } = data
   const categorySlug = categories.find((c) => c.id === product.categoryId)?.slug ?? null
   const colourNames = [...new Set(variants.map((v) => v.color))]
   const imgs = images.map((i) => ({ id: i.id, url: i.url, alt: i.alt, color: i.color, isMain: i.isMain, focusX: i.focusX, focusY: i.focusY, zoom: i.zoom }))
@@ -40,6 +41,14 @@ export default async function EditProductPage({ params }: PageProps<"/admin/prod
         </div>
       </PageHeader>
 
+      <Panel title="Shops">
+        <p className="mb-4 max-w-3xl text-sm text-king-gray">
+          Where this product is sold. Each shop has its own stock per size (below); the total is the sum of all shops. Checkout only offers a shop
+          that has the whole order in stock.
+        </p>
+        <ProductShops productId={product.id} shops={shops} selected={shopIds} />
+      </Panel>
+
       <Panel title="Colours, photos, prices & stock">
         <p className="mb-5 max-w-3xl text-sm text-king-gray">
           Every colour has its own photos, price and stock per size. Customers switch colours on the product page and see that colour&apos;s photos.
@@ -48,6 +57,7 @@ export default async function EditProductPage({ params }: PageProps<"/admin/prod
           productId={product.id}
           product={{ slug: product.slug, categorySlug, pricing: { price: product.price, salePrice: product.salePrice } }}
           threshold={threshold}
+          shops={shops.filter((s) => shopIds.includes(s.id)).map((s) => ({ id: s.id, name: s.name }))}
           images={imgs}
           variants={variants.map((v) => ({
             id: v.id,
@@ -63,6 +73,7 @@ export default async function EditProductPage({ params }: PageProps<"/admin/prod
             active: v.active,
             physical: v.physical,
             reserved: v.reserved,
+            stock: v.stock,
           }))}
         />
       </Panel>

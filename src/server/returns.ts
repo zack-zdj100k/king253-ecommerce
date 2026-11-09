@@ -103,6 +103,14 @@ async function insertReturn(tx: Tx, order: typeof orders.$inferSelect, input: Re
   return created
 }
 
+/** Shop the order shipped from: returns go back to its shelf, exchanges leave from it. */
+async function orderShop(tx: Parameters<Parameters<Db["transaction"]>[0]>[0], orderId: string) {
+  const [o] = await tx.select({ storeId: orders.storeId, number: orders.number }).from(orders).where(eq(orders.id, orderId))
+  if (!o) throw new NotFoundError("This order")
+  if (o.storeId === null) throw new AppError("NO_SHOP", `Order ${o.number} has no departure shop.`)
+  return o.storeId
+}
+
 async function lockReturn(tx: Parameters<Parameters<Db["transaction"]>[0]>[0], id: string) {
   const [request] = await tx.select().from(returnRequests).where(eq(returnRequests.id, id)).for("update")
   if (!request) throw new NotFoundError("This return request")
@@ -117,6 +125,7 @@ export async function approveReturn(db: Db, input: { id: string; actor: Actor; n
     if (request.type === "exchange" && request.replacementVariantId) {
       await reserveStock(tx, {
         variantId: request.replacementVariantId,
+        storeId: await orderShop(tx, request.orderId),
         quantity: request.quantity,
         returnRequestId: request.id,
         label: "The replacement",
@@ -169,6 +178,7 @@ export async function markReturnReceived(db: Db, input: { id: string; condition:
       }
       await restockReturnedUnits(tx, {
         variantId: item.variantId,
+        storeId: await orderShop(tx, request.orderId),
         quantity: request.quantity,
         refType: "return",
         refId: request.id,

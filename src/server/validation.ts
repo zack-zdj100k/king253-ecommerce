@@ -66,6 +66,8 @@ export const orderLineSchema = z.object({
 export const createOrderSchema = z.object({
   customer: customerInfoSchema,
   lines: z.array(orderLineSchema).min(1, "Your bag is empty.").max(30),
+  /** Departure shop chosen at checkout; empty = the first shop that has everything. */
+  storeId: z.coerce.number().int().positive().optional().nullable(),
   idempotencyKey: z.string().min(16).max(100),
 })
 export type CreateOrderInput = z.input<typeof createOrderSchema>
