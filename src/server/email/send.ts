@@ -1,22 +1,30 @@
 import { and, eq, isNull } from "drizzle-orm"
 
 import type { DbOrTx } from "../db/client"
-import { notifications, orderItems, orders } from "../db/schema"
+import { notifications, orderItems, orders, stores, users } from "../db/schema"
 import { getSettings } from "../settings"
-import { adminNewOrderEmail, customerOrderEmail, type CustomerEmailEvent, type EmailOrder } from "./templates"
+import { customerDeliveredEmail, shopNewOrderEmail, type EmailLocale, type EmailOrder } from "./templates"
 import { fromAddress, getTransport } from "./transport"
 
 const siteUrl = () => (process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000").replace(/\/$/, "")
 
-async function loadEmailOrder(db: DbOrTx, orderId: string): Promise<EmailOrder | null> {
-  const [order] = await db.select().from(orders).where(eq(orders.id, orderId))
-  if (!order) return null
+async function loadEmailOrder(db: DbOrTx, orderId: string) {
+  const [row] = await db
+    .select({ order: orders, storeName: stores.name, shopEmail: stores.notificationEmail, accountEmail: users.email, accountLocale: users.locale })
+    .from(orders)
+    .leftJoin(stores, eq(stores.id, orders.storeId))
+    .leftJoin(users, eq(users.id, orders.userId))
+    .where(eq(orders.id, orderId))
+  if (!row) return null
+  const { order } = row
   const items = await db
     .select()
     .from(orderItems)
     .where(and(eq(orderItems.orderId, orderId), isNull(orderItems.removedAt)))
   const [lead] = order.shipsWithOrderId ? await db.select({ number: orders.number }).from(orders).where(eq(orders.id, order.shipsWithOrderId)) : []
-  return { ...order, items, shipsWithNumber: lead?.number ?? null }
+  const email: EmailOrder = { ...order, storeName: row.storeName, items, shipsWithNumber: lead?.number ?? null }
+  const locale = [order.locale, row.accountLocale].find((l): l is EmailLocale => l === "ar" || l === "fr" || l === "en") ?? "fr"
+  return { email, accessToken: order.accessToken, shopEmail: row.shopEmail, customerEmail: order.customerEmail ?? row.accountEmail, locale }
 }
 
 async function deliver(
@@ -51,34 +59,28 @@ async function deliver(
   }
 }
 
-/** New order: admin alert + customer "received" email (only if they gave an email). */
+/**
+ * New order: ONE email, to the departure shop's notification address
+ * (fallback: Settings → admin email). Customers get no email at this point.
+ */
 export async function sendNewOrderEmails(db: DbOrTx, orderId: string) {
-  const [order, settings] = await Promise.all([loadEmailOrder(db, orderId), getSettings(db)])
-  if (!order) return
-  const adminTo = settings.adminNotifyEmail || settings.contactEmail
-  if (adminTo) {
-    const mail = adminNewOrderEmail(settings.brandName, order, `${siteUrl()}/admin/orders/${orderId}`)
-    await deliver(db, { ...mail, to: adminTo, template: "admin_new_order", orderId, brand: settings.brandName })
-  }
-  if (order.customerEmail && settings.customerEmailsEnabled) {
-    const mail = customerOrderEmail(settings.brandName, "received", order, `${siteUrl()}/track?number=${encodeURIComponent(order.number)}`)
-    await deliver(db, { ...mail, to: order.customerEmail, template: "customer_received", orderId, brand: settings.brandName })
-  }
+  const [loaded, settings] = await Promise.all([loadEmailOrder(db, orderId), getSettings(db)])
+  if (!loaded) return
+  const to = loaded.shopEmail || settings.adminNotifyEmail || settings.contactEmail
+  if (!to) return
+  const mail = shopNewOrderEmail(settings.brandName, loaded.email, `${siteUrl()}/admin/orders/${orderId}`)
+  await deliver(db, { ...mail, to, template: "shop_new_order", orderId, brand: settings.brandName })
 }
 
-const STATUS_EMAILS: Partial<Record<string, CustomerEmailEvent>> = {
-  confirmed: "confirmed",
-  preparing: "preparing",
-  ready_for_delivery: "ready_for_delivery",
-  delivered: "delivered",
-}
-
-/** Lifecycle email for a status change — skipped when the customer gave no email. */
+/**
+ * The only customer email: "your order has been delivered", in the customer's
+ * language, and only when they gave an email (on the order or their account).
+ */
 export async function sendStatusEmail(db: DbOrTx, orderId: string, status: string) {
-  const event = STATUS_EMAILS[status]
-  if (!event) return
-  const [order, settings] = await Promise.all([loadEmailOrder(db, orderId), getSettings(db)])
-  if (!order?.customerEmail || !settings.customerEmailsEnabled) return
-  const mail = customerOrderEmail(settings.brandName, event, order, `${siteUrl()}/track?number=${encodeURIComponent(order.number)}`)
-  await deliver(db, { ...mail, to: order.customerEmail, template: `customer_${event}`, orderId, brand: settings.brandName })
+  if (status !== "delivered") return
+  const [loaded, settings] = await Promise.all([loadEmailOrder(db, orderId), getSettings(db)])
+  if (!loaded?.customerEmail || !settings.customerEmailsEnabled) return
+  const url = `${siteUrl()}/order/${encodeURIComponent(loaded.email.number)}?t=${encodeURIComponent(loaded.accessToken)}`
+  const mail = customerDeliveredEmail(settings.brandName, loaded.email, url, loaded.locale)
+  await deliver(db, { ...mail, to: loaded.customerEmail, template: "customer_delivered", orderId, brand: settings.brandName })
 }
