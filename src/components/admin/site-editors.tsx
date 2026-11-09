@@ -14,6 +14,9 @@ import { btnGhost, btnOutline, btnRed, inputClass, labelClass, textareaClass } f
 type StoreRow = {
   id: number
   name: string
+  slug: string
+  notificationEmail: string | null
+  listed: boolean
   wilaya: string
   city: string
   address: string
@@ -28,6 +31,9 @@ type StoreRow = {
 
 const toForm = (s: StoreRow | null) => ({
   name: s?.name ?? "",
+  slug: s?.slug ?? "",
+  notificationEmail: s?.notificationEmail ?? "",
+  listed: s?.listed ?? true,
   wilaya: s?.wilaya ?? "",
   city: s?.city ?? "",
   address: s?.address ?? "",
@@ -50,10 +56,21 @@ export function StoreEditor({ store }: { store: StoreRow | null }) {
   const { run, pending, feedback } = useAdminAction()
   const [v, setV] = React.useState(() => toForm(store))
   const set = (patch: Partial<typeof v>) => setV((prev) => ({ ...prev, ...patch }))
-  const text = (key: "name" | "wilaya" | "city" | "address" | "phone" | "mapUrl", label: string, extra?: { placeholder?: string; wide?: boolean }) => (
+  const text = (
+    key: "name" | "slug" | "notificationEmail" | "wilaya" | "city" | "address" | "phone" | "mapUrl",
+    label: string,
+    extra?: { placeholder?: string; wide?: boolean; help?: string; type?: string }
+  ) => (
     <label className={extra?.wide ? "block md:col-span-2" : "block"}>
       <span className={labelClass}>{label}</span>
-      <input value={v[key]} onChange={(e) => set({ [key]: e.target.value })} placeholder={extra?.placeholder} className={inputClass} />
+      <input
+        type={extra?.type ?? "text"}
+        value={v[key]}
+        onChange={(e) => set({ [key]: e.target.value })}
+        placeholder={extra?.placeholder}
+        className={inputClass}
+      />
+      {extra?.help && <span className="mt-1 block text-xs text-king-gray">{extra.help}</span>}
     </label>
   )
   return (
@@ -67,8 +84,14 @@ export function StoreEditor({ store }: { store: StoreRow | null }) {
         )
       }}
     >
-      {text("name", "Shop name", { placeholder: "e.g. KING 253 — Bab Ezzouar" })}
+      {text("name", "Shop name", { placeholder: "e.g. KING 253 Annaba" })}
       {text("phone", "Shop phone (optional)")}
+      {text("notificationEmail", "New-order email", {
+        type: "email",
+        placeholder: "annaba@king253.com",
+        help: "Orders shipped from this shop are emailed here. Empty = the admin email in Settings.",
+      })}
+      {text("slug", "Short code", { placeholder: "annaba", help: "Used in imports (delivery prices). Empty = made from the wilaya." })}
       {text("wilaya", "Wilaya")}
       {text("city", "City")}
       {text("address", "Street address", { wide: true })}
@@ -100,14 +123,27 @@ export function StoreEditor({ store }: { store: StoreRow | null }) {
         <span className={labelClass}>Order on the page</span>
         <input value={v.sortOrder} onChange={(e) => set({ sortOrder: e.target.value.replace(/\D/g, "") })} inputMode="numeric" className={inputClass} />
       </label>
-      <label className="flex items-center gap-2 pt-5 text-sm text-king-muted">
-        <input type="checkbox" checked={v.active} onChange={(e) => set({ active: e.target.checked })} className="accent-[#a30d0d]" /> Show on the Location page
-      </label>
+      <div className="space-y-2 pt-5 text-sm text-king-muted">
+        <label className="flex items-center gap-2">
+          <input type="checkbox" checked={v.active} onChange={(e) => set({ active: e.target.checked })} className="accent-[#a30d0d]" /> Active — holds
+          stock and ships orders
+        </label>
+        <label className="flex items-center gap-2">
+          <input type="checkbox" checked={v.listed} onChange={(e) => set({ listed: e.target.checked })} className="accent-[#a30d0d]" /> Show on the
+          public Location page
+        </label>
+      </div>
       <div className="flex flex-wrap items-center gap-3 md:col-span-2">
         <button type="submit" disabled={pending} className={store ? btnOutline : btnRed}>
           {store ? "Save shop" : "Add shop"}
         </button>
-        {store && <DeleteButton label="Delete shop" confirm={`Delete ${store.name}?`} action={deleteStoreAction.bind(null, store.id)} />}
+        {store && (
+          <DeleteButton
+            label="Delete shop"
+            confirm={`Delete ${store.name}? Shops with stock or orders cannot be deleted — untick “Active” instead.`}
+            action={deleteStoreAction.bind(null, store.id)}
+          />
+        )}
         <Feedback feedback={feedback} />
       </div>
     </form>

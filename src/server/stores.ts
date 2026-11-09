@@ -1,10 +1,10 @@
-import { asc, eq } from "drizzle-orm"
+import { and, asc, eq, ne } from "drizzle-orm"
 import { z } from "zod"
 
 import type { Db, DbOrTx } from "./db/client"
 import { stores } from "./db/schema"
 import { audit, type Actor } from "./audit"
-import { NotFoundError } from "./errors"
+import { NotFoundError, RuleError } from "./errors"
 
 const optional = (max: number) =>
   z
@@ -24,6 +24,21 @@ const coordinate = (min: number, max: number, label: string) =>
 export const storeInput = z
   .object({
     name: z.string().trim().min(2, "Enter the shop name.").max(80),
+    /** Empty = made from the wilaya (or the name). */
+    slug: z
+      .string()
+      .trim()
+      .toLowerCase()
+      .max(40)
+      .regex(/^([a-z0-9]+(-[a-z0-9]+)*)?$/, "Slug: lowercase letters, digits and dashes only.")
+      .optional()
+      .nullable()
+      .transform((v) => v || null),
+    notificationEmail: z
+      .union([z.literal(""), z.email("Enter a valid email for new-order notifications.")])
+      .optional()
+      .nullable()
+      .transform((v) => v || null),
     wilaya: z.string().trim().min(2, "Enter the wilaya.").max(80),
     city: z.string().trim().min(2, "Enter the city.").max(80),
     address: z.string().trim().min(4, "Enter the street address.").max(300),
@@ -37,6 +52,7 @@ export const storeInput = z
     latitude: coordinate(-90, 90, "Latitude"),
     longitude: coordinate(-180, 180, "Longitude"),
     active: z.coerce.boolean().default(true),
+    listed: z.coerce.boolean().default(true),
     sortOrder: z.coerce.number().int().min(0).max(1000).default(0),
   })
   .refine((s) => (s.latitude === null) === (s.longitude === null), {
@@ -46,16 +62,48 @@ export const storeInput = z
 export type StoreInput = z.input<typeof storeInput>
 export type Store = typeof stores.$inferSelect
 
-export async function listStores(db: DbOrTx, opts: { activeOnly?: boolean } = {}) {
+/**
+ * activeOnly: shops that hold stock and ship orders.
+ * publicOnly: active shops shown on the public Location page.
+ */
+export async function listStores(db: DbOrTx, opts: { activeOnly?: boolean; publicOnly?: boolean } = {}) {
   return db
     .select()
     .from(stores)
-    .where(opts.activeOnly ? eq(stores.active, true) : undefined)
+    .where(
+      opts.publicOnly ? and(eq(stores.active, true), eq(stores.listed, true)) : opts.activeOnly ? eq(stores.active, true) : undefined
+    )
     .orderBy(asc(stores.sortOrder), asc(stores.name))
 }
 
+export const slugify = (s: string) =>
+  s
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 40)
+
+/** The requested slug, or one made from the wilaya/name, made unique among shops. */
+async function uniqueSlug(db: DbOrTx, id: number | null, wanted: string | null, data: { wilaya: string; name: string }) {
+  const explicit = Boolean(wanted)
+  const base = wanted ?? (slugify(data.wilaya) || slugify(data.name) || "shop")
+  for (let i = 1; i < 100; i++) {
+    const candidate = i === 1 ? base : `${base}-${i}`
+    const [taken] = await db
+      .select({ id: stores.id })
+      .from(stores)
+      .where(id === null ? eq(stores.slug, candidate) : and(eq(stores.slug, candidate), ne(stores.id, id)))
+    if (!taken) return candidate
+    if (explicit) throw new RuleError(`Another shop already uses the slug "${candidate}".`)
+  }
+  throw new RuleError("Could not make a unique slug for this shop.")
+}
+
 export async function saveStore(db: Db, id: number | null, raw: StoreInput, actor: Actor) {
-  const data = storeInput.parse(raw)
+  const parsed = storeInput.parse(raw)
+  const data = { ...parsed, slug: await uniqueSlug(db, id, parsed.slug, parsed) }
   if (id === null) {
     const [created] = await db.insert(stores).values(data).returning()
     await audit(db, actor, "store.create", "store", String(created.id), { name: data.name })

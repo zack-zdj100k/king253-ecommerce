@@ -12,7 +12,14 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Production bundle built by scripts/package-dzsecurity.sh.
+    "dist/**",
   ]),
+  {
+    // Passenger startup file: plain CommonJS on purpose.
+    files: ["app.js"],
+    rules: { "@typescript-eslint/no-require-imports": "off" },
+  },
 ]);
 
 export default eslintConfig;

@@ -10,7 +10,7 @@ import { Eyebrow, Placeholder, RedEnd } from "@/components/layout/editorial"
 type ShopsContent = { eyebrow: string; title: string; description: string; button: string; image: string }
 
 export async function LocationPreview({ content }: { content: ShopsContent }) {
-  const stores = await listStores(db, { activeOnly: true })
+  const stores = await listStores(db, { publicOnly: true })
   const title = content.title.split("\n").map((l) => l.trim()).filter(Boolean)
   return (
     <section id="shops" aria-labelledby="find-title" className="king-grain relative isolate overflow-hidden bg-king-black">

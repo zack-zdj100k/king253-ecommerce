@@ -183,6 +183,18 @@ describe("Shops", () => {
     await expect(deleteStore(testDb, a.id, actor)).rejects.toThrow()
   })
 
+  it("gives each shop a unique slug and keeps unlisted shops off the public page", async () => {
+    const a = await saveStore(testDb, null, { ...shop, wilaya: "Annaba" }, actor)
+    const b = await saveStore(testDb, null, { ...shop, wilaya: "Annaba", name: "Second", listed: false }, actor)
+    expect([a.slug, b.slug]).toEqual(["annaba", "annaba-2"])
+    await expect(saveStore(testDb, b.id, { ...shop, slug: "annaba" }, actor)).rejects.toThrow(/already uses/)
+    expect((await saveStore(testDb, a.id, { ...shop, slug: "annaba", notificationEmail: "shop@example.test" }, actor)).notificationEmail).toBe(
+      "shop@example.test"
+    )
+    expect((await listStores(testDb, { publicOnly: true })).map((s) => s.id)).toEqual([a.id])
+    expect(await listStores(testDb, { activeOnly: true })).toHaveLength(2)
+  })
+
   it("rejects half coordinates and non-https map links", async () => {
     await expect(saveStore(testDb, null, { ...shop, longitude: "" }, actor)).rejects.toThrow(/both latitude and longitude/)
     await expect(saveStore(testDb, null, { ...shop, mapUrl: "javascript:alert(1)" }, actor)).rejects.toThrow(/https/)

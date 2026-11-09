@@ -9,10 +9,10 @@ config({ path: ".env.local" })
 
 export const testDb = createDb(process.env.TEST_DATABASE_URL!, { max: 10 })
 
-/** Wipe every table (test database only). */
+/** Wipe every table except reference data (wilayas, communes) — test database only. */
 export async function resetDb() {
   const rows = await testDb.execute<{ tablename: string }>(
-    sql`select tablename from pg_tables where schemaname = 'public' and tablename <> '__drizzle_migrations'`
+    sql`select tablename from pg_tables where schemaname = 'public' and tablename not in ('__drizzle_migrations', 'wilayas', 'communes')`
   )
   const names = rows.map((r) => `"${r.tablename}"`).join(", ")
   if (names) await testDb.execute(sql.raw(`truncate ${names} restart identity cascade`))

@@ -20,7 +20,7 @@ export const dynamic = "force-dynamic"
 export default async function LocationPage() {
   const [settings, stores, hero, body] = await Promise.all([
     getSettings(db),
-    listStores(db, { activeOnly: true }),
+    listStores(db, { publicOnly: true }),
     getContent(db, "location.hero"),
     getContent(db, "location.body"),
   ])

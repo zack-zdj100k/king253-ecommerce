@@ -17,7 +17,7 @@ const linkClass = "text-sm text-king-gray transition-colors duration-300 hover:t
  * KING 253 piece. Store details come from STORE and stay marked until supplied.
  */
 async function Footer() {
-  const [settings, facets, stores] = await Promise.all([getSettings(db), getCatalogFacets(db).catch(() => null), listStores(db, { activeOnly: true })])
+  const [settings, facets, stores] = await Promise.all([getSettings(db), getCatalogFacets(db).catch(() => null), listStores(db, { publicOnly: true })])
   const categories = facets?.categories ?? []
   const phone = settings.contactPhone ? normalizePhone(settings.contactPhone) : null
   const whatsapp = settings.whatsapp ? normalizePhone(settings.whatsapp) : null

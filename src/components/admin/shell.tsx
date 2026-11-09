@@ -47,7 +47,7 @@ const NAV = [
   { href: "/admin/testimonials", label: "Testimonials", icon: MessageSquareQuote, group: "People", color: "#ac8e68" },
   { href: "/admin/social", label: "Social media", icon: Megaphone, group: "People", color: "#ff2d55" },
   { href: "/admin/content", label: "Content", icon: FileText, group: "Site", color: "#8e8e93" },
-  { href: "/admin/locations", label: "Locations", icon: MapPin, group: "Site", color: "#34c759" },
+  { href: "/admin/shops", label: "Shops", icon: MapPin, group: "Site", color: "#34c759" },
   { href: "/admin/settings", label: "Settings", icon: Settings, group: "Site", color: "#8e8e93" },
 ] as const
 type NavItem = (typeof NAV)[number]

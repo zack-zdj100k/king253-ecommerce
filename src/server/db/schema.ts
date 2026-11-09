@@ -125,10 +125,18 @@ export const customers = pgTable(
 /* Physical shops                                                     */
 /* ------------------------------------------------------------------ */
 
-/** KING 253 shops shown on the Location page; visitors pick the closest one. */
+/**
+ * KING 253 shops. Each active shop holds its own stock, ships orders (departure
+ * shop), has its own delivery rates/desks and receives its own new-order emails.
+ * Nothing in the code names a specific shop: a new row is a new shop everywhere.
+ */
 export const stores = pgTable("stores", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
+  /** Stable URL/import key, e.g. "annaba". */
+  slug: text("slug").notNull(),
+  /** New orders shipped from this shop are emailed here (falls back to Settings → admin email). */
+  notificationEmail: text("notification_email"),
   wilaya: text("wilaya").notNull(),
   city: text("city").notNull(),
   address: text("address").notNull(),
@@ -140,10 +148,38 @@ export const stores = pgTable("stores", {
   /** Coordinates enable "closest shop" and the map (optional). */
   latitude: real("latitude"),
   longitude: real("longitude"),
+  /** Operational: holds stock, can ship orders. Inactive shops are kept for history. */
   active: boolean("active").notNull().default(true),
+  /** Shown on the public Location page (only when active). */
+  listed: boolean("listed").notNull().default(true),
   sortOrder: integer("sort_order").notNull().default(0),
   ...timestamps,
+}, (t) => [uniqueIndex("stores_slug_unique").on(t.slug)])
+
+/* ------------------------------------------------------------------ */
+/* Geography                                                          */
+/* ------------------------------------------------------------------ */
+
+/** Algeria's wilayas (69 since Law 26-06, 2026), seeded from src/lib/algeria-data.json. */
+export const wilayas = pgTable("wilayas", {
+  code: smallint("code").primaryKey(),
+  nameAr: text("name_ar").notNull(),
+  nameFr: text("name_fr").notNull(),
+  nameEn: text("name_en").notNull(),
 })
+
+export const communes = pgTable(
+  "communes",
+  {
+    id: serial("id").primaryKey(),
+    wilayaCode: smallint("wilaya_code")
+      .notNull()
+      .references(() => wilayas.code),
+    nameFr: text("name_fr").notNull(),
+    nameAr: text("name_ar").notNull(),
+  },
+  (t) => [uniqueIndex("communes_wilaya_name_unique").on(t.wilayaCode, t.nameFr)]
+)
 
 /* ------------------------------------------------------------------ */
 /* Catalog                                                            */

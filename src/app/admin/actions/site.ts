@@ -16,7 +16,7 @@ import { adminAction } from "./_shared"
 
 /* Shops (Location page) ------------------------------------------ */
 
-const storePaths = ["/admin/locations", "/location", "/"]
+const storePaths = ["/admin/shops", "/location", "/"]
 
 export async function saveStoreAction(storeId: number | null, input: StoreInput) {
   return adminAction(

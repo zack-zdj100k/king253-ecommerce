@@ -74,7 +74,18 @@ above the CloudLinux Passenger block. Do not remove the Passenger block.
 - Place a test order, then delete it in admin.
 - `https://king253.com/robots.txt` shows `Sitemap: https://king253.com/sitemap.xml`.
 
-## 7. Notes and limits
+## 7. Database backups
+
+JetBackup (host) had no backups yet on 2026-11-09, and cPanel's backup page does not list PostgreSQL.
+So a cron job (cPanel → Cron Jobs, daily 03:00 server time) runs `~/backups/backup-db.sh`:
+`pg_dump --format=custom` of `kingco32_king253` into `~/backups/king253-YYYY-MM-DD_HHMM.dump`,
+log in `~/backups/backup.log`. **Dumps are never deleted** (owner's choice; ~75 KB each while the
+shop is empty). The folder is in the home directory, so JetBackup also picks it up.
+Restore: `pg_restore --clean --no-owner -d "$DATABASE_URL" <file>.dump`.
+Note: cPanel's file editor saves files with CRLF line endings, so the cron command pipes the script
+through `tr -d '\r'` before bash.
+
+## 8. Notes and limits
 
 - 1 GB RAM / 20 entry processes: keep Passenger at its default (1–2 processes).
 - The rate limiter is in memory per process — approximate, acceptable at this traffic.

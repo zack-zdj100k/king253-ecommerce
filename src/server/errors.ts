@@ -35,6 +35,13 @@ export class NotFoundError extends AppError {
   }
 }
 
+/** A business rule the admin or customer can fix (message shown as is). */
+export class RuleError extends AppError {
+  constructor(message: string) {
+    super("RULE", message)
+  }
+}
+
 export class ForbiddenError extends AppError {
   constructor() {
     super("FORBIDDEN", "You are not allowed to do that.")
