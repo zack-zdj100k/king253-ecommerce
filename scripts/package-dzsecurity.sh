@@ -23,7 +23,9 @@ cp -R .next/static "$OUT/.next/static"
 cp app.js "$OUT/app.js"
 cp -R drizzle "$OUT/drizzle"
 mkdir -p "$OUT/scripts"
-cp scripts/migrate.mjs scripts/create-admin.mjs "$OUT/scripts/"
+cp scripts/migrate.mjs scripts/create-admin.mjs scripts/import-delivery.mjs "$OUT/scripts/"
+mkdir -p "$OUT/src/lib"
+cp src/lib/delivery-csv.mjs "$OUT/src/lib/"
 # The app bundles drizzle/postgres into its chunks; the terminal scripts need the packages themselves.
 cp -R node_modules/drizzle-orm node_modules/postgres "$OUT/node_modules/"
 # Never ship local env files.

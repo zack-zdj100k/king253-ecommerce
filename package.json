@@ -15,7 +15,8 @@
     "test": "vitest run",
     "db:demo": "node --env-file=.env.local scripts/demo.mjs",
     "db:reset": "node --env-file=.env.local scripts/reset.mjs",
-    "package:dzsecurity": "bash scripts/package-dzsecurity.sh"
+    "package:dzsecurity": "bash scripts/package-dzsecurity.sh",
+    "delivery:import": "node --env-file=.env.local scripts/import-delivery.mjs"
   },
   "dependencies": {
     "class-variance-authority": "^0.7.1",

@@ -182,6 +182,58 @@ export const communes = pgTable(
 )
 
 /* ------------------------------------------------------------------ */
+/* Delivery (per departure shop)                                      */
+/* ------------------------------------------------------------------ */
+
+export const deliveryType = pgEnum("delivery_type", ["home", "desk"])
+
+/** Courier price from a shop to a wilaya. Null price = that delivery type is not offered there. */
+export const deliveryRates = pgTable(
+  "delivery_rates",
+  {
+    storeId: integer("store_id")
+      .notNull()
+      .references(() => stores.id),
+    wilayaCode: smallint("wilaya_code")
+      .notNull()
+      .references(() => wilayas.code),
+    homePrice: integer("home_price"),
+    deskPrice: integer("desk_price"),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.storeId, t.wilayaCode] }),
+    check("delivery_rates_prices_non_negative", sql`coalesce(${t.homePrice}, 0) >= 0 and coalesce(${t.deskPrice}, 0) >= 0`),
+  ]
+)
+
+/** Courier stop desks a shop can ship to (customer collects the parcel there). */
+export const deliveryDesks = pgTable(
+  "delivery_desks",
+  {
+    id: serial("id").primaryKey(),
+    storeId: integer("store_id")
+      .notNull()
+      .references(() => stores.id),
+    wilayaCode: smallint("wilaya_code")
+      .notNull()
+      .references(() => wilayas.code),
+    commune: text("commune").notNull(),
+    name: text("name").notNull(),
+    address: text("address").notNull().default(""),
+    /** Overrides the wilaya's desk price for this desk; null = the wilaya's desk price. */
+    deskPrice: integer("desk_price"),
+    active: boolean("active").notNull().default(true),
+    ...timestamps,
+  },
+  (t) => [
+    index("delivery_desks_lookup_idx").on(t.storeId, t.wilayaCode),
+    uniqueIndex("delivery_desks_unique").on(t.storeId, t.wilayaCode, t.name),
+    check("delivery_desks_price_non_negative", sql`coalesce(${t.deskPrice}, 0) >= 0`),
+  ]
+)
+
+/* ------------------------------------------------------------------ */
 /* Catalog                                                            */
 /* ------------------------------------------------------------------ */
 
