@@ -21,6 +21,20 @@
         "3002"
       ],
       "port": 3002
+    },
+    {
+      "name": "king253-bundle",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "--env-file=.env.local",
+        "dist/king253/server.js"
+      ],
+      "port": 3010,
+      "env": {
+        "PORT": "3010",
+        "HOSTNAME": "127.0.0.1",
+        "NODE_ENV": "production"
+      }
     }
   ]
 }

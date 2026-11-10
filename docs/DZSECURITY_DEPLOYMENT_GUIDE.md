@@ -98,4 +98,10 @@ through `tr -d '\r'` before bash.
 - The rate limiter is in memory per process — approximate, acceptable at this traffic.
 - All migrations applied cleanly on the server's PostgreSQL 13.23 (first deploy, 2026-11-09).
 - The browser-based cPanel Terminal may not accept automated typing; the owner can type in it directly.
+- Behind Passenger, Next sees every request as `https://localhost:3000`. Never rewrite to an absolute
+  URL in `src/proxy.ts` (it becomes a fetch to localhost:3000 → HTTP 500); use `rewrites()` in
+  `next.config.ts`. Same-origin redirects are fine (Next sends a relative `Location`).
+  To reproduce locally: run `dist/king253/server.js` and send `Host: king253.com` + `X-Forwarded-Proto: https`.
+- Multi-shop update deployed 2026-11-10 (migrations 0012–0016 applied). Previous versions are kept
+  as `~/king253-prev-20261110` (before the update) and `~/king253-broken-20261110` (first upload, /fr 500).
 - Logs: `~/king253/stderr.log` (Passenger) and cPanel → Errors.
