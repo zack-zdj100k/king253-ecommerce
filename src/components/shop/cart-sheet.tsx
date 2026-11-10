@@ -64,7 +64,7 @@ export function CartSheet() {
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <p className="truncate text-sm font-medium tracking-tight text-king-white uppercase">{line.name}</p>
-                      <p className="king-label mt-1 text-[0.6rem] text-king-gray">
+                      <p className="king-label mt-1 text-[0.625rem] text-king-gray">
                         {line.color} / {line.size}
                       </p>
                     </div>
@@ -84,7 +84,7 @@ export function CartSheet() {
                       {line.issue === "not_enough" ? t("notEnough", { count: line.available }) : line.issue === "unavailable" ? t("unavailable") : t("outOfStock")}
                     </p>
                   ) : line.available <= LOW_STOCK_DISPLAY ? (
-                    <p className="king-label mt-2 text-[0.55rem] text-king-muted">{t("left", { count: line.available })}</p>
+                    <p className="king-label mt-2 text-[0.625rem] text-king-muted">{t("left", { count: line.available })}</p>
                   ) : null}
 
                   <div className="mt-auto flex items-center justify-between pt-3">
@@ -110,7 +110,7 @@ export function CartSheet() {
                         <Plus className="size-3.5" />
                       </button>
                     </div>
-                    <p className="king-label text-[0.6rem] text-king-muted">{formatDA(line.lineTotal)}</p>
+                    <p className="king-label text-[0.625rem] text-king-muted">{formatDA(line.lineTotal)}</p>
                   </div>
                 </div>
               </li>

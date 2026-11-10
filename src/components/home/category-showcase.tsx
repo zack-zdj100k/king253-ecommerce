@@ -134,7 +134,7 @@ export function CategoryShowcase({ content }: { content: { eyebrow: string; titl
                     />
                     <div className="absolute inset-0 flex items-end justify-between p-5">
                       <div>
-                        <span className={cn("king-label text-[0.6rem] transition-colors duration-500", on ? "text-king-bright-red" : "text-king-gray")}>
+                        <span className={cn("king-label text-[0.625rem] transition-colors duration-500", on ? "text-king-bright-red" : "text-king-gray")}>
                           {String(i + 1).padStart(2, "0")}
                         </span>
                         <p

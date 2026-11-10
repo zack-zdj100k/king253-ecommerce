@@ -35,11 +35,22 @@ const TITLES = {
 } as const
 
 export async function generateMetadata(): Promise<Metadata> {
-  const t = TITLES[await currentLocale()]
+  const locale = await currentLocale()
+  const t = TITLES[locale]
   return {
     metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
     title: { default: t.title, template: "%s — KING 253" },
     description: t.description,
+    // Link previews (WhatsApp, Instagram, Facebook, Google): site name + a campaign photo.
+    openGraph: {
+      type: "website",
+      siteName: "KING 253",
+      title: t.title,
+      description: t.description,
+      locale: locale === "ar" ? "ar_DZ" : locale === "fr" ? "fr_DZ" : "en_US",
+      images: [{ url: "/images/hero/2.jpg", width: 2752, height: 1536, alt: "KING 253" }],
+    },
+    twitter: { card: "summary_large_image", title: t.title, description: t.description, images: ["/images/hero/2.jpg"] },
   }
 }
 

@@ -51,11 +51,11 @@ export function LatestDropFan({ products }: { products: ProductCardData[] }) {
           className="mx-auto mt-10 flex max-w-xl animate-in flex-col items-center gap-5 text-center duration-500 fade-in-0 slide-in-from-bottom-2 motion-reduce:animate-none"
         >
           <div>
-            <p className="king-label text-[0.6rem] text-king-bright-red">
+            <p className="king-label text-[0.625rem] text-king-bright-red">
               {String(center + 1).padStart(2, "0")} / {String(products.length).padStart(2, "0")} — {current.categoryName}
             </p>
             <p className="king-display mt-3 text-3xl text-king-white md:text-4xl">{current.name}</p>
-            <p className="king-label mt-2 text-[0.6rem] text-king-gray">
+            <p className="king-label mt-2 text-[0.625rem] text-king-gray">
               {formatDA(current.price)}
               {current.compareAt ? <span className="ml-2 line-through">{formatDA(current.compareAt)}</span> : null}
               {current.available <= 0 ? " · Out of stock" : ""}

@@ -27,7 +27,7 @@ export function OrderTimeline({ order }: { order: CustomerOrderView }) {
               {done ? <Check className="size-4" aria-hidden /> : <span className="text-xs">{i + 1}</span>}
             </span>
             <span>
-              <span className={cn("king-label block text-[0.6rem]", done ? "text-king-white" : "text-king-gray")}>{t(`step_${step.key}`)}</span>
+              <span className={cn("king-label block text-[0.625rem]", done ? "text-king-white" : "text-king-gray")}>{t(`step_${step.key}`)}</span>
               {step.at && <span className="mt-1 block text-xs text-king-gray">{fmt(step.at)}</span>}
             </span>
           </li>

@@ -185,7 +185,7 @@ export const InteractiveCard = React.forwardRef<HTMLDivElement, InteractiveCardP
                   {title}
                 </p>
               )}
-              {subtitle && <p className="king-label mt-1 text-[0.55rem] text-white/75 md:text-[0.6rem]">{subtitle}</p>}
+              {subtitle && <p className="king-label mt-1 text-[0.625rem] text-white/75 md:text-[0.625rem]">{subtitle}</p>}
             </div>
             {href ? (
               href.startsWith("http") ? (
@@ -223,7 +223,7 @@ export const InteractiveCard = React.forwardRef<HTMLDivElement, InteractiveCardP
 
           <div className="space-y-2">
           {promo && (
-            <p className="king-label flex items-center justify-center gap-2 bg-king-red py-1.5 text-center text-[0.55rem] text-king-white shadow-[0_8px_24px_-8px_rgba(212,20,20,0.7)] md:text-[0.6rem]">
+            <p className="king-label flex items-center justify-center gap-2 bg-king-red py-1.5 text-center text-[0.625rem] text-king-white shadow-[0_8px_24px_-8px_rgba(212,20,20,0.7)] md:text-[0.625rem]">
               <span className="size-1.5 animate-pulse rounded-full bg-white motion-reduce:animate-none" aria-hidden />
               {promo}
             </p>
@@ -236,7 +236,7 @@ export const InteractiveCard = React.forwardRef<HTMLDivElement, InteractiveCardP
               whileHover={actionDisabled ? undefined : { scale: 1.04 }}
               whileTap={actionDisabled ? undefined : { scale: 0.96 }}
               className={cn(
-                "king-label pointer-events-auto w-full py-2.5 text-center text-[0.6rem] text-king-white md:py-3 md:text-[0.65rem]",
+                "king-label pointer-events-auto w-full py-2.5 text-center text-[0.625rem] text-king-white md:py-3 md:text-[0.65rem]",
                 GLASS,
                 actionDisabled && "cursor-not-allowed text-king-gray hover:bg-black/45 hover:ring-white/15"
               )}
@@ -246,7 +246,7 @@ export const InteractiveCard = React.forwardRef<HTMLDivElement, InteractiveCardP
           )}
           {actionText && !onActionClick && (
             // Label only: the click goes to the whole-card link underneath.
-            <span className={cn("king-label block w-full py-2.5 text-center text-[0.6rem] text-king-white md:py-3 md:text-[0.65rem]", GLASS, "group-hover/card:bg-king-red group-hover/card:ring-king-bright-red", actionDisabled && "text-king-gray")}>
+            <span className={cn("king-label block w-full py-2.5 text-center text-[0.625rem] text-king-white md:py-3 md:text-[0.65rem]", GLASS, "group-hover/card:bg-king-red group-hover/card:ring-king-bright-red", actionDisabled && "text-king-gray")}>
               {actionText}
             </span>
           )}

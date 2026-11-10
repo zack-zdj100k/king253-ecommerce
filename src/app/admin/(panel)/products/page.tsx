@@ -1,5 +1,6 @@
 import type { Metadata } from "next"
 import Link from "next/link"
+import { sql } from "drizzle-orm"
 import { Plus } from "lucide-react"
 
 import { formatDA } from "@/lib/money"
@@ -19,6 +20,7 @@ export default async function AdminProductsPage({ searchParams }: PageProps<"/ad
   const status = ["published", "draft", "archived"].includes(one(p.status) ?? "") ? one(p.status)! : "published"
   const f = { q: one(p.q), status, page: Number(one(p.page)) || 1 }
   const { rows, total, page, pages } = await listProductsAdmin(db, f)
+  const [hidden] = (await db.execute(sql`select count(*) filter (where status = 'draft')::int as draft from products`)) as unknown as { draft: number }[]
 
   return (
     <div className="space-y-6">
@@ -32,7 +34,15 @@ export default async function AdminProductsPage({ searchParams }: PageProps<"/ad
           </>
         }
       >
-        <p className="mt-2 text-sm text-king-gray">{total} product(s). Only published products with a price appear in the shop.</p>
+        <p className="mt-2 text-sm text-king-gray">{total} {f.status} product(s). Only published products with a price appear in the shop.</p>
+        {hidden.draft > 0 && f.status !== "draft" && (
+          <p className="mt-2 text-sm text-amber-200">
+            {hidden.draft} draft product(s) are NOT in the shop.{" "}
+            <Link href="/admin/products?status=draft" className="underline underline-offset-4">
+              Show drafts
+            </Link>
+          </p>
+        )}
       </PageHeader>
 
       <form className="grid grid-cols-1 gap-3 md:grid-cols-[1fr_200px_auto]" action="/admin/products">

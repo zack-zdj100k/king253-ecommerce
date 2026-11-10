@@ -4,6 +4,8 @@ import createNextIntlPlugin from "next-intl/plugin"
 const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts")
 
 const securityHeaders = [
+  // Browsers remember to use HTTPS only (1 year). No includeSubDomains: mail.* and other host subdomains are not ours to force.
+  { key: "Strict-Transport-Security", value: "max-age=31536000" },
   { key: "X-Frame-Options", value: "DENY" },
   { key: "X-Content-Type-Options", value: "nosniff" },
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
@@ -15,6 +17,8 @@ const nextConfig: NextConfig = {
   // Production runs on DZSecurity (cPanel + Passenger): `next build` emits a
   // self-contained server in .next/standalone that `app.js` starts.
   output: "standalone",
+  // Do not advertise the framework in every response.
+  poweredByHeader: false,
   // Development only: lets the site be opened at 127.0.0.1 as well as localhost
   // (useful to test as a signed-out visitor, since cookies are per host).
   allowedDevOrigins: ["127.0.0.1"],

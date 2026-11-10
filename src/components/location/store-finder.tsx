@@ -86,7 +86,7 @@ export function StoreFinder({ stores, findLabel }: { stores: PublicStore[]; find
     <div className="grid gap-10 lg:grid-cols-12 lg:gap-14">
       <div className="lg:col-span-5">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <p className="king-label text-[0.6rem] text-king-gray">
+          <p className="king-label text-[0.625rem] text-king-gray">
             {stores.length} shop{stores.length > 1 ? "s" : ""} in Algeria
           </p>
           {canLocate && (
@@ -124,10 +124,10 @@ export function StoreFinder({ stores, findLabel }: { stores: PublicStore[]; find
                     </h3>
                     <span className="flex shrink-0 flex-col items-end gap-1">
                       {s.id === closestId && (
-                        <span className="king-label bg-king-red px-2 py-1 text-[0.5rem] text-king-white">{t("closest")}</span>
+                        <span className="king-label bg-king-red px-2 py-1 text-[0.625rem] text-king-white">{t("closest")}</span>
                       )}
                       {distances?.[s.id] !== undefined && (
-                        <span className="king-label text-[0.55rem] text-king-muted">≈ {formatKm(distances[s.id])}</span>
+                        <span className="king-label text-[0.625rem] text-king-muted">≈ {formatKm(distances[s.id])}</span>
                       )}
                     </span>
                   </div>
@@ -157,16 +157,16 @@ export function StoreFinder({ stores, findLabel }: { stores: PublicStore[]; find
 
                   {/* Links sit above the card-wide select button. */}
                   <div className="relative z-10 mt-5 flex flex-wrap items-center gap-x-5 gap-y-2">
-                    <a href={directionsUrl(s)} target="_blank" rel="noreferrer" className="king-label inline-flex items-center gap-2 text-[0.6rem] text-king-white hover:text-king-bright-red">
+                    <a href={directionsUrl(s)} target="_blank" rel="noreferrer" className="king-label inline-flex min-h-6 items-center gap-2 py-1 text-[0.625rem] text-king-white hover:text-king-bright-red">
                       <Navigation className="size-3.5" aria-hidden /> {t("directions")}
                     </a>
                     {s.phone && (
-                      <a href={`tel:${s.phone.replace(/\s/g, "")}`} className="king-label inline-flex items-center gap-2 text-[0.6rem] text-king-muted hover:text-king-white">
+                      <a href={`tel:${s.phone.replace(/\s/g, "")}`} className="king-label inline-flex min-h-6 items-center gap-2 py-1 text-[0.625rem] text-king-muted hover:text-king-white">
                         <Phone className="size-3.5" aria-hidden /> {s.phone}
                       </a>
                     )}
                     {s.mapUrl && (
-                      <a href={s.mapUrl} target="_blank" rel="noreferrer" className="king-label inline-flex items-center gap-2 text-[0.6rem] text-king-muted hover:text-king-white">
+                      <a href={s.mapUrl} target="_blank" rel="noreferrer" className="king-label inline-flex min-h-6 items-center gap-2 py-1 text-[0.625rem] text-king-muted hover:text-king-white">
                         <ExternalLink className="size-3.5" aria-hidden /> Google Maps
                       </a>
                     )}

@@ -189,7 +189,7 @@ function Style({ content }: { content: ContentOf<"who.style"> }) {
                   <Image src={look.src} alt={look.alt} fill sizes={look.sizes} className="object-cover" style={{ objectPosition: look.position }} />
                 </div>
               </TiltCard>
-              <figcaption className="king-label mt-3 text-[0.6rem] text-king-gray">{look.label}</figcaption>
+              <figcaption className="king-label mt-3 text-[0.625rem] text-king-gray">{look.label}</figcaption>
             </figure>
           ))}
         </div>

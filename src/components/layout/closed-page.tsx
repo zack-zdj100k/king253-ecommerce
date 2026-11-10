@@ -21,7 +21,7 @@ export function ClosedPage({ settings, until }: { settings: Settings; until: Dat
       ? settings.instagram
       : `https://instagram.com/${settings.instagram.replace(/^@/, "")}`
     : null
-  const link = "king-label inline-flex h-11 items-center gap-2 border border-white/15 px-4 text-[0.6rem] text-king-white transition-colors hover:border-king-bright-red hover:bg-king-red/15"
+  const link = "king-label inline-flex h-11 items-center gap-2 border border-white/15 px-4 text-[0.625rem] text-king-white transition-colors hover:border-king-bright-red hover:bg-king-red/15"
 
   return (
     <main id="main" className="bg-king-black">
@@ -35,7 +35,7 @@ export function ClosedPage({ settings, until }: { settings: Settings; until: Dat
           <p className="text-xl font-black tracking-[-0.03em] text-king-white uppercase">
             King <span className="text-king-bright-red">253</span>
           </p>
-          <p className="king-label mt-14 flex items-center gap-3 text-[0.6rem] text-king-bright-red">
+          <p className="king-label mt-14 flex items-center gap-3 text-[0.625rem] text-king-bright-red">
             <span className="size-1.5 animate-pulse rounded-full bg-king-bright-red motion-reduce:animate-none" aria-hidden />
             {t("closedNow")}
           </p>
@@ -80,7 +80,7 @@ export function ClosedPage({ settings, until }: { settings: Settings; until: Dat
 
       <section className="border-t border-white/10 px-4 py-20 sm:px-6 lg:px-12">
         <div className="mx-auto w-full max-w-5xl">
-          <p className="king-label text-[0.6rem] text-king-gray">{t("alreadyOrdered")}</p>
+          <p className="king-label text-[0.625rem] text-king-gray">{t("alreadyOrdered")}</p>
           <h2 className="king-display mt-4 text-[clamp(2.25rem,6vw,4.5rem)] text-king-white">{t("trackYour")}</h2>
           <p className="mt-3 max-w-lg text-sm text-king-muted">{t("closedTrackText")}</p>
           <div className="mt-10">
@@ -89,7 +89,7 @@ export function ClosedPage({ settings, until }: { settings: Settings; until: Dat
         </div>
       </section>
 
-      <p className="king-label px-4 pb-10 text-center text-[0.55rem] text-king-gray">
+      <p className="king-label px-4 pb-10 text-center text-[0.625rem] text-king-gray">
         © {new Date().getFullYear()} {settings.brandName} · <Link href="/admin/login" className="hover:text-king-white">{t("staff")}</Link>
       </p>
     </main>

@@ -20,14 +20,12 @@ export function BuyBox({
   product,
   variants,
   colourImages,
-  signedIn,
 }: {
   /** The product price (and regular price when on promo) — shown until a colour decides otherwise. */
   product: { id: string; slug: string; name: string; price: number | null; compareAt: number | null }
   variants: Variant[]
   colourImages?: Record<string, Crop | null>
   /** Signed-out visitors are sent to create an account before buying. */
-  signedIn: boolean
 }) {
   const router = useRouter()
   const t = useTranslations("product")
@@ -118,11 +116,7 @@ export function BuyBox({
           disabled={!!label || busy !== null}
           onClick={() => {
             if (!variant) return askForSize()
-            if (!signedIn) {
-              // Ordering needs an account: create one, then come back to this page.
-              router.push(`/sign-up?next=${encodeURIComponent(window.location.pathname + window.location.search)}`)
-              return
-            }
+            // No account needed: guests order straight away (their account is created from phone + password at checkout).
             setBusy("buy")
             router.push(`/checkout?buy=${variant.id}&qty=${qty}`)
           }}

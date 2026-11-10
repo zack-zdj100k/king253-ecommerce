@@ -74,7 +74,7 @@ export function SearchDialog({ open, onOpenChange }: { open: boolean; onOpenChan
             aria-label={t("label")}
             className="h-16 rounded-none border-0 bg-transparent px-0 text-base text-king-white shadow-none placeholder:text-king-gray focus-visible:ring-0 dark:bg-transparent"
           />
-          <kbd className="king-label hidden text-[0.6rem] text-king-gray sm:block">Esc</kbd>
+          <kbd className="king-label hidden text-[0.625rem] text-king-gray sm:block">Esc</kbd>
         </form>
 
         <div className="max-h-[60svh] overflow-y-auto p-5" data-lenis-prevent>
@@ -107,7 +107,7 @@ export function SearchDialog({ open, onOpenChange }: { open: boolean; onOpenChan
                     </span>
                     <span className="min-w-0 flex-1">
                       <span className="block truncate text-sm font-medium text-king-white uppercase">{p.name}</span>
-                      <span className="king-label mt-1 block text-[0.6rem] text-king-gray">
+                      <span className="king-label mt-1 block text-[0.625rem] text-king-gray">
                         {p.categoryName} · {formatDA(p.price)}
                         {p.available <= 0 ? " · Out of stock" : ""}
                       </span>

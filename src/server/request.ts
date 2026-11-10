@@ -61,7 +61,15 @@ export async function ensureSessionId() {
   return sid
 }
 
+/**
+ * Who is asking, for rate limits. The visitor's address from the proxy headers; when the
+ * host passes none (cPanel/Passenger may not), a fingerprint of browser + language, so
+ * visitors are not all counted as one person (which would lock every customer out after
+ * a few orders).
+ */
 export async function clientIp() {
   const h = await headers()
-  return h.get("x-forwarded-for")?.split(",")[0]?.trim() || h.get("x-real-ip") || "local"
+  const ip = h.get("x-forwarded-for")?.split(",")[0]?.trim() || h.get("x-real-ip") || h.get("cf-connecting-ip") || h.get("true-client-ip")
+  if (ip) return ip
+  return "anon:" + hashToken(`${h.get("user-agent") ?? ""}|${h.get("accept-language") ?? ""}`).slice(0, 16)
 }

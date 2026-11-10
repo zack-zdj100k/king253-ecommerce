@@ -27,7 +27,16 @@ export async function generateMetadata(): Promise<Metadata> {
   const { closure } = await currentClosure()
   if (closure.state === "closed") return { title: "Back soon", robots: { index: false, follow: false } }
   const locale = await currentLocale()
-  return { alternates: await localeAlternates(locale), openGraph: { locale: locale === "ar" ? "ar_DZ" : locale === "fr" ? "fr_DZ" : "en_US" } }
+  return {
+    alternates: await localeAlternates(locale),
+    // This object replaces the root one (Next merges only the top level), so the share image lives here too.
+    openGraph: {
+      type: "website",
+      siteName: "KING 253",
+      locale: locale === "ar" ? "ar_DZ" : locale === "fr" ? "fr_DZ" : "en_US",
+      images: [{ url: "/images/hero/2.jpg", width: 2752, height: 1536, alt: "KING 253" }],
+    },
+  }
 }
 
 /**

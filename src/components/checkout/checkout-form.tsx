@@ -185,7 +185,7 @@ export function CheckoutForm({
               {t("details")}
             </h2>
             {!editing && (
-              <button type="button" onClick={() => setEditing(true)} className="king-label inline-flex items-center gap-2 text-[0.6rem] text-king-muted hover:text-king-white">
+              <button type="button" onClick={() => setEditing(true)} className="king-label inline-flex items-center gap-2 text-[0.625rem] text-king-muted hover:text-king-white">
                 <Pencil className="size-3" aria-hidden /> {t("edit")}
               </button>
             )}
@@ -201,7 +201,7 @@ export function CheckoutForm({
                   {values.address}, {values.city}, {values.wilaya}
                 </span>
               </p>
-              <p className="king-label mt-3 text-[0.55rem] text-king-gray">{t("savedNote")}</p>
+              <p className="king-label mt-3 text-[0.625rem] text-king-gray">{t("savedNote")}</p>
             </div>
           ) : (
             <div className="mt-5 grid gap-5 sm:grid-cols-2">
@@ -360,7 +360,7 @@ export function CheckoutForm({
           </div>
 
           <div className="mt-6" aria-live="polite">
-            <p className="king-label flex items-center gap-2 text-[0.6rem] text-king-gray">
+            <p className="king-label flex items-center gap-2 text-[0.625rem] text-king-gray">
               <Store className="size-3.5 text-king-bright-red" aria-hidden /> {t("shipsFrom")}
               {quoting && <Loader2 className="size-3 animate-spin" aria-label={t("updatingPrices")} />}
             </p>
@@ -460,7 +460,7 @@ export function CheckoutForm({
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className="block truncate text-sm font-medium text-king-white uppercase">{l.name}</span>
-                  <span className="king-label mt-1 block text-[0.55rem] text-king-gray">
+                  <span className="king-label mt-1 block text-[0.625rem] text-king-gray">
                     {l.color} / {l.size} × {l.quantity}
                   </span>
                   {l.issue && (
@@ -470,7 +470,7 @@ export function CheckoutForm({
                     </span>
                   )}
                 </span>
-                <span className="king-label text-[0.6rem] text-king-muted">{formatDA(l.lineTotal)}</span>
+                <span className="king-label text-[0.625rem] text-king-muted">{formatDA(l.lineTotal)}</span>
               </li>
             ))}
           </ul>

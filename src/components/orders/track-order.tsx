@@ -68,7 +68,7 @@ function TrackedOrder({ order, phone, onUpdate }: { order: CustomerOrderView; ph
   return (
     <div className="space-y-12">
       <div>
-        <p className="king-label text-[0.6rem] text-king-gray">{t("order")}</p>
+        <p className="king-label text-[0.625rem] text-king-gray">{t("order")}</p>
         <p className="king-display mt-2 text-4xl text-king-white">{order.number}</p>
         <p className="mt-2 text-sm text-king-gray">{t("placed", { date: new Date(order.createdAt).toLocaleDateString(locale, { day: "numeric", month: "long", year: "numeric" }) })}</p>
       </div>

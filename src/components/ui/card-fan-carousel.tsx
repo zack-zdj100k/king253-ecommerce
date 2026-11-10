@@ -380,7 +380,7 @@ export default function CardFanCarousel({ cards, label = "Cards", className, onC
                 style={{ objectPosition: origin, transformOrigin: origin, scale: String(card.zoom ?? 1) }}
               />
               <span className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/10 to-black/25" />
-              <span className="king-label absolute top-3 left-3 text-[0.55rem] text-king-muted md:text-[0.6rem]">
+              <span className="king-label absolute top-3 left-3 text-[0.625rem] text-king-muted md:text-[0.625rem]">
                 {String(index + 1).padStart(2, "0")}
               </span>
               {(card.title || card.meta) && (
@@ -391,7 +391,7 @@ export default function CardFanCarousel({ cards, label = "Cards", className, onC
                     </span>
                   )}
                   {card.meta && (
-                    <span className="king-label mt-1 block text-[0.6rem] text-king-gray">{card.meta}</span>
+                    <span className="king-label mt-1 block text-[0.625rem] text-king-gray">{card.meta}</span>
                   )}
                 </span>
               )}

@@ -14,7 +14,7 @@ export default async function WishlistPage() {
     <section className="relative min-h-[80svh] bg-king-black pt-28 pb-24">
       <div className="mx-auto max-w-[1600px] px-4 sm:px-6 lg:px-12">
         <BackButton fallback="/clothes" className="mb-4" />
-        <p className="king-label text-[0.6rem] text-king-gray">{t("eyebrow")}</p>
+        <p className="king-label text-[0.625rem] text-king-gray">{t("eyebrow")}</p>
         <h1 className="king-display mt-4 mb-14 text-[clamp(2.75rem,7vw,6rem)] text-king-white">{t("heading")}</h1>
         <WishlistView />
       </div>

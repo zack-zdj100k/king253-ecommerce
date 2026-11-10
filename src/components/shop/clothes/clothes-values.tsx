@@ -33,7 +33,7 @@ export function ClothesValues({ content }: { content: BasicsContent }) {
         </TiltCard>
 
         <div data-reveal>
-          <p className="king-label text-[0.6rem] text-king-bright-red">{content.eyebrow}</p>
+          <p className="king-label text-[0.625rem] text-king-bright-red">{content.eyebrow}</p>
           <h2 id="basics-title" className="king-display mt-4 text-[clamp(2.25rem,4vw,4rem)] text-king-white">
             {content.title}
           </h2>

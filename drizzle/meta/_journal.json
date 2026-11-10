@@ -134,6 +134,13 @@
       "when": 1794341043881,
       "tag": "0018_zr_express_annaba_rates",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1794345039378,
+      "tag": "0019_indexes_for_foreign_keys",
+      "breakpoints": true
     }
   ]
 }

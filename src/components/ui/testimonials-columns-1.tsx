@@ -43,7 +43,7 @@ export const TestimonialsColumn = (props: { className?: string; testimonials: Te
                   )}
                   <span className="flex flex-col">
                     <span className="text-sm leading-5 font-semibold tracking-tight text-king-white uppercase">{t.name}</span>
-                    {t.role && <span className="king-label mt-0.5 text-[0.55rem] text-king-gray">{t.role}</span>}
+                    {t.role && <span className="king-label mt-0.5 text-[0.625rem] text-king-gray">{t.role}</span>}
                   </span>
                 </figcaption>
               </figure>

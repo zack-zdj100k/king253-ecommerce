@@ -75,7 +75,7 @@ export function BackButton({ fallback, label, variant = "site", className }: { f
       }}
       className={cn(
         variant === "site"
-          ? "king-label inline-flex h-10 items-center gap-2 text-[0.6rem] text-king-muted transition-colors hover:text-king-white"
+          ? "king-label inline-flex h-10 items-center gap-2 text-[0.625rem] text-king-muted transition-colors hover:text-king-white"
           : "inline-flex h-9 items-center gap-0.5 text-[17px] text-[var(--ios-tint)] transition-opacity hover:opacity-70 active:opacity-50",
         className
       )}

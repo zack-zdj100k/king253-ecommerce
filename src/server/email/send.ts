@@ -44,7 +44,13 @@ async function deliver(
     return
   }
   try {
-    await transport.sendMail({ from: fromAddress(msg.brand), to: msg.to, subject: msg.subject, html: msg.html, text: msg.text })
+    // One retry after a short pause: SMTP servers often fail once and then accept.
+    try {
+      await transport.sendMail({ from: fromAddress(msg.brand), to: msg.to, subject: msg.subject, html: msg.html, text: msg.text })
+    } catch {
+      await new Promise((r) => setTimeout(r, 1500))
+      await transport.sendMail({ from: fromAddress(msg.brand), to: msg.to, subject: msg.subject, html: msg.html, text: msg.text })
+    }
     await db.insert(notifications).values({ recipient: msg.to, subject: msg.subject, template: msg.template, status: "sent", orderId: msg.orderId })
   } catch (error) {
     console.error("[king253] email failed", error)
@@ -67,7 +73,18 @@ export async function sendNewOrderEmails(db: DbOrTx, orderId: string) {
   const [loaded, settings] = await Promise.all([loadEmailOrder(db, orderId), getSettings(db)])
   if (!loaded) return
   const to = loaded.shopEmail || settings.adminNotifyEmail || settings.contactEmail
-  if (!to) return
+  if (!to) {
+    // Nobody to tell: leave a visible trace on the order instead of failing silently.
+    await db.insert(notifications).values({
+      recipient: "(no address)",
+      subject: `New order ${loaded.email.number} — nobody was notified`,
+      template: "shop_new_order",
+      status: "skipped",
+      error: `No notification email for ${loaded.email.storeName ?? "this shop"} (add it in Admin → Shops).`,
+      orderId,
+    })
+    return
+  }
   const mail = shopNewOrderEmail(settings.brandName, loaded.email, `${siteUrl()}/admin/orders/${orderId}`)
   await deliver(db, { ...mail, to, template: "shop_new_order", orderId, brand: settings.brandName })
 }

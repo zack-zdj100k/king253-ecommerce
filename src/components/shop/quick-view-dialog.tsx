@@ -130,9 +130,8 @@ function QuickViewBody({ data, onClose }: { data: QuickViewData; onClose: () => 
             onClick={() => {
               if (!variant) return setNeedSize(true)
               onClose()
-              // Ordering needs an account: create one, then come back to this page.
-              if (!data.signedIn) router.push(`/sign-up?next=${encodeURIComponent(window.location.pathname + window.location.search)}`)
-              else router.push(`/checkout?buy=${variant.id}&qty=1`)
+              // No account needed: guests order straight away.
+              router.push(`/checkout?buy=${variant.id}&qty=1`)
             }}
           >
             {variant && variant.available <= 0 ? t("outOfStock") : t("buyNow")}
@@ -148,7 +147,7 @@ function QuickViewBody({ data, onClose }: { data: QuickViewData; onClose: () => 
           <div className="divide-y divide-white/10 border-y border-white/10">
             {data.details.map((d, i) => (
               <details key={d.title} open={i === 0} className="group py-4">
-                <summary className="king-label flex cursor-pointer list-none items-center justify-between text-[0.6rem] text-king-white">
+                <summary className="king-label flex cursor-pointer list-none items-center justify-between text-[0.625rem] text-king-white">
                   {d.title}
                   <span aria-hidden className="text-king-bright-red transition-transform group-open:rotate-45">
                     +
@@ -163,7 +162,7 @@ function QuickViewBody({ data, onClose }: { data: QuickViewData; onClose: () => 
         <Link
           href={`/product/${data.slug}${selection.colour ? `?colour=${encodeURIComponent(selection.colour)}` : ""}`}
           onClick={onClose}
-          className="king-label block text-center text-[0.6rem] text-king-muted underline-offset-4 hover:text-king-white hover:underline"
+          className="king-label block text-center text-[0.625rem] text-king-muted underline-offset-4 hover:text-king-white hover:underline"
         >
           {t("openPage")}
         </Link>
@@ -182,7 +181,7 @@ function ColourPhotos({ photos, name, colour }: { photos: QuickViewData["images"
       <div className="relative aspect-[4/5] overflow-hidden bg-king-card">
         <ProductImage image={main} alt={main?.alt ?? (colour ? `${name} — ${colour}` : name)} sizes={productSizes(main, [100, 50, 40])} />
         {colour && (
-          <span className="king-label absolute bottom-3 left-3 bg-black/60 px-3 py-1.5 text-[0.55rem] text-king-white backdrop-blur">{colour}</span>
+          <span className="king-label absolute bottom-3 left-3 bg-black/60 px-3 py-1.5 text-[0.625rem] text-king-white backdrop-blur">{colour}</span>
         )}
       </div>
       {photos.length > 1 && (

@@ -84,7 +84,7 @@ export default async function CheckoutPage({ searchParams }: PageProps<"/checkou
       <div aria-hidden className="pointer-events-none absolute top-0 left-0 h-[50svh] w-full bg-[radial-gradient(ellipse_at_20%_0%,rgba(163,13,13,0.22),transparent_60%)]" />
       <div className="relative mx-auto max-w-[1600px] px-4 sm:px-6 lg:px-12">
         <BackButton fallback="/clothes" className="mb-4" />
-        <p className="king-label text-[0.6rem] text-king-gray">{t("checkoutEyebrow")}</p>
+        <p className="king-label text-[0.625rem] text-king-gray">{t("checkoutEyebrow")}</p>
         <h1 className="king-display mt-4 text-[clamp(2.75rem,6vw,5.5rem)] text-king-white">{mode === "buy_now" ? t("buyNow") : t("buyAll")}</h1>
         <div className="mt-12">
           <CheckoutForm

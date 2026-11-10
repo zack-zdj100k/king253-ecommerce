@@ -76,12 +76,12 @@ export function Catalog({
           {t("newCollection")}
         </h2>
         <div className="grid grid-cols-2 gap-x-10 gap-y-1 lg:pb-3">
-          <ul className="king-label space-y-1.5 text-[0.55rem] text-king-gray">
+          <ul className="king-label space-y-1.5 text-[0.625rem] text-king-gray">
             <li>{t("tagNew")}</li>
             <li>{t("tagStudio")}</li>
             <li>{t("tagStreet")}</li>
           </ul>
-          <ul className="king-label space-y-1.5 text-[0.55rem] text-king-gray">
+          <ul className="king-label space-y-1.5 text-[0.625rem] text-king-gray">
             {facets.categories.slice(0, 4).map((c) => (
               <li key={c.slug}>{c.name}</li>
             ))}
@@ -114,7 +114,7 @@ export function Catalog({
           </div>
 
           <div className="flex items-center justify-between gap-3 lg:justify-end">
-            <p className="king-label shrink-0 text-[0.6rem] text-king-gray" aria-live="polite">
+            <p className="king-label shrink-0 text-[0.625rem] text-king-gray" aria-live="polite">
               {t("pieces", { count: total })}
             </p>
             <div className="flex min-w-0 items-center gap-2">
@@ -152,7 +152,7 @@ export function Catalog({
                   aria-pressed={on}
                   onClick={() => update({ category: c.slug })}
                   className={cn(
-                    "king-label h-8 shrink-0 rounded-full border px-3.5 text-[0.55rem] transition-colors",
+                    "king-label h-8 shrink-0 rounded-full border px-3.5 text-[0.625rem] transition-colors",
                     on ? "border-king-bright-red bg-king-red/15 text-king-white" : "border-white/15 text-king-gray hover:border-white/35 hover:text-king-white"
                   )}
                 >
@@ -174,7 +174,7 @@ export function Catalog({
             {filters.inStock && <Chip label={t("inStock")} onClear={() => update({ stock: null })} />}
             {filters.minPrice !== undefined && <Chip label={t("from", { price: formatDA(filters.minPrice) })} onClear={() => update({ min: null })} />}
             {filters.maxPrice !== undefined && <Chip label={t("upTo", { price: formatDA(filters.maxPrice) })} onClear={() => update({ max: null })} />}
-            <button type="button" onClick={() => router.push(`${pathname}#catalog`, { scroll: false })} className="king-label h-9 px-3 text-[0.6rem] text-king-gray hover:text-king-white">
+            <button type="button" onClick={() => router.push(`${pathname}#catalog`, { scroll: false })} className="king-label h-9 px-3 text-[0.625rem] text-king-gray hover:text-king-white">
               {t("clearAll")}
             </button>
           </div>
@@ -237,7 +237,7 @@ function Chip({ label, onClear }: { label: string; onClear: () => void }) {
     <button
       type="button"
       onClick={onClear}
-      className="king-label inline-flex h-9 items-center gap-2 border border-white/15 px-3 text-[0.6rem] text-king-white hover:border-king-bright-red"
+      className="king-label inline-flex h-9 items-center gap-2 border border-white/15 px-3 text-[0.625rem] text-king-white hover:border-king-bright-red"
     >
       {label} <X className="size-3" aria-label={t("removeFilter")} />
     </button>
@@ -261,7 +261,7 @@ function FilterSheet({
   const [max, setMax] = React.useState(filters.maxPrice?.toString() ?? "")
   const option = (active: boolean) =>
     cn(
-      "king-label h-10 border px-3 text-[0.6rem] transition-colors",
+      "king-label h-10 border px-3 text-[0.625rem] transition-colors",
       active ? "border-king-bright-red bg-king-red/15 text-king-white" : "border-white/15 text-king-muted hover:text-king-white"
     )
 
@@ -326,7 +326,7 @@ function FilterSheet({
               <input inputMode="numeric" value={min} onChange={(e) => setMin(e.target.value.replace(/\D/g, ""))} placeholder={t("min")} aria-label={t("minPrice")} className="h-10 w-full border border-white/15 bg-black/40 px-3 text-sm text-king-white" />
               <span className="text-king-gray">–</span>
               <input inputMode="numeric" value={max} onChange={(e) => setMax(e.target.value.replace(/\D/g, ""))} placeholder={t("max")} aria-label={t("maxPrice")} className="h-10 w-full border border-white/15 bg-black/40 px-3 text-sm text-king-white" />
-              <button type="submit" className="king-label h-10 shrink-0 bg-king-red px-4 text-[0.6rem] text-king-white hover:bg-king-bright-red">
+              <button type="submit" className="king-label h-10 shrink-0 bg-king-red px-4 text-[0.625rem] text-king-white hover:bg-king-bright-red">
                 {t("apply")}
               </button>
             </form>
@@ -340,7 +340,7 @@ function FilterSheet({
 function FilterGroup({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <fieldset>
-      <legend className="king-label mb-3 text-[0.6rem] text-king-gray">{title}</legend>
+      <legend className="king-label mb-3 text-[0.625rem] text-king-gray">{title}</legend>
       <div className="flex flex-wrap gap-2">{children}</div>
     </fieldset>
   )

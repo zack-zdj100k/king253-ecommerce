@@ -88,7 +88,7 @@ export function ProductCard({
       <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[2] h-[62%] bg-gradient-to-t from-black via-black/60 to-transparent" aria-hidden />
       <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[3] space-y-2 p-3 md:space-y-3 md:p-5">
         <div className="pointer-events-none space-y-1.5">
-          {label && <p className={cn("king-label text-[0.5rem] text-king-muted md:text-[0.55rem]", !feature && "hidden xl:block")}>{label}</p>}
+          {label && <p className={cn("king-label text-[0.625rem] text-king-muted md:text-[0.625rem]", !feature && "hidden xl:block")}>{label}</p>}
           <h3
             className={cn(
               "king-display leading-[0.92] text-king-white",
@@ -100,7 +100,7 @@ export function ProductCard({
         </div>
 
         {soldOut ? (
-          <p className="king-label text-[0.5rem] text-king-gray md:text-[0.55rem]">{t("outOfStock")}</p>
+          <p className="king-label text-[0.625rem] text-king-gray md:text-[0.625rem]">{t("outOfStock")}</p>
         ) : (
           <>
             <div className={cn(feature ? "block" : "hidden md:block")}>
@@ -144,7 +144,7 @@ function HangTag({ price, compareAt, soon, feature }: { price: number | null; co
       )}
     >
       <span className="size-1.5 rounded-full bg-[#0b0b0b] md:size-2" aria-hidden />
-      <span className="king-label mt-1 text-[0.4rem] text-king-red md:mt-1.5 md:text-[0.5rem]">KING 253</span>
+      <span className="king-label mt-1 text-[0.4rem] text-king-red md:mt-1.5 md:text-[0.625rem]">KING 253</span>
       {price === null ? (
         <span className="mt-1 text-xs font-bold">{soon}</span>
       ) : (
@@ -152,8 +152,8 @@ function HangTag({ price, compareAt, soon, feature }: { price: number | null; co
           <span className="mt-0.5 text-[0.95rem] leading-none font-extrabold tracking-tight whitespace-nowrap tabular-nums md:text-[clamp(1.05rem,2.2vw,1.55rem)]">
             {price.toLocaleString("fr-DZ")}
           </span>
-          <span className="king-label text-[0.45rem] md:text-[0.55rem]">DA</span>
-          {compareAt ? <span className="mt-0.5 text-[0.5rem] text-[#8a1010] line-through md:text-[0.6rem]">{compareAt.toLocaleString("fr-DZ")}</span> : null}
+          <span className="king-label text-[0.625rem] md:text-[0.625rem]">DA</span>
+          {compareAt ? <span className="mt-0.5 text-[0.625rem] text-[#8a1010] line-through md:text-[0.625rem]">{compareAt.toLocaleString("fr-DZ")}</span> : null}
         </>
       )}
     </div>
@@ -247,7 +247,7 @@ function AddToBag({ product, soldOut }: { product: ProductCardData; soldOut: boo
           className="pointer-events-auto absolute inset-x-0 bottom-0 z-20 space-y-2.5 border-t border-white/10 bg-king-black/85 p-3 backdrop-blur-xl md:p-4"
         >
           <div className="flex items-center justify-between gap-2">
-            <p className="king-label text-[0.55rem] text-king-muted">{t("sizeTitle")}</p>
+            <p className="king-label text-[0.625rem] text-king-muted">{t("sizeTitle")}</p>
             <button
               type="button"
               onClick={() => setOpen(false)}

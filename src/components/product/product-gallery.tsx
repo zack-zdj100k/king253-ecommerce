@@ -110,7 +110,7 @@ function Gallery({ images, name }: { images: Crop[]; name: string }) {
           >
             <ProductImage image={images[active]} alt={images[active].alt ?? name} sizes={productSizes(images[active], [100, 100, 60])} preload />
           </div>
-          <span className="king-label pointer-events-none absolute right-4 bottom-4 flex items-center gap-2 bg-black/50 px-3 py-2 text-[0.55rem] text-king-white backdrop-blur">
+          <span className="king-label pointer-events-none absolute right-4 bottom-4 flex items-center gap-2 bg-black/50 px-3 py-2 text-[0.625rem] text-king-white backdrop-blur">
             <Expand className="size-3" aria-hidden /> {t("zoomHint")}
           </span>
         </div>
@@ -141,7 +141,7 @@ function Gallery({ images, name }: { images: Crop[]; name: string }) {
               <button type="button" onClick={() => go(active + 1)} aria-label={t("next")} className="absolute top-1/2 right-4 grid size-11 -translate-y-1/2 place-items-center rounded-full bg-white/10 text-king-white hover:bg-white/20">
                 <ChevronRight className="size-5" />
               </button>
-              <p className="king-label absolute bottom-5 left-1/2 -translate-x-1/2 text-[0.6rem] text-king-muted">
+              <p className="king-label absolute bottom-5 left-1/2 -translate-x-1/2 text-[0.625rem] text-king-muted">
                 {active + 1} / {images.length}
               </p>
             </>

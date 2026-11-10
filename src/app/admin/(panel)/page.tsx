@@ -6,6 +6,7 @@ import { formatDA } from "@/lib/money"
 import { db } from "@/server/db"
 import { getOverview, type Overview } from "@/server/overview"
 import { getSettings } from "@/server/settings"
+import { emailSetup } from "@/server/email/setup"
 import { listStores } from "@/server/stores"
 import { AnalyticsBento, type AnalyticsBentoProps } from "@/components/ui/analytics-bento"
 import { LinkButton, PageHeader, pill } from "@/components/admin/ui"
@@ -82,6 +83,7 @@ function bentoProps(o: Overview): Omit<AnalyticsBentoProps, "currency"> {
 }
 
 export default async function AdminOverview({ searchParams }: PageProps<"/admin">) {
+  const mail = await emailSetup(db)
   const p = await searchParams
   const [settings, shops] = await Promise.all([getSettings(db), listStores(db, { activeOnly: true })])
   // Statistics may combine shops (this is not a list filter).
@@ -130,6 +132,24 @@ export default async function AdminOverview({ searchParams }: PageProps<"/admin"
           ))}
         </nav>
       </PageHeader>
+
+      {(!mail.smtpReady || mail.shopsWithoutEmail.length > 0) && (
+        <div role="status" className="rounded-2xl border border-amber-400/30 bg-amber-400/[0.07] p-4 text-sm text-amber-100">
+          <p className="font-semibold">New-order emails are not fully set up — a new order does not reach anyone by email yet.</p>
+          <ul className="mt-2 list-disc space-y-1 ps-5 text-amber-100/90">
+            {mail.shopsWithoutEmail.length > 0 && (
+              <li>
+                No notification email for: {mail.shopsWithoutEmail.join(", ")}.{" "}
+                <Link href="/admin/shops" className="underline underline-offset-4">
+                  Add it in Shops
+                </Link>
+              </li>
+            )}
+            {!mail.smtpReady && <li>The email account (SMTP) is not connected on the server, so emails are only recorded, not sent.</li>}
+          </ul>
+          <p className="mt-2 text-xs text-amber-100/70">Until then, check Orders → Pending: the sidebar badge shows new orders.</p>
+        </div>
+      )}
 
       <ul className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
         {kpis.map((c) => (

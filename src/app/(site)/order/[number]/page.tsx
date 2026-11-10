@@ -32,19 +32,19 @@ export default async function OrderConfirmationPage({ params, searchParams }: Pa
         <BackButton fallback="/account" className="mb-4" />
         {order.status === "cancelled" ? (
           <>
-            <p className="king-label text-[0.6rem] text-king-gray">{t("cancelledEyebrow")}</p>
+            <p className="king-label text-[0.625rem] text-king-gray">{t("cancelledEyebrow")}</p>
             <h1 className="king-display mt-4 text-[clamp(2.75rem,7vw,6rem)] text-king-white">{t("orderNo", { number: order.number })}</h1>
             <p className="mt-5 max-w-xl text-base text-king-muted">{t("cancelledText")}</p>
           </>
         ) : order.returned ? (
           <>
-            <p className="king-label text-[0.6rem] text-king-gray">{t("returnedEyebrow")}</p>
+            <p className="king-label text-[0.625rem] text-king-gray">{t("returnedEyebrow")}</p>
             <h1 className="king-display mt-4 text-[clamp(2.75rem,7vw,6rem)] text-king-white">{t("orderNo", { number: order.number })}</h1>
             <p className="mt-5 max-w-xl text-base text-king-muted">{t("returnedText")}</p>
           </>
         ) : (
           <>
-            <p className="king-label text-[0.6rem] text-king-bright-red">{order.status === "delivered" ? t("delivered") : t("received")}</p>
+            <p className="king-label text-[0.625rem] text-king-bright-red">{order.status === "delivered" ? t("delivered") : t("received")}</p>
             <h1 className="king-display mt-4 text-[clamp(2.75rem,7vw,6rem)] text-king-white">{t("thanks", { name: order.customerName.split(" ")[0] })}</h1>
             <p className="mt-5 max-w-xl text-base text-king-muted">
               {t(order.status === "delivered" ? "deliveredText" : order.status === "pending" || order.status === "contacting" ? "pendingText" : "confirmedText", {

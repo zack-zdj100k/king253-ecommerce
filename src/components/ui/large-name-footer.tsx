@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button"
 import { GraffitiWordmark } from "@/components/ui/graffiti-wordmark"
 import { LanguageSwitcher } from "@/components/layout/language-switcher"
 
-const linkClass = "text-sm text-king-gray transition-colors duration-300 hover:text-king-white"
+const linkClass = "inline-block py-1.5 text-sm text-king-gray transition-colors duration-300 hover:text-king-white"
 
 /**
  * Large-name footer: brand block + link columns, closed by a 3D graffiti
@@ -26,7 +26,7 @@ async function Footer() {
   const phone = settings.contactPhone ? normalizePhone(settings.contactPhone) : null
   const whatsapp = settings.whatsapp ? normalizePhone(settings.whatsapp) : null
   return (
-    <footer className="relative overflow-hidden border-t border-white/[0.06] bg-king-black px-4 pt-16 pb-6 md:px-6 md:pt-20 lg:px-12">
+    <footer className="relative overflow-hidden border-t border-white/[0.06] bg-king-black px-4 pt-16 pb-24 md:px-6 md:pt-20 lg:px-12 lg:pb-6">
       <div aria-hidden className="pointer-events-none absolute -bottom-1/3 left-1/2 h-2/3 w-[80%] -translate-x-1/2 king-glow [--glow:rgb(92_7_7_/_0.25)]" />
 
       <div className="relative mx-auto max-w-[1600px]">

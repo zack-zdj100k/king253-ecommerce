@@ -8,7 +8,7 @@ export function OrderSummary({ order }: { order: CustomerOrderView }) {
   return (
     <div className="grid gap-8 md:grid-cols-2">
       <div>
-        <h2 className="king-label text-[0.6rem] text-king-gray">{t("items")}</h2>
+        <h2 className="king-label text-[0.625rem] text-king-gray">{t("items")}</h2>
         <ul className="mt-3 divide-y divide-white/5">
           {order.items.map((i) => (
             <li key={i.id} className="flex gap-4 py-3">
@@ -17,7 +17,7 @@ export function OrderSummary({ order }: { order: CustomerOrderView }) {
               </span>
               <span className="min-w-0 flex-1">
                 <span className="block text-sm font-medium text-king-white uppercase">{i.name}</span>
-                <span className="king-label mt-1 block text-[0.55rem] text-king-gray">
+                <span className="king-label mt-1 block text-[0.625rem] text-king-gray">
                   {i.color} / {i.size} × {i.quantity}
                 </span>
               </span>
@@ -61,7 +61,7 @@ export function OrderSummary({ order }: { order: CustomerOrderView }) {
           )}
         </dl>
         <div className="text-sm leading-relaxed text-king-muted">
-          <h2 className="king-label mb-2 text-[0.6rem] text-king-gray">{t("delivery")}</h2>
+          <h2 className="king-label mb-2 text-[0.625rem] text-king-gray">{t("delivery")}</h2>
           <p>{order.customerName}</p>
           <p className="text-king-white">{order.delivery.type === "desk" ? t("stopDesk", { name: order.delivery.deskName ?? "—" }) : t("homeDelivery")}</p>
           {order.delivery.type === "desk" && order.delivery.deskAddress ? <p>{order.delivery.deskAddress}</p> : null}

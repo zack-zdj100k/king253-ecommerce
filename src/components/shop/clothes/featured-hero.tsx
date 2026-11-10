@@ -53,7 +53,7 @@ export function FeaturedHero({ products: FEATURED, content }: { products: Produc
         <div className="mx-auto grid max-w-[1600px] grid-cols-[minmax(0,1fr)] gap-10 px-4 sm:px-6 lg:min-h-[calc(100svh-12rem)] lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)_minmax(0,0.5fr)] lg:items-center lg:gap-12 lg:px-12">
           {/* Left — title, spec rows, add to bag */}
           <div className="order-1">
-            <p className="king-label text-[0.6rem] whitespace-pre-wrap text-king-gray">{content.eyebrow}</p>
+            <p className="king-label text-[0.625rem] whitespace-pre-wrap text-king-gray">{content.eyebrow}</p>
             <h1 id="collection-title" className="king-display mt-6 text-[clamp(3.25rem,7vw,7.5rem)] text-king-white">
               {title.map((line, i) => (
                 <span key={`${line}-${i}`} className="block">
@@ -65,7 +65,7 @@ export function FeaturedHero({ products: FEATURED, content }: { products: Produc
             <p className="king-serif mt-3 text-[clamp(1.4rem,2.2vw,2rem)] text-king-muted">{content.subtitle}</p>
 
             <dl className="mt-10 grid max-w-sm grid-cols-[6rem_1fr] gap-x-4 gap-y-3 border-t border-white/10 pt-6">
-              <dt className="king-label text-[0.6rem] text-king-gray">Piece</dt>
+              <dt className="king-label text-[0.625rem] text-king-gray">Piece</dt>
               <dd className="text-sm font-medium text-king-white uppercase">
                 <AnimatePresence mode="wait" initial={false}>
                   <motion.span key={product.id} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.25 }} className="block">
@@ -73,10 +73,10 @@ export function FeaturedHero({ products: FEATURED, content }: { products: Produc
                   </motion.span>
                 </AnimatePresence>
               </dd>
-              <dt className="king-label text-[0.6rem] text-king-gray">Category</dt>
-              <dd className="king-label text-[0.6rem] text-king-white">{product.categoryName}</dd>
-              <dt className="king-label text-[0.6rem] text-king-gray">Colour</dt>
-              <dd className="king-label flex items-center gap-2 text-[0.6rem] text-king-white">
+              <dt className="king-label text-[0.625rem] text-king-gray">Category</dt>
+              <dd className="king-label text-[0.625rem] text-king-white">{product.categoryName}</dd>
+              <dt className="king-label text-[0.625rem] text-king-gray">Colour</dt>
+              <dd className="king-label flex items-center gap-2 text-[0.625rem] text-king-white">
                 {product.colours[0] ? (
                   <span className="size-2.5 rounded-full ring-1 ring-white/30" style={{ backgroundColor: product.colours[0].hex ?? "#555" }} aria-hidden />
                 ) : null}
@@ -118,7 +118,7 @@ export function FeaturedHero({ products: FEATURED, content }: { products: Produc
                 </motion.div>
               </AnimatePresence>
               <div className="absolute inset-0 bg-gradient-to-t from-king-black/80 via-transparent to-king-black/20" />
-              <p className="king-label absolute bottom-4 left-5 text-[0.6rem] text-king-muted">Look {pad(index + 1)}</p>
+              <p className="king-label absolute bottom-4 left-5 text-[0.625rem] text-king-muted">Look {pad(index + 1)}</p>
             </div>
           </div>
 
@@ -135,7 +135,7 @@ export function FeaturedHero({ products: FEATURED, content }: { products: Produc
                   >
                     <ProductImage image={p.image} alt="" sizes={productSizes(p.image, [30, 30, 12])} className="transition-[filter] duration-500 group-hover:brightness-110" />
                     <span className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
-                    <span className="king-label absolute bottom-3 left-3 text-[0.55rem] text-king-white">{pad(i + 1)}</span>
+                    <span className="king-label absolute bottom-3 left-3 text-[0.625rem] text-king-white">{pad(i + 1)}</span>
                   </button>
                 </TiltCard>
               ))}
@@ -164,11 +164,11 @@ export function FeaturedHero({ products: FEATURED, content }: { products: Produc
               <button type="button" onClick={() => go(-1)} aria-label="Previous look" className="grid size-10 place-items-center rounded-full border border-white/15 text-king-muted transition-colors hover:border-king-bright-red hover:text-king-white">
                 <ChevronLeft className="size-4" aria-hidden />
               </button>
-              <span className="king-label text-[0.6rem] text-king-white tabular-nums">{pad(index + 1)}</span>
+              <span className="king-label text-[0.625rem] text-king-white tabular-nums">{pad(index + 1)}</span>
               <span className="relative h-px flex-1 bg-white/15">
                 <span className="absolute inset-y-0 left-0 bg-king-bright-red transition-[width] duration-500 ease-king" style={{ width: `${((index + 1) / FEATURED.length) * 100}%` }} />
               </span>
-              <span className="king-label text-[0.6rem] text-king-gray tabular-nums">{pad(FEATURED.length)}</span>
+              <span className="king-label text-[0.625rem] text-king-gray tabular-nums">{pad(FEATURED.length)}</span>
               <button type="button" onClick={() => go(1)} aria-label="Next look" className="grid size-10 place-items-center rounded-full border border-white/15 text-king-muted transition-colors hover:border-king-bright-red hover:text-king-white">
                 <ChevronRight className="size-4" aria-hidden />
               </button>
@@ -185,7 +185,7 @@ function EmptyHero({ content }: { content: ClothesHeroContent }) {
   return (
     <section id="collection" className="relative bg-king-black px-4 pt-32 pb-16 sm:px-6 lg:px-12">
       <div className="mx-auto max-w-[1600px]">
-        <p className="king-label text-[0.6rem] text-king-gray">[ KING 253 collection ]</p>
+        <p className="king-label text-[0.625rem] text-king-gray">[ KING 253 collection ]</p>
         <h1 id="collection-title" className="king-display mt-6 text-[clamp(3.25rem,7vw,7.5rem)] text-king-white">
           {content.title.replace(/\n/g, " ")}
           <span className="text-king-bright-red">.</span>

@@ -111,7 +111,7 @@ export function DetailsForm({ initial }: { initial: AccountDetails }) {
       </div>
 
       <fieldset className="space-y-5 border-t border-white/10 pt-6">
-        <legend className="king-label flex items-center gap-2 text-[0.6rem] text-king-gray">
+        <legend className="king-label flex items-center gap-2 text-[0.625rem] text-king-gray">
           <MapPin className="size-3.5 text-king-bright-red" aria-hidden /> {t("deliveryAddress")}
         </legend>
         <div className="grid gap-5 sm:grid-cols-2">
@@ -298,7 +298,7 @@ export function RemoveFromMyOrders({ orderId, kind }: { orderId: string; kind: "
         <button
           type="button"
           onClick={() => setAsking(true)}
-          className="king-label inline-flex h-9 items-center gap-2 px-3 text-[0.6rem] text-king-gray transition-colors hover:text-king-bright-red"
+          className="king-label inline-flex h-9 items-center gap-2 px-3 text-[0.625rem] text-king-gray transition-colors hover:text-king-bright-red"
         >
           <Trash2 className="size-3.5" aria-hidden /> {t("removeFromOrders")}
         </button>

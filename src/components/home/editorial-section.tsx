@@ -58,7 +58,7 @@ export function EditorialSection({ content }: { content: AttitudeContent }) {
               />
             </div>
           </div>
-          <figcaption className="king-label mt-4 flex justify-between text-[0.6rem] text-king-gray">
+          <figcaption className="king-label mt-4 flex justify-between text-[0.625rem] text-king-gray">
             <span>{content.captionLeft}</span>
             <span>{content.captionRight}</span>
           </figcaption>

@@ -31,7 +31,7 @@ export default async function LanguagePage({ searchParams }: PageProps<"/languag
       <Image src="/images/backgrounds/home-background.jpg" alt="" fill priority sizes="100vw" className="object-cover opacity-35" />
       <div aria-hidden className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_0%,rgba(212,20,20,0.35),transparent_60%),linear-gradient(to_bottom,rgba(5,5,5,0.4),#050505_85%)]" />
       <div className="relative w-full max-w-3xl text-center">
-        <p className="king-label text-[0.6rem] text-king-gray" dir="ltr">
+        <p className="king-label text-[0.625rem] text-king-gray" dir="ltr">
           KING <span className="text-king-bright-red">253</span> · Built for the city
         </p>
         <div className="mt-6 space-y-1">

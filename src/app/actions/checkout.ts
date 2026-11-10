@@ -118,6 +118,10 @@ export async function placeOrderAction(raw: unknown): Promise<PlaceOrderResult> 
       return { ok: false, error: closure.until ? `The shop is closed until ${formatClosureDate(closure.until)} — orders are paused.` : "The shop is closed for now — orders are paused." }
     }
     const input = placeOrderInput.parse(raw)
+    // Per phone number too: the same person cannot flood the shop with orders from many networks.
+    if (!rateLimit(`order-phone:${String(input.customer?.phone ?? "").replace(/\D/g, "").slice(-9)}`, 5, 10 * 60_000).ok) {
+      return { ok: false, error: "Too many attempts. Please wait a few minutes and try again." }
+    }
     const resolved = await resolveLines(input)
     if (!resolved.ok) return resolved
     const { lines, cartId } = resolved

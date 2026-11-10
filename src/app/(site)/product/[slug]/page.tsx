@@ -11,7 +11,6 @@ import { getProductPage, getRelatedProducts, productDetails } from "@/server/cat
 import { offerOf } from "@/server/pricing"
 import { approvedReviews } from "@/server/reviews"
 import { getSettings } from "@/server/settings"
-import { getCurrentUser } from "@/server/auth/session"
 import { BackButton } from "@/components/ui/back-button"
 import { BuyBox } from "@/components/product/buy-box"
 import { ProductGallery } from "@/components/product/product-gallery"
@@ -32,7 +31,8 @@ export async function generateMetadata({ params }: PageProps<"/product/[slug]">)
   const { product, images } = data
   const title = product.seoTitle || product.name
   const description = product.seoDescription || product.shortDescription || `${product.name} — KING 253 streetwear. Cash on delivery.`
-  const image = product.ogImageUrl || images[0]?.url
+  // A product without a photo still shares with the brand image instead of a blank preview.
+  const image = product.ogImageUrl || images[0]?.url || "/images/hero/2.jpg"
   return {
     title,
     description,
@@ -62,11 +62,10 @@ export default async function ProductPage({ params, searchParams }: PageProps<"/
   if (!data) notFound()
   const { product, category, parentCategory, images, variants, rating } = data
 
-  const [related, reviews, settings, user] = await Promise.all([
+  const [related, reviews, settings] = await Promise.all([
     getRelatedProducts(db, product),
     approvedReviews(db, product.id),
     getSettings(db),
-    getCurrentUser(),
   ])
 
   const prices = variants.map((v) => v.price).filter((p): p is number => p !== null)
@@ -131,7 +130,7 @@ export default async function ProductPage({ params, searchParams }: PageProps<"/
         />
         <div className="relative mx-auto max-w-[1600px] px-4 sm:px-6 lg:px-12">
           <BackButton fallback="/clothes" className="mb-2 -ml-0.5" />
-          <nav aria-label={t("breadcrumb")} className="king-label mb-6 flex flex-wrap items-center gap-2 text-[0.65rem] text-king-gray">
+          <nav aria-label={t("breadcrumb")} className="king-label mb-6 flex flex-wrap items-center gap-x-2 gap-y-0 [&_a]:inline-block [&_a]:py-2 text-[0.65rem] text-king-gray">
             <Link href="/clothes" className="hover:text-king-white">
               {t("clothes")}
             </Link>
@@ -180,7 +179,6 @@ export default async function ProductPage({ params, searchParams }: PageProps<"/
                     }}
                     variants={variants}
                     colourImages={colourImages}
-                    signedIn={!!user}
                   />
                 </div>
 

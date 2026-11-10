@@ -93,6 +93,7 @@ export const users = pgTable(
   (t) => [
     uniqueIndex("users_email_unique").on(sql`lower(${t.email})`),
     uniqueIndex("users_login_phone_unique").on(t.loginPhone),
+    index("users_customer_idx").on(t.customerId),
     check("users_email_or_phone", sql`${t.email} is not null or ${t.loginPhone} is not null`),
   ]
 )
@@ -383,7 +384,7 @@ export const productStores = pgTable(
     /** Off = this shop stops selling the product; its stock is kept for when it is switched back on. */
     active: boolean("active").notNull().default(true),
   },
-  (t) => [primaryKey({ columns: [t.productId, t.storeId] })]
+  (t) => [primaryKey({ columns: [t.productId, t.storeId] }), index("product_stores_store_idx").on(t.storeId)]
 )
 
 /**
@@ -432,7 +433,7 @@ export const carts = pgTable(
     lastActivityAt: timestamp("last_activity_at", { withTimezone: true }).notNull().defaultNow(),
     ...timestamps,
   },
-  (t) => [index("carts_activity_idx").on(t.lastActivityAt)]
+  (t) => [index("carts_activity_idx").on(t.lastActivityAt), index("carts_user_idx").on(t.userId)]
 )
 
 export const cartItems = pgTable(
@@ -447,7 +448,7 @@ export const cartItems = pgTable(
     quantity: integer("quantity").notNull(),
     addedAt: timestamp("added_at", { withTimezone: true }).notNull().defaultNow(),
   },
-  (t) => [primaryKey({ columns: [t.cartId, t.variantId] }), check("cart_items_quantity_positive", sql`${t.quantity} > 0`)]
+  (t) => [primaryKey({ columns: [t.cartId, t.variantId] }), index("cart_items_variant_idx").on(t.variantId), check("cart_items_quantity_positive", sql`${t.quantity} > 0`)]
 )
 
 /**
@@ -543,6 +544,9 @@ export const orders = pgTable(
     uniqueIndex("orders_number_unique").on(t.number),
     uniqueIndex("orders_idempotency_unique").on(t.idempotencyKey),
     index("orders_status_idx").on(t.status),
+    // Shop-filtered lists and the Overview ("this shop's orders, newest first"), and "my orders" on the account page.
+    index("orders_store_idx").on(t.storeId, t.createdAt),
+    index("orders_user_idx").on(t.userId, t.createdAt),
     index("orders_created_idx").on(t.createdAt),
     index("orders_customer_idx").on(t.customerId),
     index("orders_phone_idx").on(t.customerPhone),
@@ -580,6 +584,7 @@ export const orderItems = pgTable(
   (t) => [
     index("order_items_order_idx").on(t.orderId),
     index("order_items_product_idx").on(t.productId),
+    index("order_items_variant_idx").on(t.variantId),
     check("order_items_quantity_positive", sql`${t.quantity} > 0`),
     check("order_items_price_non_negative", sql`${t.unitPrice} >= 0`),
     check("order_items_returned_within_quantity", sql`${t.returnedQuantity} >= 0 and ${t.returnedQuantity} <= ${t.quantity}`),
@@ -651,7 +656,11 @@ export const stockMovements = pgTable(
     actorUserId: uuid("actor_user_id").references(() => users.id),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
-  (t) => [index("stock_movements_variant_idx").on(t.variantId, t.createdAt), index("stock_movements_type_idx").on(t.type)]
+  (t) => [
+    index("stock_movements_variant_idx").on(t.variantId, t.createdAt),
+    index("stock_movements_type_idx").on(t.type),
+    index("stock_movements_store_idx").on(t.storeId, t.createdAt),
+  ]
 )
 
 /* ------------------------------------------------------------------ */
@@ -705,7 +714,12 @@ export const returnJournal = pgTable(
     actorLabel: text("actor_label").notNull(),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
-  (t) => [index("return_journal_created_idx").on(t.createdAt), index("return_journal_order_idx").on(t.orderId)]
+  (t) => [
+    index("return_journal_created_idx").on(t.createdAt),
+    index("return_journal_order_idx").on(t.orderId),
+    // The journal page: one shop, newest first.
+    index("return_journal_store_idx").on(t.storeId, t.createdAt),
+  ]
 )
 
 export const returnJournalItems = pgTable(
@@ -728,6 +742,7 @@ export const returnJournalItems = pgTable(
   },
   (t) => [
     index("return_journal_items_journal_idx").on(t.journalId),
+    index("return_journal_items_order_item_idx").on(t.orderItemId),
     check("return_journal_items_direction", sql`${t.direction} in ('in', 'out')`),
     check("return_journal_items_quantity_positive", sql`${t.quantity} > 0`),
   ]
@@ -756,7 +771,7 @@ export const reviews = pgTable(
     moderatedAt: timestamp("moderated_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
-  (t) => [index("reviews_product_idx").on(t.productId, t.status), check("reviews_rating_range", sql`${t.rating} between 1 and 5`)]
+  (t) => [index("reviews_product_idx").on(t.productId, t.status), index("reviews_user_idx").on(t.userId), check("reviews_rating_range", sql`${t.rating} between 1 and 5`)]
 )
 
 /** Admin-curated customer words. Nothing is shown until an admin publishes it. */
@@ -782,7 +797,7 @@ export const wishlistItems = pgTable(
       .references(() => products.id, { onDelete: "cascade" }),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
-  (t) => [primaryKey({ columns: [t.userId, t.productId] })]
+  (t) => [primaryKey({ columns: [t.userId, t.productId] }), index("wishlist_items_product_idx").on(t.productId)]
 )
 
 /* ------------------------------------------------------------------ */

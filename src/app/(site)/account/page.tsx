@@ -53,7 +53,7 @@ export default async function AccountPage({ searchParams }: PageProps<"/account"
               {user.name.trim().charAt(0).toUpperCase()}
             </span>
             <div className="min-w-0">
-              <p className="king-label text-[0.6rem] text-king-gray">{t("eyebrow")}</p>
+              <p className="king-label text-[0.625rem] text-king-gray">{t("eyebrow")}</p>
               <h1 className="king-display mt-2 truncate text-[clamp(2.25rem,6vw,4.5rem)] text-king-white">{t("hi", { name: user.name.split(" ")[0] })}</h1>
               <p className="mt-1 truncate text-sm text-king-gray">
                 {user.email ?? (user.loginPhone ? formatPhone(user.loginPhone) : "")} · {t("memberSince", { date: fmtDate(user.createdAt) })}
@@ -109,7 +109,7 @@ export default async function AccountPage({ searchParams }: PageProps<"/account"
               <Icon className="size-4" aria-hidden />
               {t(`tab_${key}`)}
               {key === "orders" && orders.length > 0 && (
-                <span className="grid h-5 min-w-5 place-items-center rounded-full bg-white/10 px-1.5 text-[0.6rem] text-king-white">{orders.length}</span>
+                <span className="grid h-5 min-w-5 place-items-center rounded-full bg-white/10 px-1.5 text-[0.625rem] text-king-white">{orders.length}</span>
               )}
             </Link>
           ))}
@@ -132,7 +132,7 @@ export default async function AccountPage({ searchParams }: PageProps<"/account"
                 />
               </div>
               <aside className="space-y-3 self-start border border-white/10 bg-king-near-black p-5 text-sm">
-                <p className="king-label flex items-center gap-2 text-[0.6rem] text-king-gray">
+                <p className="king-label flex items-center gap-2 text-[0.625rem] text-king-gray">
                   <MapPin className="size-3.5 text-king-bright-red" aria-hidden /> {t("savedForDelivery")}
                 </p>
                 <p className="font-medium text-king-white">{user.name}</p>
@@ -219,7 +219,7 @@ function Orders({ orders, open }: { orders: AccountOrder[]; open: number }) {
                     </p>
                   </div>
                   <div className="text-right">
-                    <p className={cn("king-label text-[0.6rem]", cancelled ? "text-king-gray line-through" : o.returned ? "text-king-gray" : o.status === "delivered" ? "text-emerald-300" : "text-king-bright-red")}>
+                    <p className={cn("king-label text-[0.625rem]", cancelled ? "text-king-gray line-through" : o.returned ? "text-king-gray" : o.status === "delivered" ? "text-emerald-300" : "text-king-bright-red")}>
                       {cancelled ? t("cancelled") : o.returned ? t("returned") : step >= 0 ? to(`step_${CUSTOMER_STEPS[step].key}`) : ""}
                     </p>
                     <p className="mt-1 text-sm text-king-white">{formatDA(o.total)}</p>
@@ -231,7 +231,7 @@ function Orders({ orders, open }: { orders: AccountOrder[]; open: number }) {
                     {CUSTOMER_STEPS.map((s, i) => (
                       <li key={s.key} className="space-y-1.5">
                         <span className={cn("block h-1 rounded-full", i <= step ? "bg-king-bright-red" : "bg-white/10")} />
-                        <span className={cn("hidden text-[0.6rem] sm:block", i <= step ? "text-king-muted" : "text-king-gray/60")}>{to(`step_${s.key}`)}</span>
+                        <span className={cn("hidden text-[0.625rem] sm:block", i <= step ? "text-king-muted" : "text-king-gray/60")}>{to(`step_${s.key}`)}</span>
                       </li>
                     ))}
                   </ol>
@@ -251,7 +251,7 @@ function Orders({ orders, open }: { orders: AccountOrder[]; open: number }) {
                       {o.items.map((i) => `${i.name} × ${i.quantity}`).join(", ")}
                     </li>
                   </ul>
-                  <span className="king-label flex shrink-0 items-center gap-2 text-[0.6rem] text-king-muted group-hover:text-king-white">
+                  <span className="king-label flex shrink-0 items-center gap-2 text-[0.625rem] text-king-muted group-hover:text-king-white">
                     {t("details")} <ArrowRight className="size-3.5 rtl:rotate-180 transition-transform group-hover:translate-x-1" aria-hidden />
                   </span>
                 </div>

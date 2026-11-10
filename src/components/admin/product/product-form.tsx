@@ -43,7 +43,8 @@ export function ProductForm({ productId, categories, initial }: { productId: str
     slug: initial?.slug ?? "",
     categoryId: blank(initial?.categoryId),
     gender: initial?.gender ?? "men",
-    status: initial?.status ?? "draft",
+    // A new product goes straight into the shop (every product you add is found on the Clothes page); choose Draft to hide it.
+    status: initial?.status ?? "published",
     price: blank(initial?.price),
     salePrice: blank(initial?.salePrice),
     material: blank(initial?.material),
@@ -139,8 +140,8 @@ export function ProductForm({ productId, categories, initial }: { productId: str
           <label className="block">
             <span className={labelClass}>Status</span>
             <select value={v.status} onChange={(e) => set({ status: e.target.value as typeof v.status })} className={selectClass}>
-              <option value="draft">Draft (hidden)</option>
-              <option value="published">Published (in the shop)</option>
+              <option value="published">Published — shown on the Clothes page</option>
+              <option value="draft">Draft — hidden from the shop</option>
               <option value="archived">Archived (hidden, kept for history)</option>
             </select>
           </label>

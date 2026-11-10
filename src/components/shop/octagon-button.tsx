@@ -30,7 +30,7 @@ export function OctagonButton({
         <ArrowUpRight className="relative size-6 text-king-white transition-transform duration-500 group-hover:rotate-45" aria-hidden />
       </span>
       <span>
-        <span className="king-label block text-[0.6rem] text-king-muted transition-colors group-hover:text-king-white">{label}</span>
+        <span className="king-label block text-[0.625rem] text-king-muted transition-colors group-hover:text-king-white">{label}</span>
         {detail && <span className="mt-1.5 block text-2xl font-medium tracking-tight text-king-white md:text-3xl">{detail}</span>}
       </span>
     </button>

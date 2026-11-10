@@ -42,7 +42,7 @@ export function CategoryTiles({
                 <span className="text-[0.8rem] leading-none font-semibold tracking-tight text-king-white uppercase md:text-sm">
                   {c.name}
                 </span>
-                <span className="king-label mt-1.5 text-[0.55rem] text-king-muted">{c.tagline}</span>
+                <span className="king-label mt-1.5 text-[0.625rem] text-king-muted">{c.tagline}</span>
                 <span className="mt-3 flex items-center gap-1 text-king-white" aria-hidden>
                   <span className="h-px w-6 bg-king-bright-red" />
                   <ArrowRight className="size-3" />

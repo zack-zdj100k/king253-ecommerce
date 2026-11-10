@@ -25,7 +25,7 @@ export function AssembleLook({ products, content }: { products: ProductCardData[
       <div className="mx-auto max-w-[1600px] px-4 sm:px-6 lg:px-12">
         <div className="king-chamfer grid overflow-hidden border border-white/10 [--cut:22px] lg:grid-cols-[minmax(0,0.75fr)_minmax(0,2.25fr)]">
           <div data-reveal className="flex flex-col justify-center bg-king-surface p-8 md:p-10">
-            <p className="king-label text-[0.6rem] text-king-bright-red">{content.eyebrow}</p>
+            <p className="king-label text-[0.625rem] text-king-bright-red">{content.eyebrow}</p>
             <h2 id="look-title" className="king-display mt-4 text-[clamp(2.5rem,4.5vw,4.5rem)] text-king-white">
               {title.map((line, i) => (
                 <span key={`${line}-${i}`} className="block">
@@ -33,9 +33,9 @@ export function AssembleLook({ products, content }: { products: ProductCardData[
                 </span>
               ))}
             </h2>
-            <p className="king-label mt-4 text-[0.6rem] leading-relaxed text-king-muted">{content.note}</p>
+            <p className="king-label mt-4 text-[0.625rem] leading-relaxed text-king-muted">{content.note}</p>
             <p className="mt-8 text-sm text-king-gray">{content.hint}</p>
-            <p className="king-label mt-3 text-[0.6rem] text-king-white">Look total — {formatDA(total)}</p>
+            <p className="king-label mt-3 text-[0.625rem] text-king-white">Look total — {formatDA(total)}</p>
           </div>
 
           <div className="relative isolate p-6 md:p-10">
@@ -63,11 +63,11 @@ export function AssembleLook({ products, content }: { products: ProductCardData[
                         <span className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                       </button>
                       <TiltLayer depth={40} className="pointer-events-none absolute right-3 bottom-3 left-3">
-                        <span className="king-label text-[0.55rem] text-king-bright-red">{String(i + 1).padStart(2, "0")}</span>
+                        <span className="king-label text-[0.625rem] text-king-bright-red">{String(i + 1).padStart(2, "0")}</span>
                       </TiltLayer>
                     </TiltCard>
                     <p className="mt-3 text-[0.75rem] font-semibold tracking-tight text-king-white uppercase">{p.name}</p>
-                    <p className="king-label mt-1 text-[0.55rem] text-king-gray">
+                    <p className="king-label mt-1 text-[0.625rem] text-king-gray">
                       {p.available > 0 ? formatDA(p.price) : "Out of stock"}
                     </p>
                   </li>

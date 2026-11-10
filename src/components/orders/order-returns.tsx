@@ -9,7 +9,7 @@ export function OrderReturns({ order }: { order: CustomerOrderView }) {
   if (!order.returns.length) return null
   return (
     <div className="border-t border-white/10 pt-10">
-      <h2 className="king-label text-[0.6rem] text-king-gray">{t("returns")}</h2>
+      <h2 className="king-label text-[0.625rem] text-king-gray">{t("returns")}</h2>
       <ul className="mt-4 space-y-4 text-sm text-king-muted">
         {order.returns.map((r) => (
           <li key={r.id} className="border border-white/10 p-4">

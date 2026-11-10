@@ -37,9 +37,12 @@ export async function saveProductAction(productId: string | null, input: Product
   const result = await adminAction(
     async ({ actor }) => {
       const product = await saveProduct(db, productId ? id.parse(productId) : null, input, actor)
-      return { id: product.id, slug: product.slug }
+      return { id: product.id, slug: product.slug, status: product.status }
     },
-    { revalidate: productPaths(productId ?? undefined), message: "Product saved." }
+    {
+      revalidate: productPaths(productId ?? undefined),
+      message: input.status === "published" ? "Saved — this product is in the shop (Clothes page)." : input.status === "draft" ? "Saved as DRAFT — it is hidden from the shop. Set Status to Published to show it." : "Saved as archived — hidden from the shop.",
+    }
   )
   if (result.ok && !productId) redirect(`/admin/products/${result.data.id}`)
   return result
