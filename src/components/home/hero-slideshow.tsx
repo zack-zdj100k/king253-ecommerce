@@ -49,16 +49,44 @@ function toSlides(urls: string[] | undefined) {
   })
 }
 
-export function HeroSlideshow({ className, mediaClassName, slides }: { className?: string; mediaClassName?: string; slides?: string[] }) {
+/** The campaign images in order (Hero needs the count to size its scroll). */
+export function heroSlideCount(slides?: string[]) {
+  return toSlides(slides).length
+}
+
+export function HeroSlideshow({
+  className,
+  mediaClassName,
+  slides,
+  index: controlled,
+  onSelect,
+}: {
+  className?: string
+  mediaClassName?: string
+  slides?: string[]
+  /** Scroll-driven mode: the parent picks the slide (no timer, no pause button). */
+  index?: number
+  /** Scroll-driven mode: a number was clicked — the parent scrolls to that photo. */
+  onSelect?: (i: number) => void
+}) {
   const t = useTranslations("home")
   const SLIDES = toSlides(slides)
-  const [index, setIndex] = React.useState(0)
+  const scrollDriven = controlled !== undefined
+  const [ownIndex, setIndex] = React.useState(0)
+  const index = scrollDriven ? Math.min(controlled, SLIDES.length - 1) : ownIndex
   // Highest slide allowed to load: the current one plus the next, so the
   // full-resolution campaign images arrive one at a time.
   const [loadUpTo, setLoadUpTo] = React.useState(1)
   const [userPaused, setUserPaused] = React.useState<boolean | null>(null)
   const reducedMotion = useReducedMotion()
-  const paused = userPaused ?? reducedMotion
+  const paused = scrollDriven || (userPaused ?? reducedMotion)
+
+  // Scroll-driven: keep the image after the one on screen loading ahead.
+  /* eslint-disable react-hooks/set-state-in-effect -- preload follows the parent's index */
+  React.useEffect(() => {
+    if (scrollDriven) setLoadUpTo((n) => Math.max(n, index + 1))
+  }, [scrollDriven, index])
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   React.useEffect(() => {
     if (paused) return
@@ -67,6 +95,7 @@ export function HeroSlideshow({ className, mediaClassName, slides }: { className
   }, [index, paused, SLIDES.length])
 
   function goTo(i: number) {
+    if (scrollDriven) return onSelect?.(i)
     setIndex(i)
     setLoadUpTo((n) => Math.max(n, i + 1))
   }
@@ -88,7 +117,8 @@ export function HeroSlideshow({ className, mediaClassName, slides }: { className
                 key={`${slide.src}-${i}`}
                 aria-hidden={!active}
                 className={cn(
-                  "absolute inset-0 transition-opacity duration-[1600ms] ease-king motion-reduce:duration-500",
+                  "absolute inset-0 transition-opacity ease-king motion-reduce:duration-500",
+                  scrollDriven ? "duration-700" : "duration-[1600ms]",
                   active ? "opacity-100" : "opacity-0"
                 )}
               >
@@ -121,7 +151,7 @@ export function HeroSlideshow({ className, mediaClassName, slides }: { className
       <div
         data-hero-reveal
         data-hero-meta
-        className="absolute right-4 bottom-6 z-20 flex items-center gap-4 sm:right-6 lg:right-12 lg:bottom-10"
+        className="absolute top-20 right-4 z-20 flex items-center gap-4 sm:right-6 lg:top-auto lg:right-12 lg:bottom-10"
       >
         <ol className="flex items-center gap-2" aria-label={t("chooseLook")}>
           {SLIDES.map((slide, i) => (
@@ -157,6 +187,7 @@ export function HeroSlideshow({ className, mediaClassName, slides }: { className
             </li>
           ))}
         </ol>
+        {!scrollDriven && (
         <button
           type="button"
           onClick={() => setUserPaused(!paused)}
@@ -165,6 +196,7 @@ export function HeroSlideshow({ className, mediaClassName, slides }: { className
         >
           {paused ? <Play className="size-3.5" /> : <Pause className="size-3.5" />}
         </button>
+        )}
       </div>
     </div>
   )

@@ -6,9 +6,8 @@ import * as React from "react"
 import Image from "next/image"
 
 import MotionButton from "@/components/ui/motion-button"
-import { ParallaxScrolling } from "@/components/ui/parallax-scrolling"
-import { HeroSlideshow } from "@/components/home/hero-slideshow"
-import { gsap, MOTION_OK } from "@/lib/gsap"
+import { heroSlideCount, HeroSlideshow } from "@/components/home/hero-slideshow"
+import { gsap, MOTION_OK, type ScrollTrigger } from "@/lib/gsap"
 
 export type HeroContent = {
   eyebrow: string
@@ -28,6 +27,11 @@ export function Hero({ content }: { content: HeroContent }) {
   const t = useTranslations("home")
   const headline = content.headline.split("\n").map((l) => l.trim()).filter(Boolean)
   const ref = React.useRef<HTMLElement>(null)
+  const slides = [content.slide1, content.slide2, content.slide3, content.slide4]
+  const count = heroSlideCount(slides)
+  // Scroll-driven photo (undefined = reduced motion: the slideshow plays on its own).
+  const [slide, setSlide] = React.useState<number | undefined>(undefined)
+  const trigger = React.useRef<ScrollTrigger | null>(null)
 
   React.useEffect(() => {
     const mm = gsap.matchMedia(ref.current ?? undefined)
@@ -51,25 +55,50 @@ export function Hero({ content }: { content: HeroContent }) {
         .fromTo("[data-hero-cta]", { autoAlpha: 0, y: 20 }, { autoAlpha: 1, y: 0, duration: 1, stagger: 0.1 }, 1.3)
         .fromTo("[data-hero-meta]", { autoAlpha: 0 }, { autoAlpha: 1, duration: 1.2 }, 1.6)
 
-      // Scrolling reveals the photo: the words and the dark shade fade away
-      // during the first half of the hero, so the campaign look shows clean.
-      gsap
-        .timeline({ scrollTrigger: { trigger: ref.current, start: "top top", end: "45% top", scrub: 0.4 } })
-        .to("[data-hero-copy]", { autoAlpha: 0, y: -48, ease: "none" }, 0)
-        .to("[data-hero-shade]", { opacity: 0.12, ease: "none" }, 0)
-        .to("[data-hero-vignette]", { opacity: 0.35, ease: "none" }, 0)
+      // The hero stays on screen while scrolling walks through every campaign photo;
+      // the words and both buttons stay on every photo. The rest of the home page
+      // comes after the last one.
+      setSlide(0)
+      const pinned = gsap.timeline({
+        scrollTrigger: {
+          trigger: ref.current,
+          start: "top top",
+          end: () => `+=${Math.round(window.innerHeight * 0.7 * count)}`,
+          pin: true,
+          scrub: 0.4,
+          anticipatePin: 1,
+          invalidateOnRefresh: true,
+          onUpdate: (self) => setSlide(Math.min(count - 1, Math.floor(self.progress * count))),
+        },
+      })
+      trigger.current = pinned.scrollTrigger ?? null
+      pinned.to({}, { duration: count })
+      return () => {
+        trigger.current = null
+        setSlide(undefined)
+      }
     })
     return () => mm.revert()
-  }, [])
+  }, [count])
+
+  /** A photo number was clicked: scroll to the middle of that photo's step. */
+  const scrollToSlide = React.useCallback(
+    (i: number) => {
+      const st = trigger.current
+      if (!st) return
+      window.scrollTo({ top: st.start + ((i + 0.5) / count) * (st.end - st.start), behavior: "smooth" })
+    },
+    [count]
+  )
 
   return (
     <section
       id="hero"
       ref={ref}
       aria-labelledby="hero-title"
-      className="relative h-svh min-h-[720px] bg-king-black"
+      className="relative h-svh min-h-[560px] bg-king-black lg:min-h-[720px]"
     >
-      <ParallaxScrolling className="absolute inset-0">
+      <div className="absolute inset-0 overflow-hidden">
         {/* Layer 1 — brick wall */}
         <div data-parallax-layer="1" className="absolute inset-0">
           <Image
@@ -90,16 +119,16 @@ export function Hero({ content }: { content: HeroContent }) {
 
         {/* Layer 3 — the model (campaign slideshow) */}
         <div data-parallax-layer="3" className="absolute inset-0">
-          <HeroSlideshow slides={[content.slide1, content.slide2, content.slide3, content.slide4]} mediaClassName="lg:left-[24%] lg:[mask-image:linear-gradient(to_right,transparent_0%,black_32%)]" />
+          <HeroSlideshow slides={slides} index={slide} onSelect={scrollToSlide} mediaClassName="lg:left-[24%] lg:[mask-image:linear-gradient(to_right,transparent_0%,black_32%)]" />
           {/* Readability: bottom fade on mobile, left fade on desktop, vignette everywhere */}
-          <div data-hero-shade className="pointer-events-none absolute inset-0 z-10 bg-[linear-gradient(to_top,#050505_8%,rgba(5,5,5,0.86)_38%,rgba(5,5,5,0.15)_70%,rgba(5,5,5,0.35)_100%)] lg:bg-[linear-gradient(to_right,rgba(5,5,5,0.75)_0%,rgba(5,5,5,0.35)_35%,transparent_55%),linear-gradient(to_top,rgba(5,5,5,0.85)_0%,transparent_30%)]" />
-          <div data-hero-vignette className="pointer-events-none absolute inset-0 z-10 shadow-[inset_0_0_180px_40px_rgba(0,0,0,0.75)]" />
+          <div className="pointer-events-none absolute inset-0 z-10 bg-[linear-gradient(to_top,#050505_8%,rgba(5,5,5,0.86)_38%,rgba(5,5,5,0.15)_70%,rgba(5,5,5,0.35)_100%)] lg:bg-[linear-gradient(to_right,rgba(5,5,5,0.75)_0%,rgba(5,5,5,0.35)_35%,transparent_55%),linear-gradient(to_top,rgba(5,5,5,0.85)_0%,transparent_30%)]" />
+          <div className="pointer-events-none absolute inset-0 z-10 shadow-[inset_0_0_180px_40px_rgba(0,0,0,0.75)]" />
         </div>
 
         {/* Layer 4 — typography and UI */}
         <div data-parallax-layer="4" className="pointer-events-none relative z-10 h-full">
           <div className="mx-auto flex h-full max-w-[1600px] flex-col justify-end px-4 pt-28 pb-28 sm:px-6 lg:justify-center lg:px-12 lg:pb-16">
-            <div data-hero-copy className="pointer-events-auto max-w-[min(100%,44rem)]">
+            <div className="pointer-events-auto max-w-[min(100%,44rem)]">
               <p data-hero-reveal data-hero-eyebrow className="king-label flex items-center gap-3 text-king-muted">
                 <span className="h-px w-8 bg-king-bright-red" aria-hidden />
                 {content.eyebrow}
@@ -154,7 +183,7 @@ export function Hero({ content }: { content: HeroContent }) {
             <span className="king-label text-[0.625rem] text-king-gray">{t("scroll")}</span>
           </div>
         </div>
-      </ParallaxScrolling>
+      </div>
     </section>
   )
 }

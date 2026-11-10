@@ -148,41 +148,41 @@ export function Navbar() {
             <MobileMenu pathname={pathname} onSearch={() => setSearchOpen(true)} showOnDesktop={scrolled} />
           </div>
         </nav>
-
-        {/* Phones and tablets: page icons floating under the header — a quick way to switch
-            pages without opening the menu. Slides away with the header while scrolling down. */}
-        <nav
-          aria-label={t("quick")}
-          onFocusCapture={() => setHidden(false)}
-          className={cn(
-            "flex justify-center transition-[translate,opacity] duration-500 ease-king lg:hidden",
-            hidden && "pointer-events-none -translate-y-[calc(100%+4rem)] opacity-0"
-          )}
-        >
-          <ul className="pointer-events-auto flex items-center gap-1 rounded-full border border-white/12 bg-king-black/55 p-1 shadow-[0_8px_30px_rgba(0,0,0,0.5)] backdrop-blur-xl">
-            {NAV_LINKS.map((link) => {
-              const Icon = NAV_ICONS[link.key]
-              const active = isActivePath(pathname, link.href)
-              return (
-                <li key={link.href}>
-                  <Link
-                    href={link.href}
-                    aria-label={t(link.key)}
-                    title={t(link.key)}
-                    aria-current={active ? "page" : undefined}
-                    className={cn(
-                      "grid size-11 place-items-center rounded-full transition-colors duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-king-bright-red",
-                      active ? "bg-king-bright-red text-king-white" : "text-king-white/75 hover:bg-white/10 hover:text-king-white"
-                    )}
-                  >
-                    <Icon className="size-[1.1rem]" aria-hidden />
-                  </Link>
-                </li>
-              )
-            })}
-          </ul>
-        </nav>
       </header>
+
+        {/* Phones and tablets: page icons floating at the bottom of the screen — a quick way
+          to switch pages without opening the menu. Slides away while scrolling down. */}
+      <nav
+        aria-label={t("quick")}
+        onFocusCapture={() => setHidden(false)}
+        className={cn(
+          "pointer-events-none fixed inset-x-0 bottom-0 z-50 flex justify-center pb-[max(0.75rem,env(safe-area-inset-bottom))] transition-[translate,opacity] duration-500 ease-king lg:hidden",
+          hidden && "translate-y-[calc(100%+1rem)] opacity-0"
+        )}
+      >
+        <ul className="pointer-events-auto flex items-center gap-1 rounded-full border border-white/12 bg-king-black/55 p-1 shadow-[0_8px_30px_rgba(0,0,0,0.5)] backdrop-blur-xl">
+          {NAV_LINKS.map((link) => {
+            const Icon = NAV_ICONS[link.key]
+            const active = isActivePath(pathname, link.href)
+            return (
+              <li key={link.href}>
+                <Link
+                  href={link.href}
+                  aria-label={t(link.key)}
+                  title={t(link.key)}
+                  aria-current={active ? "page" : undefined}
+                  className={cn(
+                    "grid size-11 place-items-center rounded-full transition-colors duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-king-bright-red",
+                    active ? "bg-king-bright-red text-king-white" : "text-king-white/75 hover:bg-white/10 hover:text-king-white"
+                  )}
+                >
+                  <Icon className="size-[1.1rem]" aria-hidden />
+                </Link>
+              </li>
+            )
+          })}
+        </ul>
+      </nav>
 
       <SearchDialog open={searchOpen} onOpenChange={setSearchOpen} />
     </>
