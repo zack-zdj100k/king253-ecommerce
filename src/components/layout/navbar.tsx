@@ -31,6 +31,20 @@ export function Navbar() {
   const ref = React.useRef<HTMLElement>(null)
 
   const [hidden, setHidden] = React.useState(false)
+  // Inside the pinned home hero the header never hides or collapses (the bottom icon bar still does).
+  const [inHero, setInHero] = React.useState(false)
+  React.useEffect(() => {
+    const sync = () => setInHero(document.documentElement.hasAttribute("data-hero-active"))
+    sync()
+    window.addEventListener("king:hero", sync)
+    window.addEventListener("scroll", sync, { passive: true })
+    return () => {
+      window.removeEventListener("king:hero", sync)
+      window.removeEventListener("scroll", sync)
+    }
+  }, [])
+  const headerHidden = hidden && !inHero
+  const collapsed = scrolled && !inHero
 
   // Collapse once scrolled; slide away while scrolling down, return on any scroll up.
   React.useEffect(() => {
@@ -78,7 +92,7 @@ export function Navbar() {
           onFocusCapture={() => setHidden(false)}
           className={cn(
             "mx-auto grid h-16 max-w-[1600px] grid-cols-[1fr_auto] items-center px-4 drop-shadow-[0_1px_10px_rgba(0,0,0,0.65)] transition-[translate,opacity] duration-500 ease-king sm:px-6 lg:h-[72px] lg:grid-cols-[1fr_auto_1fr] lg:px-12",
-            hidden && "-translate-y-full opacity-0"
+            headerHidden && "-translate-y-full opacity-0"
           )}
         >
           <Logo className="pointer-events-auto justify-self-start" />
@@ -87,7 +101,7 @@ export function Navbar() {
           <ul
             className={cn(
               "hidden items-center gap-10 transition-[opacity,visibility,translate] duration-500 ease-king lg:flex",
-              scrolled ? "invisible -translate-y-2 opacity-0" : "pointer-events-auto"
+              collapsed ? "invisible -translate-y-2 opacity-0" : "pointer-events-auto"
             )}
           >
             {NAV_LINKS.map((link) => {
@@ -118,7 +132,7 @@ export function Navbar() {
               onClick={() => setSearchOpen(true)}
               className={cn(
                 "king-label hidden h-11 items-center gap-2 px-3 text-king-muted transition-[color,opacity] duration-500 hover:text-king-white",
-                !scrolled && "lg:inline-flex"
+                !collapsed && "lg:inline-flex"
               )}
             >
               <Search className="size-4" aria-hidden />
@@ -145,7 +159,7 @@ export function Navbar() {
                 </span>
               )}
             </button>
-            <MobileMenu pathname={pathname} onSearch={() => setSearchOpen(true)} showOnDesktop={scrolled} />
+            <MobileMenu pathname={pathname} onSearch={() => setSearchOpen(true)} showOnDesktop={collapsed} />
           </div>
         </nav>
       </header>

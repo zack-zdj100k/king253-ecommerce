@@ -69,11 +69,18 @@ export function Hero({ content }: { content: HeroContent }) {
           anticipatePin: 1,
           invalidateOnRefresh: true,
           onUpdate: (self) => setSlide(Math.min(count - 1, Math.floor(self.progress * count))),
+          // While the hero is on screen the header stays fully visible (navbar reads this flag).
+          onToggle: (self) => {
+            document.documentElement.toggleAttribute("data-hero-active", self.isActive)
+            window.dispatchEvent(new Event("king:hero"))
+          },
         },
       })
       trigger.current = pinned.scrollTrigger ?? null
       pinned.to({}, { duration: count })
       return () => {
+        document.documentElement.removeAttribute("data-hero-active")
+        window.dispatchEvent(new Event("king:hero"))
         trigger.current = null
         setSlide(undefined)
       }
