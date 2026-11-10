@@ -1,0 +1,62 @@
+[
+ {
+  "config": "Chromium desktop",
+  "home": "ok",
+  "heroScroll": "ok",
+  "arabicRTL": "ok",
+  "catalog": "4 cards",
+  "buyNowOrder": "KING253-20261110-065",
+  "bottomBarOrMenu": "ok",
+  "jsErrors": 0
+ },
+ {
+  "config": "Firefox desktop",
+  "home": "ok",
+  "heroScroll": "ok",
+  "arabicRTL": "ok",
+  "catalog": "4 cards",
+  "buyNowOrder": "KING253-20261110-066",
+  "bottomBarOrMenu": "ok",
+  "jsErrors": 0
+ },
+ {
+  "config": "WebKit (Safari) desktop",
+  "home": "ok",
+  "heroScroll": "ok",
+  "arabicRTL": "ok",
+  "catalog": "4 cards",
+  "buyNowOrder": "KING253-20261110-067",
+  "bottomBarOrMenu": "ok",
+  "jsErrors": "/localhost:3010/account?_rsc=5CB68i4pnAekjehf due to access control checks. | /localhost:3010/?_rsc=tXyZJ52UQVBCVsD3 due to access control checks."
+ },
+ {
+  "config": "WebKit iPhone 15",
+  "home": "ok",
+  "heroScroll": "ok",
+  "arabicRTL": "ok",
+  "catalog": "4 cards",
+  "buyNowOrder": "KING253-20261110-068",
+  "bottomBarOrMenu": "ok",
+  "jsErrors": "/localhost:3010/ar due to access control checks. | TypeError: Load failed"
+ },
+ {
+  "config": "Chromium Android (Pixel 7)",
+  "home": "ok",
+  "heroScroll": "ok",
+  "arabicRTL": "ok",
+  "catalog": "4 cards",
+  "buyNowOrder": "KING253-20261110-069",
+  "bottomBarOrMenu": "ok",
+  "jsErrors": 0
+ },
+ {
+  "config": "Firefox mobile-size",
+  "home": "ok",
+  "heroScroll": "ok",
+  "arabicRTL": "ok",
+  "catalog": "4 cards",
+  "buyNowOrder": "KING253-20261110-070",
+  "bottomBarOrMenu": "ok",
+  "jsErrors": 0
+ }
+]

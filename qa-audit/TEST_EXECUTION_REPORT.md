@@ -26,7 +26,7 @@ Final runs on **2026-11-10**, on the **final deploy package** (`dist/king253.zip
 | 18 | Load test (1,300 requests, up to 50 at once) | package | 5 runs | **5** (0 errors) | 0 | 0 | PERFORMANCE_REPORT |
 | 19 | Lighthouse mobile | package + live | 8 pages | measured (see PERFORMANCE_REPORT) | – | – | lh/*.json |
 | 20 | Dependency audit (`npm audit --omit=dev`) | – | 1 | **1** after upgrade (0 critical, 0 vulnerable packages in the bundle) | – | – | — |
-| 21 | Cross-browser (Firefox, Safari/WebKit, Edge) | – | 0 | – | – | **BLOCKED** (only Chromium installed) | — |
+| 21 | Cross-browser journey (home, hero, Arabic RTL, catalogue, **Buy now → real order**, navigation) on Chromium, Firefox, WebKit (Safari), iPhone 15, Pixel 7, Firefox phone-size (`cross-browser.cjs`) | package | 6 configurations × 6 steps | **36** | 0 | Edge itself not installed (same Chromium engine, covered) | cross-browser.json |
 | 22 | Real email delivery | – | 0 | – | – | **BLOCKED** (no SMTP yet; mock transport tested in Vitest) | — |
 | 23 | Order on king253.com | – | 0 | – | – | **BLOCKED** (would write real data; 0 products live) | — |
 | 24 | DB connection failure / backup restore | – | 0 | – | – | **BLOCKED** (destructive) | — |

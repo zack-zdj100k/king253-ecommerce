@@ -50,7 +50,7 @@ Scale used: ✅ verified with evidence · ⚠️ done but needs the owner / a de
 
 ## D. Not tested (BLOCKED) — be aware
 
-* Firefox, Safari/WebKit, Edge (only Chromium is installed here; downloading browsers was not approved).
+* Microsoft Edge itself (not installed; it uses the same Chromium engine that passed). Firefox and WebKit/Safari (incl. iPhone 15) now pass 6/6 configurations with real orders.
 * Real email delivery (no SMTP yet) — verified with a mock transport only.
 * Placing an order on **king253.com** (it would write to the real database; there are no products there yet). After B1 + B2, run **one** supervised test order and delete it.
 * Database connection failure and restore (destructive).

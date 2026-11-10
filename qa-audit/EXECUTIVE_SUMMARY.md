@@ -35,7 +35,7 @@ It is **not yet ready for real customers** for four reasons that only the owner 
 |---|---|---|
 | Home page is slow on low-end phones (Lighthouse mobile 43–45; LCP ~7.5 s simulated) because of the animated intro | MEDIUM | show the hero text immediately (needs your OK — design change) |
 | Backup restore never tested | MEDIUM | restore one dump to a spare database |
-| Not tested on Firefox / Safari / Edge | LOW–MEDIUM | test on a real iPhone (Safari) after deploy |
+| Tested on Chromium, Firefox and WebKit/Safari (incl. iPhone 15 emulation): 6/6 with real orders; a real iPhone is still worth one look | LOW | quick check on your phone after deploy |
 | No error monitoring | LOW | check `stderr.log` after deploys |
 | Rate limiter in memory | LOW | fine at current traffic |
 
