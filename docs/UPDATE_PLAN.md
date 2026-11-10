@@ -116,6 +116,9 @@ Migrations: 0012 shops_and_wilayas · 0013 stock_per_shop · 0014 delivery_rates
 Env: nothing new is required. Emails need `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`,
 `SMTP_FROM` in `~/king253/.env`. Shop notification emails are set in Admin → Shops (not env).
 
-Waiting for the owner: card choice (01 / 02 / 03 on /dev/card-preview), delivery desk PDFs
+Card: the owner chose the hang tag (2026-11-10); it now replaces every product card (catalog, related, wishlist,
+recently viewed, featured look). Its + adds to the bag (sizes in stock shown on the card); the card opens the product page.
+
+Waiting for the owner: delivery desk PDFs
 (→ `data/delivery/*.csv`, Admin → Delivery → Import), the two shop emails, SMTP account, go-ahead to deploy.
 Not translated by design: product texts and admin-written content (each language can be written in Admin → Content).

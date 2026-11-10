@@ -110,7 +110,7 @@ export default async function AdminOverview({ searchParams }: PageProps<"/admin"
     {
       label: "Top source",
       value: k.topSource?.label ?? "—",
-      hint: k.topSource ? `${k.topSource.orders} order(s) · 30 days` : "Where did you hear about us?",
+      hint: k.topSource ? `${k.topSource.share}% of sign-ups · ${k.topSource.accounts} account(s)` : "Where did you hear about us?",
       href: "/admin/social",
       tone: "",
     },

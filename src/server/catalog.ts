@@ -27,6 +27,8 @@ export type ProductCardData = {
   ratingAvg: number | null
   ratingCount: number
   featured: boolean
+  /** Each active shop holding this product, with the units it can ship (all sizes). */
+  shops: { storeId: number; name: string; available: number }[]
 }
 
 export const SORTS = ["featured", "newest", "price_asc", "price_desc", "popular", "rating"] as const
@@ -64,6 +66,7 @@ type Row = {
   image: CardImage | null
   rating_avg: number | null
   rating_count: number
+  shops: { storeId: number; name: string; available: number }[] | null
   total: number
 }
 
@@ -90,6 +93,7 @@ function toCard(r: Row): ProductCardData {
     ratingAvg: r.rating_avg === null ? null : Math.round(Number(r.rating_avg) * 10) / 10,
     ratingCount: Number(r.rating_count ?? 0),
     featured: r.featured,
+    shops: r.shops ?? [],
   }
 }
 
@@ -106,7 +110,7 @@ async function cardQuery(db: DbOrTx, where: SQL[], orderBy: SQL, limit: number, 
       c.slug as category_slug, c.name as category_name,
       agg.available, agg.min_price, agg.colours, agg.sizes, agg.any_promo,
       ${CARD_PRICE} as card_price,
-      img.image, r.avg as rating_avg, coalesce(r.cnt, 0) as rating_count,
+      img.image, r.avg as rating_avg, coalesce(r.cnt, 0) as rating_count, sh.shops,
       count(*) over() as total
     from products p
     left join categories c on c.id = p.category_id
@@ -126,6 +130,14 @@ async function cardQuery(db: DbOrTx, where: SQL[], orderBy: SQL, limit: number, 
       select avg(rv.rating)::float as avg, count(*)::int as cnt
       from reviews rv where rv.product_id = p.id and rv.status = 'approved'
     ) r on true
+    left join lateral (
+      select jsonb_agg(jsonb_build_object('storeId', s.id, 'name', s.name, 'available', x.available) order by s.sort_order, s.name) as shops
+      from (
+        select ss.store_id, coalesce(sum(greatest(ss.physical - ss.reserved, 0)), 0)::int as available
+        from store_stock ss join product_variants sv on sv.id = ss.variant_id and sv.active
+        where sv.product_id = p.id group by ss.store_id
+      ) x join stores s on s.id = x.store_id and s.active
+    ) sh on true
     left join lateral (
       select coalesce(sum(oi.quantity), 0)::int as units from order_items oi
       join orders o on o.id = oi.order_id

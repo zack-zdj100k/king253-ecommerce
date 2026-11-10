@@ -3,7 +3,7 @@ import { sql, type SQL } from "drizzle-orm"
 import type { DbOrTx } from "./db/client"
 import { lowStockByShop } from "./admin/queries"
 import { netRevenueSql } from "./pricing"
-import { referralLabel } from "@/lib/referral"
+import { socialStats } from "./admin/social"
 
 /*
  * Admin Overview numbers, all from the database. A delivered order counts on
@@ -47,9 +47,8 @@ export async function getOverview(db: DbOrTx, opts: { storeId: number | null; lo
       coalesce(sum(j.amount) filter (where j.amount > 0), 0)::int as collected
     from return_journal j join orders o on o.id = j.order_id
     where j.created_at >= ${ago(30)} ${opts.storeId ? sql`and j.store_id = ${opts.storeId}` : sql``}`)
-  const sources = await run(sql`select o.referral_source as key, count(*)::int as n from orders o
-    where o.created_at >= ${ago(30)} and o.referral_source is not null and o.status <> 'cancelled' ${shop}
-    group by 1 order by 2 desc limit 1`)
+  // Same numbers as Admin → Social media (sign-ups by "where did you hear about us").
+  const social = await socialStats(db)
   const lowStock = (await lowStockByShop(db, opts.lowStockThreshold)).filter((s) => !opts.storeId || s.storeId === opts.storeId)
 
   /* ---------------- Revenue, last 30 days ---------------- */
@@ -149,7 +148,9 @@ export async function getOverview(db: DbOrTx, opts: { storeId: number | null; lo
       delivered: num(counts?.delivered),
       journal: { count: num(journal?.n), refunded: num(journal?.refunded), collected: num(journal?.collected) },
       lowStock: lowStock.map((s) => ({ storeId: s.storeId, name: s.storeName, low: s.low, out: s.out })),
-      topSource: sources[0] ? { label: referralLabel(String(sources[0].key)), orders: num(sources[0].n) } : null,
+      topSource: social.top
+        ? { label: social.top.label, accounts: social.top.accounts, share: Math.round((social.top.accounts / social.answered) * 100) }
+        : null,
     },
     revenue: {
       value: num(rev?.now),

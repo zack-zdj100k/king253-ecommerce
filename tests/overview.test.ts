@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from "vitest"
 
 import { createOrder } from "@/server/orders/create"
+import { createUser } from "@/server/auth/users"
 import { getOverview } from "@/server/overview"
 import { recordReturn } from "@/server/returns"
 import { customer, deliver, key, resetDb, seedDelivery, seedProduct, testDb } from "./support/db"
@@ -22,8 +23,12 @@ describe("Overview", () => {
     await deliver(a.id, admin)
     await deliver(b.id, admin)
 
+    // Top source = the Social media page's top (sign-ups), not order counts.
+    for (const [i, src] of ["instagram", "instagram", "tiktok"].entries())
+      await createUser(testDb, { phone: `055000000${i}`, name: `U${i}`, password: "test-pass-123", role: "customer", referralSource: src })
+
     let o = await getOverview(testDb, { storeId: null, lowStockThreshold: 3 })
-    expect(o.kpis).toMatchObject({ pending: 1, confirmed: 0, delivered: 2, topSource: { label: "TikTok" } })
+    expect(o.kpis).toMatchObject({ pending: 1, confirmed: 0, delivered: 2, topSource: { label: "Instagram", accounts: 2, share: 67 } })
     expect(o.revenue.value).toBe(9000)
     expect(o.revenue.series.at(-1)?.value).toBe(9000)
     expect(o.orders.value).toBe(3)

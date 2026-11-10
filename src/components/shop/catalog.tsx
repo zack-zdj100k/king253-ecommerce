@@ -8,11 +8,8 @@ import { ChevronDown, SlidersHorizontal, X } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { formatDA } from "@/lib/money"
-import { promoBarText } from "@/components/shop/stock"
 import type { CatalogFilters, ProductCardData, Sort } from "@/server/catalog"
-import { useShop } from "@/components/providers/shop-provider"
 import { ProductCard } from "@/components/shop/product-card"
-import { InteractiveCard } from "@/components/ui/3d-card"
 import { Sheet, SheetContent, SheetDescription, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 
 const SORTS: Sort[] = ["featured", "newest", "price_asc", "price_desc", "popular", "rating"]
@@ -349,42 +346,8 @@ function FilterGroup({ title, children }: { title: string; children: React.React
   )
 }
 
-/** Wide campaign card leading the grid — full look, title on the image. */
+/** Wide campaign card leading the grid — same hang-tag card, full look. */
 function FeatureCard({ product }: { product: ProductCardData }) {
   const t = useTranslations("catalog")
-  const ts = useTranslations("stock")
-  const { setQuickView } = useShop()
-  const image = product.image
-  return (
-    <article className="group">
-      <InteractiveCard
-        className="aspect-[4/5] sm:aspect-[8/5]"
-        imageUrl={image?.url ?? "/images/hero/2.jpg"}
-        imageAlt={t("campaign", { name: product.name })}
-        focus={{ x: image?.focusX ?? 50, y: 40 }}
-        zoom={1}
-        sizes="(min-width: 1280px) 40vw, (min-width: 1024px) 50vw, 100vw"
-        title={product.name}
-        subtitle={t("featured", { category: product.categoryName ?? "" })}
-        href={`/product/${product.slug}`}
-        arrowLabel={t("view", { name: product.name })}
-        actionText={product.available > 0 ? t("viewDetailsPrice", { price: formatDA(product.price) }) : t("outOfStock")}
-        actionDisabled={product.available <= 0}
-        linkWholeCard
-        promo={promoBarText(product, ts)}
-      />
-      <div className="mt-3 flex items-center justify-between gap-4 md:mt-4">
-        <p className="king-label flex flex-wrap items-center gap-2 text-[0.55rem] text-king-gray">
-          {t("featuredLook")}
-          {product.compareAt ? <span className="line-through">{formatDA(product.compareAt)}</span> : null}
-        </p>
-        {product.colours[0] && (
-          <p className="king-label flex items-center gap-2 text-[0.55rem] text-king-gray">
-            <span className="size-2 rounded-full ring-1 ring-white/25" style={{ backgroundColor: product.colours[0].hex ?? "#555" }} aria-hidden />
-            {product.colours[0].name}
-          </p>
-        )}
-      </div>
-    </article>
-  )
+  return <ProductCard product={product} index={0} feature eyebrow={t("featured", { category: product.categoryName ?? "" })} />
 }
