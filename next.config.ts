@@ -25,6 +25,20 @@ const nextConfig: NextConfig = {
     // 1-CPU server rarely has to resize the same image again.
     minimumCacheTTL: 60 * 60 * 24 * 30,
   },
+  // /ar/…, /fr/…, /en/… serve the unprefixed page (src/proxy.ts sets the language first).
+  // Done here, not with a rewrite in the proxy: behind cPanel's Passenger the proxy sees
+  // https://localhost:3000 as the request origin, so an absolute rewrite became an
+  // external fetch to that address and failed (HTTP 500).
+  async rewrites() {
+    return {
+      beforeFiles: [
+        { source: "/:locale(ar|fr|en)", destination: "/" },
+        { source: "/:locale(ar|fr|en)/:path*", destination: "/:path*" },
+      ],
+      afterFiles: [],
+      fallback: [],
+    }
+  },
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }]
   },

@@ -4,7 +4,7 @@ import { DEFAULT_LOCALE, isLocale, LOCALE_COOKIE, LOCALE_HEADER, PATH_HEADER, sp
 
 /*
  * Language routing for the storefront.
- *   /ar/…, /fr/…, /en/…  → the same page in that language (prefix removed internally, choice saved in a cookie)
+ *   /ar/…, /fr/…, /en/…  → the same page in that language (prefix removed by next.config rewrites, choice saved in a cookie)
  *   /…                   → the saved language; on a first visit people get the language page, then come back here
  * Search engines and link previews are never sent to the language page (they get French, x-default).
  * Admin is always English.
@@ -28,15 +28,16 @@ export function proxy(request: NextRequest) {
   if (locale) {
     headers.set(LOCALE_HEADER, locale)
     headers.set(PATH_HEADER, path)
-    const url = request.nextUrl.clone()
-    url.pathname = path
-    const response = NextResponse.rewrite(url, { request: { headers } })
+    // The prefix itself is removed by the rewrites in next.config.ts.
+    const response = NextResponse.next({ request: { headers } })
     if (saved !== locale) response.cookies.set(LOCALE_COOKIE, locale, { path: "/", maxAge: YEAR, sameSite: "lax" })
     return response
   }
 
   const page = request.method === "GET" && (request.headers.get("accept") ?? "").includes("text/html") && !request.headers.get("rsc")
   if (!isLocale(saved) && page && pathname !== "/language" && !BOTS.test(request.headers.get("user-agent") ?? "")) {
+    // Next turns a same-origin redirect into a relative Location, so behind Passenger
+    // (where this URL says localhost:3000) the browser still stays on king253.com.
     const url = request.nextUrl.clone()
     url.pathname = "/language"
     url.search = `?next=${encodeURIComponent(pathname + search)}`
