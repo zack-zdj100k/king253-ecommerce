@@ -127,6 +127,13 @@
       "when": 1794327360115,
       "tag": "0017_product_shop_on_off",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1794341043881,
+      "tag": "0018_zr_express_annaba_rates",
+      "breakpoints": true
     }
   ]
 }

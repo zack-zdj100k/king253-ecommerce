@@ -71,6 +71,8 @@ above the CloudLinux Passenger block. Do not remove the Passenger block.
 
 - Admin → Shops: set each shop's **new-order email** (Annaba, Constantine) and its address.
 - Admin → Delivery → Import CSV: courier prices and stop desks (format in `data/delivery/README.md`).
+  ZR Express prices for Annaba (54 wilayas, PDF of 2026-11-10) are loaded by migration 0018; the same
+  rows are in `data/delivery/zr-express-annaba-rates.csv`. Stop desk addresses are not in that PDF.
   Terminal alternative: `node --env-file=.env scripts/import-delivery.mjs rates rates.csv`.
 - The storefront is at `/ar`, `/fr`, `/en`; first-time visitors see the language page.
 
