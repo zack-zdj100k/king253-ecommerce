@@ -1,0 +1,110 @@
+[
+ {
+  "id": "ORD-01",
+  "name": "Guest Buy now → order (fr, phone)",
+  "status": "PASS",
+  "detail": "KING253-20261110-046 total 9100 DA, status pending, shop 3"
+ },
+ {
+  "id": "ORD-02",
+  "name": "Guest Buy now → order (ar, desktop)",
+  "status": "PASS",
+  "detail": "KING253-20261110-047 total 9100 DA, status pending, shop 3"
+ },
+ {
+  "id": "ORD-03",
+  "name": "Guest Buy now → order (en, phone)",
+  "status": "PASS",
+  "detail": "KING253-20261110-048 total 9000 DA, status pending, shop 3"
+ },
+ {
+  "id": "ORD-04",
+  "name": "Guest cart → checkout → order (fr, phone)",
+  "status": "PASS",
+  "detail": "KING253-20261110-049 "
+ },
+ {
+  "id": "ORD-05",
+  "name": "Empty form is refused, nothing saved",
+  "status": "PASS",
+  "detail": "button disabled"
+ },
+ {
+  "id": "ORD-06",
+  "name": "Invalid phone number is refused",
+  "status": "PASS",
+  "detail": "Entre un numéro mobile algérien valide (05, 06 ou 07 suivi de 8 chiffres). / Vérifie les champs en rouge. / Commande — K"
+ },
+ {
+  "id": "ORD-07",
+  "name": "Missing address is refused",
+  "status": "PASS",
+  "detail": ""
+ },
+ {
+  "id": "ORD-08",
+  "name": "5000-character name/address does not create an order",
+  "status": "PASS",
+  "detail": ""
+ },
+ {
+  "id": "ORD-09",
+  "name": "XSS / SQL-injection text is stored as plain text, no script runs, table intact",
+  "status": "PASS",
+  "detail": "saved as KING253-20261110-050"
+ },
+ {
+  "id": "ORD-10",
+  "name": "Rapid double/triple click creates exactly one order",
+  "status": "PASS",
+  "detail": "1 order(s)"
+ },
+ {
+  "id": "ORD-11",
+  "name": "Browser Back after ordering does not duplicate the order",
+  "status": "PASS",
+  "detail": "orders total 56 → 58"
+ },
+ {
+  "id": "ORD-12",
+  "name": "No server errors during the abuse tests",
+  "status": "PASS",
+  "detail": ""
+ },
+ {
+  "id": "ORD-18",
+  "name": "Signed-in customer orders again; both orders on one account",
+  "status": "PASS",
+  "detail": "orders 2, accounts 1"
+ },
+ {
+  "id": "ORD-13",
+  "name": "Existing phone + WRONG password is refused (no account takeover)",
+  "status": "PASS",
+  "detail": "Mauvais mot de passe pour ce numéro. / Ce numéro a déjà un compte KING 253. Entre son mot de passe, ou coche « J'ai oublié mon mot de passe ». / Commande — KING"
+ },
+ {
+  "id": "ORD-14",
+  "name": "Existing phone + CORRECT password places a second order on the same account",
+  "status": "PASS",
+  "detail": "http://localhost:3010/order/KING253-20261110-054?t=[redacted]"
+ },
+ {
+  "id": "ORD-15",
+  "name": "Every order's subtotal equals the sum of its lines",
+  "status": "PASS",
+  "detail": ""
+ },
+ {
+  "id": "ORD-16",
+  "name": "Order numbers are unique",
+  "status": "PASS",
+  "detail": ""
+ },
+ {
+  "id": "ORD-17",
+  "name": "No order line without an order",
+  "status": "PASS",
+  "detail": ""
+ }
+]

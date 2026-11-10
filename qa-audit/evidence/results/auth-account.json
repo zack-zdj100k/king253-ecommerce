@@ -1,0 +1,80 @@
+[
+ {
+  "id": "AUTH-01",
+  "name": "Wrong password is refused with a clear message",
+  "ok": true,
+  "d": "Email/téléphone ou mot de passe incorrect."
+ },
+ {
+  "id": "AUTH-02",
+  "name": "Sign in with phone + password opens the account",
+  "ok": true,
+  "d": "/account"
+ },
+ {
+  "id": "AUTH-03",
+  "name": "Account page lists the customer's orders",
+  "ok": true,
+  "d": "KING253-20261110-044"
+ },
+ {
+  "id": "AUTH-04",
+  "name": "Session survives a page refresh",
+  "ok": true,
+  "d": ""
+ },
+ {
+  "id": "AUTH-05",
+  "name": "Adding an email on the account page is saved",
+  "ok": true,
+  "d": "qa1794346791392@example.test"
+ },
+ {
+  "id": "AUTH-06",
+  "name": "Invalid email is refused on the account page",
+  "ok": true,
+  "d": "qa1794346791392@example.test"
+ },
+ {
+  "id": "AUTH-07",
+  "name": "Customer is kept out of /admin",
+  "ok": true,
+  "d": "/admin/login"
+ },
+ {
+  "id": "AUTH-08",
+  "name": "After sign-out the account page needs a sign-in again",
+  "ok": true,
+  "d": "/sign-in?next=/account"
+ },
+ {
+  "id": "AUTH-09",
+  "name": "Sign-up with bad email + short password creates nothing",
+  "ok": true,
+  "d": ""
+ },
+ {
+  "id": "AUTH-10",
+  "name": "Sign-up with an existing email does not create a duplicate account",
+  "ok": true,
+  "d": "1 account(s)"
+ },
+ {
+  "id": "AUTH-11",
+  "name": "Customer cancels own order with the secret link: status Cancelled, stock released",
+  "ok": true,
+  "d": "cancelled; reserved 23 → 22"
+ },
+ {
+  "id": "AUTH-12",
+  "name": "Order page with a wrong secret token shows 404 (no order data leaked)",
+  "ok": true,
+  "d": "404"
+ },
+ {
+  "id": "AUTH-13",
+  "name": "Order page without a token shows 404",
+  "ok": true,
+  "d": "404"
+ }
+]

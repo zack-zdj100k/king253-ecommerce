@@ -1,0 +1,331 @@
+[
+ {
+  "id": "SEC-A-/admin",
+  "name": "Visitor cannot open /admin",
+  "ok": true,
+  "detail": "307 /admin/login",
+  "sev": "CRITICAL"
+ },
+ {
+  "id": "SEC-A-/admin/orders",
+  "name": "Visitor cannot open /admin/orders",
+  "ok": true,
+  "detail": "307 /admin/login",
+  "sev": "CRITICAL"
+ },
+ {
+  "id": "SEC-A-/admin/products",
+  "name": "Visitor cannot open /admin/products",
+  "ok": true,
+  "detail": "307 /admin/login",
+  "sev": "CRITICAL"
+ },
+ {
+  "id": "SEC-A-/admin/users",
+  "name": "Visitor cannot open /admin/users",
+  "ok": true,
+  "detail": "307 /admin/login",
+  "sev": "CRITICAL"
+ },
+ {
+  "id": "SEC-A-/admin/settings",
+  "name": "Visitor cannot open /admin/settings",
+  "ok": true,
+  "detail": "307 /admin/login",
+  "sev": "CRITICAL"
+ },
+ {
+  "id": "SEC-A-/admin/inventory",
+  "name": "Visitor cannot open /admin/inventory",
+  "ok": true,
+  "detail": "307 /admin/login",
+  "sev": "CRITICAL"
+ },
+ {
+  "id": "SEC-A-/admin/returns",
+  "name": "Visitor cannot open /admin/returns",
+  "ok": true,
+  "detail": "307 /admin/login",
+  "sev": "CRITICAL"
+ },
+ {
+  "id": "SEC-A-/admin/shops",
+  "name": "Visitor cannot open /admin/shops",
+  "ok": true,
+  "detail": "307 /admin/login",
+  "sev": "CRITICAL"
+ },
+ {
+  "id": "SEC-A-/admin/delivery",
+  "name": "Visitor cannot open /admin/delivery",
+  "ok": true,
+  "detail": "307 /admin/login",
+  "sev": "CRITICAL"
+ },
+ {
+  "id": "SEC-A-/admin/customers",
+  "name": "Visitor cannot open /admin/customers",
+  "ok": true,
+  "detail": "307 /admin/login",
+  "sev": "CRITICAL"
+ },
+ {
+  "id": "SEC-A-/admin/content",
+  "name": "Visitor cannot open /admin/content",
+  "ok": true,
+  "detail": "307 /admin/login",
+  "sev": "CRITICAL"
+ },
+ {
+  "id": "SEC-A2-/admin",
+  "name": "Customer account cannot open /admin",
+  "ok": true,
+  "detail": "307 /admin/login",
+  "sev": "CRITICAL"
+ },
+ {
+  "id": "SEC-A2-/admin/orders",
+  "name": "Customer account cannot open /admin/orders",
+  "ok": true,
+  "detail": "307 /admin/login",
+  "sev": "CRITICAL"
+ },
+ {
+  "id": "SEC-A2-/admin/users",
+  "name": "Customer account cannot open /admin/users",
+  "ok": true,
+  "detail": "307 /admin/login",
+  "sev": "CRITICAL"
+ },
+ {
+  "id": "SEC-A3",
+  "name": "Customer cannot use the admin upload API",
+  "ok": true,
+  "detail": "403",
+  "sev": "CRITICAL"
+ },
+ {
+  "id": "SEC-A4",
+  "name": "Visitor cannot use the admin upload API",
+  "ok": true,
+  "detail": "403",
+  "sev": "CRITICAL"
+ },
+ {
+  "id": "SEC-A5",
+  "name": "Upload API refuses GET",
+  "ok": true,
+  "detail": "405",
+  "sev": "LOW"
+ },
+ {
+  "id": "SEC-A6",
+  "name": "Invalid session cookie is treated as signed out",
+  "ok": true,
+  "detail": "307",
+  "sev": "HIGH"
+ },
+ {
+  "id": "SEC-B1",
+  "name": "All 52 admin server actions check the admin session on the server",
+  "ok": true,
+  "detail": "",
+  "sev": "CRITICAL"
+ },
+ {
+  "id": "SEC-B2",
+  "name": "Customer order lookup/cancel need the secret order token (no ID guessing)",
+  "ok": true,
+  "detail": "",
+  "sev": "HIGH"
+ },
+ {
+  "id": "SEC-C1",
+  "name": "X-Frame-Options DENY (clickjacking)",
+  "ok": true,
+  "detail": "DENY",
+  "sev": "MEDIUM"
+ },
+ {
+  "id": "SEC-C2",
+  "name": "X-Content-Type-Options nosniff",
+  "ok": true,
+  "detail": "nosniff",
+  "sev": "MEDIUM"
+ },
+ {
+  "id": "SEC-C3",
+  "name": "Referrer-Policy set",
+  "ok": true,
+  "detail": "strict-origin-when-cross-origin",
+  "sev": "LOW"
+ },
+ {
+  "id": "SEC-C4",
+  "name": "Permissions-Policy set",
+  "ok": true,
+  "detail": "camera=(), microphone=(), geolocation=(self), payment=()",
+  "sev": "LOW"
+ },
+ {
+  "id": "SEC-C5",
+  "name": "Content-Security-Policy present",
+  "ok": false,
+  "detail": "missing (INFORMATIONAL: Next inline scripts need a nonce setup)",
+  "sev": "INFORMATIONAL"
+ },
+ {
+  "id": "SEC-C6",
+  "name": "HSTS header (HTTPS sites only)",
+  "ok": true,
+  "detail": "local http: n/a",
+  "sev": "MEDIUM"
+ },
+ {
+  "id": "SEC-C7",
+  "name": "x-powered-by header",
+  "ok": true,
+  "detail": "absent",
+  "sev": "INFORMATIONAL"
+ },
+ {
+  "id": "SEC-C8",
+  "name": "No secrets / stack traces in page source",
+  "ok": true,
+  "detail": "",
+  "sev": "HIGH"
+ },
+ {
+  "id": "SEC-C9",
+  "name": "404 page shows no stack trace or file paths",
+  "ok": true,
+  "detail": "404",
+  "sev": "MEDIUM"
+ },
+ {
+  "id": "SEC-C10",
+  "name": "No file leak / path traversal at /.env",
+  "ok": true,
+  "detail": "404",
+  "sev": "CRITICAL"
+ },
+ {
+  "id": "SEC-C10",
+  "name": "No file leak / path traversal at /.git/config",
+  "ok": true,
+  "detail": "404",
+  "sev": "CRITICAL"
+ },
+ {
+  "id": "SEC-C10",
+  "name": "No file leak / path traversal at /package.json",
+  "ok": true,
+  "detail": "404",
+  "sev": "CRITICAL"
+ },
+ {
+  "id": "SEC-C10",
+  "name": "No file leak / path traversal at /drizzle/0001_init.sql",
+  "ok": true,
+  "detail": "404",
+  "sev": "CRITICAL"
+ },
+ {
+  "id": "SEC-C10",
+  "name": "No file leak / path traversal at /src/proxy.ts",
+  "ok": true,
+  "detail": "404",
+  "sev": "CRITICAL"
+ },
+ {
+  "id": "SEC-C10",
+  "name": "No file leak / path traversal at /..%2f..%2fetc/passwd",
+  "ok": true,
+  "detail": "404",
+  "sev": "CRITICAL"
+ },
+ {
+  "id": "SEC-C10",
+  "name": "No file leak / path traversal at /media/..%2f..%2f.env",
+  "ok": true,
+  "detail": "404",
+  "sev": "CRITICAL"
+ },
+ {
+  "id": "SEC-C10",
+  "name": "No file leak / path traversal at /media/%2e%2e/%2e%2e/.env",
+  "ok": true,
+  "detail": "404",
+  "sev": "CRITICAL"
+ },
+ {
+  "id": "SEC-C10",
+  "name": "No file leak / path traversal at /media/../../etc/passwd",
+  "ok": true,
+  "detail": "404",
+  "sev": "CRITICAL"
+ },
+ {
+  "id": "SEC-C11",
+  "name": "Cookies are HttpOnly + SameSite",
+  "ok": true,
+  "detail": "k253_locale",
+  "sev": "MEDIUM"
+ },
+ {
+  "id": "SEC-D1",
+  "name": "36 hostile query strings: no server error, no reflected script, tables intact",
+  "ok": true,
+  "detail": "500s 0, reflected 0",
+  "sev": "HIGH"
+ },
+ {
+  "id": "SEC-D2",
+  "name": "Stored XSS: hostile name/address saved earlier is HTML-escaped in the admin order page",
+  "ok": true,
+  "detail": "stored as text: <img src=x onerror=alert(1)> O",
+  "sev": "HIGH"
+ },
+ {
+  "id": "SEC-E1",
+  "name": "Session ids stored hashed (SHA-256), never raw tokens",
+  "ok": true,
+  "detail": "",
+  "sev": "HIGH"
+ },
+ {
+  "id": "SEC-E2",
+  "name": "Login brute-force limit exists in code (10 tries / 15 min per address)",
+  "ok": true,
+  "detail": "verified in code; browser flow tested in AUTH tests",
+  "sev": "HIGH"
+ },
+ {
+  "id": "SEC-E3",
+  "name": "Passwords use a slow salted hash (scrypt/argon2/bcrypt)",
+  "ok": true,
+  "detail": "scrypt",
+  "sev": "HIGH"
+ },
+ {
+  "id": "SEC-F1",
+  "name": ".env files are git-ignored",
+  "ok": true,
+  "detail": "",
+  "sev": "CRITICAL"
+ },
+ {
+  "id": "SEC-F2",
+  "name": "No .env file is committed to git",
+  "ok": true,
+  "detail": "",
+  "sev": "CRITICAL"
+ },
+ {
+  "id": "SEC-F3",
+  "name": "No keys/passwords committed in source",
+  "ok": true,
+  "detail": "",
+  "sev": "CRITICAL"
+ }
+]

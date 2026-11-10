@@ -1,0 +1,10 @@
+{
+ "performance": 64,
+ "accessibility": 96,
+ "best-practices": 96,
+ "seo": 100,
+ "first-contentful-paint": "1.4\u00a0s",
+ "largest-contentful-paint": "6.2\u00a0s",
+ "total-blocking-time": "530\u00a0ms",
+ "cumulative-layout-shift": "0"
+}

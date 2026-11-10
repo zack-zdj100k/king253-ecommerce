@@ -1,0 +1,122 @@
+[
+ {
+  "id": "SEO-/fr",
+  "name": "/fr: title, description, canonical, og, one h1",
+  "ok": true,
+  "d": "title=\"KING 253 — Streetwear homme\" desc=102ch canon=yes hreflang=0 og:image=true lang=fr"
+ },
+ {
+  "id": "SEO-/ar",
+  "name": "/ar: title, description, canonical, og, one h1",
+  "ok": true,
+  "d": "title=\"KING 253 — ستريت وير رجالي\" desc=67ch canon=yes hreflang=0 og:image=true lang=ar"
+ },
+ {
+  "id": "SEO-/en",
+  "name": "/en: title, description, canonical, og, one h1",
+  "ok": true,
+  "d": "title=\"KING 253 — Men&#x27;s Streetwear\" desc=87ch canon=yes hreflang=0 og:image=true lang=en"
+ },
+ {
+  "id": "SEO-/fr/clothes",
+  "name": "/fr/clothes: title, description, canonical, og, one h1",
+  "ok": true,
+  "d": "title=\"La collection — KING 253\" desc=90ch canon=yes hreflang=0 og:image=true lang=fr"
+ },
+ {
+  "id": "SEO-/ar/clothes",
+  "name": "/ar/clothes: title, description, canonical, og, one h1",
+  "ok": true,
+  "d": "title=\"المجموعة — KING 253\" desc=74ch canon=yes hreflang=0 og:image=true lang=ar"
+ },
+ {
+  "id": "SEO-/en/clothes",
+  "name": "/en/clothes: title, description, canonical, og, one h1",
+  "ok": true,
+  "d": "title=\"The Collection — KING 253\" desc=89ch canon=yes hreflang=0 og:image=true lang=en"
+ },
+ {
+  "id": "SEO-/fr/who-is-king",
+  "name": "/fr/who-is-king: title, description, canonical, og, one h1",
+  "ok": true,
+  "d": "title=\"Qui est le King ? — KING 253\" desc=101ch canon=yes hreflang=0 og:image=true lang=fr"
+ },
+ {
+  "id": "SEO-/fr/location",
+  "name": "/fr/location: title, description, canonical, og, one h1",
+  "ok": true,
+  "d": "title=\"Trouve le King — KING 253\" desc=90ch canon=yes hreflang=0 og:image=true lang=fr"
+ },
+ {
+  "id": "SEO-/fr/product/china-jacket",
+  "name": "/fr/product/china-jacket: desc",
+  "ok": false,
+  "d": "title=\"china jacket — KING 253\" desc=15ch canon=yes hreflang=0 og:image=true lang=fr"
+ },
+ {
+  "id": "SEO-/fr/product/jacket-china",
+  "name": "/fr/product/jacket-china: title, description, canonical, og, one h1",
+  "ok": true,
+  "d": "title=\"jacket — KING 253\" desc=47ch canon=yes hreflang=0 og:image=true lang=fr"
+ },
+ {
+  "id": "SEO-/fr/track",
+  "name": "/fr/track: title, description, canonical, og, one h1",
+  "ok": true,
+  "d": "title=\"Suivre ta commande — KING 253\" desc=71ch canon=yes hreflang=0 og:image=true lang=fr"
+ },
+ {
+  "id": "SEO-/fr/sign-in",
+  "name": "/fr/sign-in: title, description, canonical, og, one h1",
+  "ok": true,
+  "d": "title=\"Connexion — KING 253\" desc=102ch canon=yes hreflang=0 og:image=true lang=fr NOINDEX"
+ },
+ {
+  "id": "SEO-UNIQUE",
+  "name": "Page titles are unique per page",
+  "ok": true,
+  "d": ""
+ },
+ {
+  "id": "SEO-LD",
+  "name": "Product page has JSON-LD structured data (Product, price, availability)",
+  "ok": true,
+  "d": "2 block(s)"
+ },
+ {
+  "id": "SEO-SITEMAP",
+  "name": "sitemap.xml lists pages in all 3 languages with alternates",
+  "ok": true,
+  "d": "27 urls, status 200"
+ },
+ {
+  "id": "SEO-SITEMAP2",
+  "name": "Every URL in the sitemap answers 200",
+  "ok": true,
+  "d": "27 checked"
+ },
+ {
+  "id": "SEO-ROBOTS",
+  "name": "robots.txt blocks admin/checkout/account and points to the sitemap",
+  "ok": true,
+  "d": "User-Agent: * Allow: / Disallow: /admin Disallow: /api Disallow: /checkout Disallow: /account Disallow: /order/ Disallow"
+ },
+ {
+  "id": "SEO-404",
+  "name": "Unknown product returns a real 404 status",
+  "ok": true,
+  "d": "404"
+ },
+ {
+  "id": "SEO-ADMIN",
+  "name": "Admin login is not indexable",
+  "ok": true,
+  "d": ""
+ },
+ {
+  "id": "SEO-CHECKOUT",
+  "name": "Checkout and order pages are noindex",
+  "ok": true,
+  "d": ""
+ }
+]

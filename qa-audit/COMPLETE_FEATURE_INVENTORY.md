@@ -61,7 +61,7 @@ Admin buttons skipped on purpose (they change data): Save, Apply, Set to…, Del
 
 Admin "no effect" items: "→ Confirmed" (selecting the option that is already selected), "Choose files" (opens the OS file picker, which a script cannot see), "Add desk" (needs the form fields filled first) — all correct.
 
-Pages not probed by clicking in this run (admin probe stopped when the dev server restarted): inventory, reviews, testimonials, social, abandoned, settings, content. They were opened and crawled with 0 errors in the crawl (see TEST_EXECUTION_REPORT) and re-run on the final package.
+Second admin run on the final package (all clicked, 0 dead buttons, 0 JavaScript errors): `/admin/inventory` (43 elements), `/admin/reviews` (23), `/admin/testimonials` (34), `/admin/social` (20), `/admin/abandoned` (30), `/admin/settings` (52), `/admin/content` (123), and the order lists Returned / Delivered / Cancelled / Confirmed. Total admin pages click-probed: 25.
 
 ## 4. Routes in the code (38)
 

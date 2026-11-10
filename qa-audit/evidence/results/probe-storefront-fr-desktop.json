@@ -1,0 +1,208 @@
+{
+ "inventory": [
+  {
+   "page": "/fr",
+   "total": 31,
+   "links": 24,
+   "buttons": 7,
+   "fields": 0,
+   "clicked": 7,
+   "noEffect": [],
+   "skipped": [],
+   "disabled": 0,
+   "badLinks": [],
+   "noName": [],
+   "small": []
+  },
+  {
+   "page": "/fr/clothes",
+   "total": 53,
+   "links": 29,
+   "buttons": 23,
+   "fields": 1,
+   "clicked": 22,
+   "noEffect": [],
+   "skipped": [],
+   "disabled": 1,
+   "badLinks": [],
+   "noName": [],
+   "small": []
+  },
+  {
+   "page": "/fr/clothes?category=jackets",
+   "total": 49,
+   "links": 27,
+   "buttons": 21,
+   "fields": 1,
+   "clicked": 13,
+   "noEffect": [],
+   "skipped": [],
+   "disabled": 0,
+   "badLinks": [],
+   "noName": [],
+   "small": []
+  },
+  {
+   "page": "/fr/product/china-jacket",
+   "total": 53,
+   "links": 28,
+   "buttons": 25,
+   "fields": 0,
+   "clicked": 22,
+   "noEffect": [
+    "White",
+    "Taille S",
+    "Taille M"
+   ],
+   "skipped": [],
+   "disabled": 3,
+   "badLinks": [],
+   "noName": [],
+   "small": []
+  },
+  {
+   "page": "/fr/product/jacket-china",
+   "total": 47,
+   "links": 29,
+   "buttons": 18,
+   "fields": 0,
+   "clicked": 17,
+   "noEffect": [
+    "Black"
+   ],
+   "skipped": [],
+   "disabled": 1,
+   "badLinks": [],
+   "noName": [],
+   "small": []
+  },
+  {
+   "page": "/fr/who-is-king",
+   "total": 25,
+   "links": 23,
+   "buttons": 2,
+   "fields": 0,
+   "clicked": 2,
+   "noEffect": [],
+   "skipped": [],
+   "disabled": 0,
+   "badLinks": [],
+   "noName": [],
+   "small": []
+  },
+  {
+   "page": "/fr/location",
+   "total": 29,
+   "links": 26,
+   "buttons": 3,
+   "fields": 0,
+   "clicked": 3,
+   "noEffect": [],
+   "skipped": [],
+   "disabled": 0,
+   "badLinks": [],
+   "noName": [],
+   "small": []
+  },
+  {
+   "page": "/fr/track",
+   "total": 29,
+   "links": 23,
+   "buttons": 4,
+   "fields": 2,
+   "clicked": 4,
+   "noEffect": [
+    "SUIVRE"
+   ],
+   "skipped": [],
+   "disabled": 0,
+   "badLinks": [],
+   "noName": [],
+   "small": []
+  },
+  {
+   "page": "/fr/sign-in",
+   "total": 36,
+   "links": 23,
+   "buttons": 11,
+   "fields": 2,
+   "clicked": 11,
+   "noEffect": [
+    "Connexion",
+    "Se connecter",
+    "Continuer avec Apple"
+   ],
+   "skipped": [],
+   "disabled": 0,
+   "badLinks": [],
+   "noName": [],
+   "small": []
+  },
+  {
+   "page": "/fr/sign-up",
+   "total": 42,
+   "links": 23,
+   "buttons": 16,
+   "fields": 3,
+   "clicked": 16,
+   "noEffect": [
+    "Inscription"
+   ],
+   "skipped": [],
+   "disabled": 0,
+   "badLinks": [],
+   "noName": [],
+   "small": []
+  },
+  {
+   "page": "/fr/wishlist",
+   "total": 41,
+   "links": 28,
+   "buttons": 13,
+   "fields": 0,
+   "clicked": 9,
+   "noEffect": [],
+   "skipped": [],
+   "disabled": 1,
+   "badLinks": [],
+   "noName": [],
+   "small": []
+  },
+  {
+   "page": "/fr/checkout",
+   "total": 38,
+   "links": 23,
+   "buttons": 6,
+   "fields": 9,
+   "clicked": 5,
+   "noEffect": [],
+   "skipped": [],
+   "disabled": 1,
+   "badLinks": [],
+   "noName": [
+    "input[null]",
+    "input[email]",
+    "input[password]",
+    "input[null]",
+    "textarea[null]"
+   ],
+   "small": []
+  },
+  {
+   "page": "/language",
+   "total": 3,
+   "links": 3,
+   "buttons": 0,
+   "fields": 0,
+   "clicked": 0,
+   "noEffect": [],
+   "skipped": [],
+   "disabled": 0,
+   "badLinks": [],
+   "noName": [],
+   "small": []
+  }
+ ],
+ "findings": [],
+ "jsErrors": []
+}

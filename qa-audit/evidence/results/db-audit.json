@@ -1,0 +1,409 @@
+{
+ "res": [
+  {
+   "id": "DB-01",
+   "name": "No order line without an order",
+   "ok": true,
+   "n": 0
+  },
+  {
+   "id": "DB-02",
+   "name": "No order without lines",
+   "ok": true,
+   "n": 0
+  },
+  {
+   "id": "DB-03",
+   "name": "Order numbers unique",
+   "ok": true,
+   "n": 0
+  },
+  {
+   "id": "DB-04",
+   "name": "Order subtotal = sum of live original lines",
+   "ok": true,
+   "n": 0
+  },
+  {
+   "id": "DB-05",
+   "name": "Order total = subtotal − discount + delivery (when not free)",
+   "ok": true,
+   "n": 0
+  },
+  {
+   "id": "DB-06",
+   "name": "Line total = unit price × quantity",
+   "ok": true,
+   "n": 0
+  },
+  {
+   "id": "DB-07",
+   "name": "No negative stock (shop level)",
+   "ok": true,
+   "n": 0
+  },
+  {
+   "id": "DB-08",
+   "name": "Variant physical total = sum over shops",
+   "ok": true,
+   "n": 0
+  },
+  {
+   "id": "DB-09",
+   "name": "Variant reserved total = sum over shops",
+   "ok": true,
+   "n": 0
+  },
+  {
+   "id": "DB-10",
+   "name": "Reserved units = active reservations (per shop and variant)",
+   "ok": true,
+   "n": 0
+  },
+  {
+   "id": "DB-11",
+   "name": "Every active reservation belongs to a live order line",
+   "ok": true,
+   "n": 0
+  },
+  {
+   "id": "DB-12",
+   "name": "Cancelled orders hold no active reservation",
+   "ok": true,
+   "n": 0
+  },
+  {
+   "id": "DB-13",
+   "name": "Delivered orders carry delivered_at; others do not",
+   "ok": true,
+   "n": 0
+  },
+  {
+   "id": "DB-14",
+   "name": "Delivered orders are paid or refused (never 'due')",
+   "ok": true,
+   "n": 0
+  },
+  {
+   "id": "DB-15",
+   "name": "Customer phones unique",
+   "ok": true,
+   "n": 0
+  },
+  {
+   "id": "DB-16",
+   "name": "User login phones / emails unique",
+   "ok": true,
+   "n": 0
+  },
+  {
+   "id": "DB-17",
+   "name": "Every user has an email or a phone",
+   "ok": true,
+   "n": 0
+  },
+  {
+   "id": "DB-18",
+   "name": "Passwords are hashed (no plain text)",
+   "ok": true,
+   "n": 0
+  },
+  {
+   "id": "DB-19",
+   "name": "Return journal items point to existing orders and have a direction",
+   "ok": true,
+   "n": 0
+  },
+  {
+   "id": "DB-20",
+   "name": "Returned quantity never exceeds ordered quantity",
+   "ok": true,
+   "n": 0
+  },
+  {
+   "id": "DB-21",
+   "name": "Journal amount matches its items (in: refund, out: collected)",
+   "ok": true,
+   "n": 0
+  },
+  {
+   "id": "DB-22",
+   "name": "Orders reference an existing shop and wilaya",
+   "ok": true,
+   "n": 0
+  },
+  {
+   "id": "DB-23",
+   "name": "Delivery rates only for known shops/wilayas, non-negative",
+   "ok": true,
+   "n": 0
+  },
+  {
+   "id": "DB-24",
+   "name": "Sessions belong to existing users",
+   "ok": true,
+   "n": 0
+  },
+  {
+   "id": "DB-25",
+   "name": "Stock movement ledger has no orphan variant/shop",
+   "ok": true,
+   "n": 0
+  },
+  {
+   "id": "DB-26",
+   "name": "Published products have a price",
+   "ok": true,
+   "n": 0
+  },
+  {
+   "id": "DB-27",
+   "name": "Variant SKUs unique",
+   "ok": true,
+   "n": 0
+  },
+  {
+   "id": "DB-28",
+   "name": "Order line price snapshot kept when product price changes (lines hold own price)",
+   "ok": true,
+   "n": 0
+  }
+ ],
+ "schema": {
+  "tables": 34,
+  "fks": 52,
+  "unique": 48,
+  "checks": 23,
+  "idx": 91,
+  "noPk": [],
+  "fkNoIdx": [
+   {
+    "tbl": "order_status_history",
+    "col": "actor_user_id"
+   },
+   {
+    "tbl": "reviews",
+    "col": "moderated_by"
+   },
+   {
+    "tbl": "delivery_rates",
+    "col": "wilaya_code"
+   },
+   {
+    "tbl": "stock_reservations",
+    "col": "store_id"
+   },
+   {
+    "tbl": "stock_movements",
+    "col": "actor_user_id"
+   },
+   {
+    "tbl": "return_journal_items",
+    "col": "variant_id"
+   },
+   {
+    "tbl": "orders",
+    "col": "delivery_desk_id"
+   },
+   {
+    "tbl": "return_requests",
+    "col": "replacement_variant_id"
+   },
+   {
+    "tbl": "return_requests",
+    "col": "order_item_id"
+   },
+   {
+    "tbl": "audit_logs",
+    "col": "actor_user_id"
+   },
+   {
+    "tbl": "orders",
+    "col": "ships_with_order_id"
+   },
+   {
+    "tbl": "reviews",
+    "col": "order_id"
+   },
+   {
+    "tbl": "carts",
+    "col": "customer_id"
+   },
+   {
+    "tbl": "delivery_desks",
+    "col": "wilaya_code"
+   },
+   {
+    "tbl": "return_journal",
+    "col": "actor_user_id"
+   }
+  ]
+ },
+ "cascade": [
+  {
+   "tbl": "cart_items",
+   "ref": "carts",
+   "del": "CASCADE"
+  },
+  {
+   "tbl": "cart_items",
+   "ref": "product_variants",
+   "del": "CASCADE"
+  },
+  {
+   "tbl": "categories",
+   "ref": "categories",
+   "del": "SET NULL"
+  },
+  {
+   "tbl": "notifications",
+   "ref": "orders",
+   "del": "CASCADE"
+  },
+  {
+   "tbl": "order_items",
+   "ref": "orders",
+   "del": "CASCADE"
+  },
+  {
+   "tbl": "order_items",
+   "ref": "products",
+   "del": "SET NULL"
+  },
+  {
+   "tbl": "order_items",
+   "ref": "product_variants",
+   "del": "SET NULL"
+  },
+  {
+   "tbl": "order_status_history",
+   "ref": "orders",
+   "del": "CASCADE"
+  },
+  {
+   "tbl": "orders",
+   "ref": "orders",
+   "del": "SET NULL"
+  },
+  {
+   "tbl": "orders",
+   "ref": "delivery_desks",
+   "del": "SET NULL"
+  },
+  {
+   "tbl": "orders",
+   "ref": "users",
+   "del": "SET NULL"
+  },
+  {
+   "tbl": "orders",
+   "ref": "customers",
+   "del": "SET NULL"
+  },
+  {
+   "tbl": "product_images",
+   "ref": "products",
+   "del": "CASCADE"
+  },
+  {
+   "tbl": "product_stores",
+   "ref": "products",
+   "del": "CASCADE"
+  },
+  {
+   "tbl": "product_variants",
+   "ref": "products",
+   "del": "CASCADE"
+  },
+  {
+   "tbl": "return_journal",
+   "ref": "users",
+   "del": "SET NULL"
+  },
+  {
+   "tbl": "return_journal",
+   "ref": "orders",
+   "del": "CASCADE"
+  },
+  {
+   "tbl": "return_journal_items",
+   "ref": "order_items",
+   "del": "SET NULL"
+  },
+  {
+   "tbl": "return_journal_items",
+   "ref": "return_journal",
+   "del": "CASCADE"
+  },
+  {
+   "tbl": "return_journal_items",
+   "ref": "product_variants",
+   "del": "SET NULL"
+  },
+  {
+   "tbl": "return_requests",
+   "ref": "orders",
+   "del": "CASCADE"
+  },
+  {
+   "tbl": "return_requests",
+   "ref": "order_items",
+   "del": "CASCADE"
+  },
+  {
+   "tbl": "return_requests",
+   "ref": "product_variants",
+   "del": "SET NULL"
+  },
+  {
+   "tbl": "reviews",
+   "ref": "users",
+   "del": "SET NULL"
+  },
+  {
+   "tbl": "reviews",
+   "ref": "products",
+   "del": "CASCADE"
+  },
+  {
+   "tbl": "reviews",
+   "ref": "orders",
+   "del": "SET NULL"
+  },
+  {
+   "tbl": "sessions",
+   "ref": "users",
+   "del": "CASCADE"
+  },
+  {
+   "tbl": "stock_movements",
+   "ref": "product_variants",
+   "del": "CASCADE"
+  },
+  {
+   "tbl": "stock_reservations",
+   "ref": "order_items",
+   "del": "CASCADE"
+  },
+  {
+   "tbl": "stock_reservations",
+   "ref": "product_variants",
+   "del": "CASCADE"
+  },
+  {
+   "tbl": "store_stock",
+   "ref": "product_variants",
+   "del": "CASCADE"
+  },
+  {
+   "tbl": "wishlist_items",
+   "ref": "users",
+   "del": "CASCADE"
+  },
+  {
+   "tbl": "wishlist_items",
+   "ref": "products",
+   "del": "CASCADE"
+  }
+ ]
+}

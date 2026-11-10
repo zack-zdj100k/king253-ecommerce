@@ -1,0 +1,255 @@
+{
+ "inventory": [
+  {
+   "page": "/admin/inventory",
+   "total": 43,
+   "links": 30,
+   "buttons": 12,
+   "fields": 1,
+   "clicked": 2,
+   "noEffect": [],
+   "skipped": [
+    "Sign out",
+    "Add stock",
+    "Set count",
+    "Delete KING-JACK-WHI-S-001",
+    "Add stock",
+    "Set count",
+    "Delete KING-JACK-WHI-M-002",
+    "Add stock",
+    "Set count",
+    "Delete KING-JEAN-BLA-M-002"
+   ],
+   "disabled": 0,
+   "badLinks": [],
+   "noName": [],
+   "small": []
+  },
+  {
+   "page": "/admin/reviews",
+   "total": 23,
+   "links": 21,
+   "buttons": 2,
+   "fields": 0,
+   "clicked": 1,
+   "noEffect": [],
+   "skipped": [
+    "Sign out"
+   ],
+   "disabled": 0,
+   "badLinks": [],
+   "noName": [],
+   "small": []
+  },
+  {
+   "page": "/admin/testimonials",
+   "total": 34,
+   "links": 18,
+   "buttons": 6,
+   "fields": 10,
+   "clicked": 2,
+   "noEffect": [],
+   "skipped": [
+    "Sign out",
+    "Remove photo",
+    "Save",
+    "Delete"
+   ],
+   "disabled": 0,
+   "badLinks": [],
+   "noName": [
+    "textarea[null]"
+   ],
+   "small": []
+  },
+  {
+   "page": "/admin/social",
+   "total": 20,
+   "links": 18,
+   "buttons": 2,
+   "fields": 0,
+   "clicked": 1,
+   "noEffect": [],
+   "skipped": [
+    "Sign out"
+   ],
+   "disabled": 0,
+   "badLinks": [],
+   "noName": [],
+   "small": []
+  },
+  {
+   "page": "/admin/abandoned",
+   "total": 30,
+   "links": 22,
+   "buttons": 6,
+   "fields": 2,
+   "clicked": 5,
+   "noEffect": [],
+   "skipped": [
+    "Sign out",
+    "Apply",
+    "Delete abandoned bag",
+    "Delete abandoned bag",
+    "Delete abandoned bag"
+   ],
+   "disabled": 0,
+   "badLinks": [],
+   "noName": [],
+   "small": []
+  },
+  {
+   "page": "/admin/settings",
+   "total": 52,
+   "links": 19,
+   "buttons": 9,
+   "fields": 24,
+   "clicked": 1,
+   "noEffect": [],
+   "skipped": [
+    "Sign out",
+    "Save shop status",
+    "Save settings"
+   ],
+   "disabled": 5,
+   "badLinks": [],
+   "noName": [
+    "input[datetime-local]",
+    "input[datetime-local]",
+    "input[null]",
+    "input[null]",
+    "input[null]",
+    "input[null]",
+    "input[null]",
+    "input[null]",
+    "input[null]",
+    "input[null]",
+    "input[null]",
+    "input[null]",
+    "input[null]",
+    "input[null]"
+   ],
+   "small": []
+  },
+  {
+   "page": "/admin/content",
+   "total": 123,
+   "links": 34,
+   "buttons": 53,
+   "fields": 36,
+   "clicked": 18,
+   "noEffect": [],
+   "skipped": [
+    "Sign out",
+    "Upload",
+    "Upload",
+    "Upload",
+    "Upload",
+    "Upload",
+    "Reset to default",
+    "Reset to default",
+    "Reset to default",
+    "Upload",
+    "Upload",
+    "Reset to default",
+    "Upload",
+    "Upload",
+    "Upload",
+    "Upload",
+    "Upload",
+    "Upload",
+    "Reset to default",
+    "Reset to default",
+    "Upload",
+    "Reset to default",
+    "Upload",
+    "Reset to default",
+    "Upload",
+    "Reset to default"
+   ],
+   "disabled": 9,
+   "badLinks": [],
+   "noName": [],
+   "small": []
+  },
+  {
+   "page": "/admin/orders?status=returned",
+   "total": 38,
+   "links": 28,
+   "buttons": 8,
+   "fields": 2,
+   "clicked": 2,
+   "noEffect": [],
+   "skipped": [
+    "Sign out",
+    "Delete order KING253-20261110-004",
+    "Delete order KING253-20261011-001",
+    "Delete order KING253-20261008-001",
+    "Delete order KING253-20261005-002",
+    "Delete order KING253-20261005-001"
+   ],
+   "disabled": 0,
+   "badLinks": [],
+   "noName": [],
+   "small": []
+  },
+  {
+   "page": "/admin/orders?status=delivered",
+   "total": 34,
+   "links": 26,
+   "buttons": 6,
+   "fields": 2,
+   "clicked": 2,
+   "noEffect": [],
+   "skipped": [
+    "Sign out",
+    "Delete order KING253-20261110-057",
+    "Delete order KING253-20261026-001",
+    "Delete order KING253-20261012-001"
+   ],
+   "disabled": 0,
+   "badLinks": [],
+   "noName": [],
+   "small": []
+  },
+  {
+   "page": "/admin/orders?status=cancelled",
+   "total": 38,
+   "links": 28,
+   "buttons": 8,
+   "fields": 2,
+   "clicked": 2,
+   "noEffect": [],
+   "skipped": [
+    "Sign out",
+    "Delete order KING253-20261110-058",
+    "Delete order KING253-20261110-044",
+    "Delete order KING253-20261110-024",
+    "Delete order KING253-20261110-019",
+    "Delete order KING253-20261110-005"
+   ],
+   "disabled": 0,
+   "badLinks": [],
+   "noName": [],
+   "small": []
+  },
+  {
+   "page": "/admin/orders?status=confirmed",
+   "total": 28,
+   "links": 23,
+   "buttons": 3,
+   "fields": 2,
+   "clicked": 2,
+   "noEffect": [],
+   "skipped": [
+    "Sign out"
+   ],
+   "disabled": 0,
+   "badLinks": [],
+   "noName": [],
+   "small": []
+  }
+ ],
+ "findings": [],
+ "jsErrors": []
+}
