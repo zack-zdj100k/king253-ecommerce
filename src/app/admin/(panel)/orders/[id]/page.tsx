@@ -4,11 +4,13 @@ import { notFound } from "next/navigation"
 import { Mail, MessageCircle, Phone } from "lucide-react"
 
 import { formatDA } from "@/lib/money"
+import { orderStatusView } from "@/lib/order-status"
 import { formatPhone, whatsappLink } from "@/lib/phone"
 import { referralLabel } from "@/lib/referral"
 import { listStores } from "@/server/stores"
 import { db } from "@/server/db"
 import { getOrderDetail } from "@/server/admin/queries"
+import { categoriesForPicker, lineInfo } from "@/server/admin/line-info"
 import { STATUS_LABELS } from "@/server/orders/manage"
 import { orderMoney } from "@/server/pricing"
 import { deleteOrderAction } from "@/app/admin/actions/orders"
@@ -16,6 +18,7 @@ import { DeleteButton } from "@/components/admin/delete-button"
 import { ReturnExchangePanel } from "@/components/admin/order/return-exchange"
 import { exchangeCatalog, listJournal, returnableItems } from "@/server/returns"
 import { DeliveryPanel, DiscountPanel, ItemsPanel, NotesPanel, StatusPanel } from "@/components/admin/order/order-panels"
+import { ProductLine } from "@/components/admin/order/product-line"
 import { Badge, PageHeader, Panel, btnRed, btnOutline } from "@/components/admin/ui"
 
 export const metadata: Metadata = { title: "Order" }
@@ -89,6 +92,12 @@ export default async function AdminOrderPage({ params }: PageProps<"/admin/order
   const refused = order.paymentStatus === "refused"
   const [returnable, catalog] = order.status === "delivered" ? await Promise.all([returnableItems(db, order.id), exchangeCatalog(db)]) : [[], []]
   const editable = order.status !== "delivered" && order.status !== "cancelled"
+  const info = await lineInfo(db, [
+    ...items.map((r) => ({ variantId: r.item.variantId, productId: r.item.productId })),
+    ...journal.rows.flatMap((r) => r.items.map((i) => ({ variantId: i.variantId }))),
+    ...returnable.map((i) => ({ variantId: i.variantId, productId: i.productId })),
+  ])
+  const categories = editable ? await categoriesForPicker(db) : []
 
   const firstName = order.customerName.split(" ")[0]
   const waMessage = `Bonjour ${firstName}, ici KING 253 concernant votre commande ${order.number} (${STATUS_LABELS[order.status]}) — total ${formatDA(order.total)}, livraison ${order.wilayaName}, ${order.city}.`
@@ -108,7 +117,9 @@ export default async function AdminOrderPage({ params }: PageProps<"/admin/order
         }
       >
         <div className="mt-3 flex flex-wrap items-center gap-3">
-          <Badge status={order.status}>{STATUS_LABELS[order.status]}</Badge>
+          <Badge status={orderStatusView({ ...order, partlyReturned: journal.rows.some((r) => r.items.some((i) => i.direction === "in")) }).tone}>
+            {orderStatusView({ ...order, partlyReturned: journal.rows.some((r) => r.items.some((i) => i.direction === "in")) }).label}
+          </Badge>
           <span className="text-xs font-medium text-king-gray">Cash on delivery</span>
           <Link href="/admin/orders" className="text-xs font-medium text-king-gray hover:text-king-white">← All orders</Link>
         </div>
@@ -117,14 +128,18 @@ export default async function AdminOrderPage({ params }: PageProps<"/admin/order
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
         <div className="space-y-6">
           <Panel title="Status">
-            <StatusPanel orderId={order.id} status={order.status} />
+            <StatusPanel orderId={order.id} status={order.status} returned={order.status === "delivered" && refused} hasReturns={journal.rows.length > 0} />
           </Panel>
 
           <Panel title="Items">
             <ItemsPanel
               orderId={order.id}
               editable={editable}
-              items={items.map((r) => ({ ...r.item, variants: r.variants }))}
+              items={items.map((r) => {
+                const extra = info(r.item)
+                return { ...r.item, variants: r.variants, view: { ...extra, image: r.item.imageUrl ?? extra.image } }
+              })}
+              categories={categories}
             />
             <dl className="mt-4 space-y-1.5 border-t border-white/10 pt-4 text-sm">
               <div className="flex justify-between text-king-gray"><dt>Clothes</dt><dd className="text-king-white">{formatDA(order.subtotal)}</dd></div>
@@ -193,11 +208,26 @@ export default async function AdminOrderPage({ params }: PageProps<"/admin/order
                             {r.entry.amount < 0 ? `Refunded ${formatDA(-r.entry.amount)}` : r.entry.amount > 0 ? `Collected ${formatDA(r.entry.amount)}` : "No difference"}
                           </span>
                         </div>
-                        {r.items.map((i) => (
-                          <p key={i.id} className="text-king-muted">
-                            {i.direction === "in" ? "↩ Back" : "→ Given"}: {i.productName} — {i.color} / {i.size} × {i.quantity}
-                          </p>
-                        ))}
+                        <ul className="space-y-3 pt-1">
+                          {r.items.map((i) => (
+                            <li key={i.id}>
+                              <ProductLine
+                                line={{ ...info({ variantId: i.variantId }), name: i.productName, color: i.color, size: i.size, quantity: i.quantity }}
+                                badge={
+                                  <span
+                                    className={
+                                      i.direction === "in"
+                                        ? "mb-1 inline-flex rounded-full bg-amber-400/10 px-2 py-0.5 text-[0.7rem] font-semibold text-amber-200"
+                                        : "mb-1 inline-flex rounded-full bg-emerald-400/10 px-2 py-0.5 text-[0.7rem] font-semibold text-emerald-200"
+                                    }
+                                  >
+                                    {i.direction === "in" ? "↩ Came back from the customer" : "→ Given to the customer"}
+                                  </span>
+                                }
+                              />
+                            </li>
+                          ))}
+                        </ul>
                         <p className="text-xs text-king-gray">
                           {r.entry.reason ?? ""}
                           {r.entry.note ? ` — ${r.entry.note}` : ""} · {r.entry.actorLabel} · {fmt(r.entry.createdAt)}
@@ -209,7 +239,10 @@ export default async function AdminOrderPage({ params }: PageProps<"/admin/order
                 {order.status === "delivered" && (
                   <ReturnExchangePanel
                     orderId={order.id}
-                    items={returnable}
+                    items={returnable.map((i) => {
+                      const extra = info(i)
+                      return { ...i, view: { ...extra, image: i.image ?? extra.image } }
+                    })}
                     shops={shops.filter((s) => s.active).map((s) => ({ id: s.id, name: s.name }))}
                     orderShopId={order.storeId}
                     catalog={catalog}

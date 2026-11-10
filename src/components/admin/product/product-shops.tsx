@@ -10,7 +10,7 @@ type Shop = { id: number; name: string; active: boolean }
 
 /**
  * Shops that sell this product. Each ticked shop gets its own stock per size
- * below. A shop can only be unticked once its stock of this product is 0.
+ * below. Unticking a shop stops selling there but keeps its stock.
  */
 export function ProductShops({ productId, shops, selected }: { productId: string; shops: Shop[]; selected: number[] }) {
   const { run, pending, feedback } = useAdminAction()

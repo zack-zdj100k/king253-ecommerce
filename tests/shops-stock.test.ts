@@ -44,12 +44,19 @@ describe("Stock per shop", () => {
     expect(move).toMatchObject({ physicalBefore: 0, physicalAfter: 3 })
   })
 
-  it("a shop cannot be removed from a product while it still has units", async () => {
+  it("switching a shop off for a product keeps its stock but stops selling it; on again sells it", async () => {
     const { product, variants, shop } = await seedProduct({ slug: "tee", price: 2000, variants: [{ size: "M", color: "Black", physical: 2 }] })
-    await expect(testDb.transaction((tx) => setProductStores(tx, product.id, []))).rejects.toThrow(/still has 2 unit/)
-    await testDb.transaction((tx) => adjustPhysicalStock(tx, { variantId: variants[0].id, storeId: shop.id, newPhysical: 0, reason: "Moved", actorUserId: actor.userId }))
+    const line = [{ variantId: variants[0].id, quantity: 1 }]
+    expect((await shopsThatCanFulfil(testDb, line)).map((s) => s.id)).toEqual([shop.id])
+
     await testDb.transaction((tx) => setProductStores(tx, product.id, []))
-    expect(await shopStock(variants[0].id, shop.id)).toBeNull()
+    expect(await shopStock(variants[0].id, shop.id)).toEqual({ physical: 2, reserved: 0 })
+    expect(await shopsThatCanFulfil(testDb, line)).toEqual([])
+    const [row] = await testDb.select().from(productStores).where(eq(productStores.productId, product.id))
+    expect(row.active).toBe(false)
+
+    await testDb.transaction((tx) => setProductStores(tx, product.id, [shop.id]))
+    expect((await shopsThatCanFulfil(testDb, line)).map((s) => s.id)).toEqual([shop.id])
   })
 
   it("checkout ships from a shop that has the whole order, reserves there, and never splits", async () => {

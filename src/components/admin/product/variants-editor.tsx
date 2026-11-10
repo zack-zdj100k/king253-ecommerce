@@ -30,7 +30,7 @@ type Variant = {
   physical: number
   reserved: number
   /** One row per shop that sells the product. */
-  stock: { storeId: number; storeName: string; shopActive: boolean; physical: number; reserved: number }[]
+  stock: { storeId: number; storeName: string; shopActive: boolean; selling: boolean; physical: number; reserved: number }[]
 }
 
 type Shop = { id: number; name: string }
@@ -247,11 +247,10 @@ function ColourCard({
       </div>
 
       <div className="p-4 md:p-5">
-        <div className="hidden grid-cols-[72px_minmax(0,1.3fr)_88px_minmax(0,1fr)_auto] gap-3 pb-2 text-xs font-medium text-king-gray md:grid">
+        <div className="hidden grid-cols-[72px_minmax(0,1.3fr)_88px_auto] gap-3 pb-2 text-xs font-medium text-king-gray md:grid">
           <span>Size</span>
           <span>SKU / barcode</span>
           <span>Low alert</span>
-          <span>Stock — physical · reserved · available</span>
           <span />
         </div>
         <ul className="divide-y divide-white/5">
@@ -280,7 +279,7 @@ function SizeRow({ productId, variant, threshold }: { productId: string; variant
   const low = available > 0 && available <= (variant.lowStockThreshold ?? threshold)
 
   return (
-    <li className={cn("grid gap-3 py-3 md:grid-cols-[72px_minmax(0,1.3fr)_88px_minmax(0,1fr)_auto] md:items-start", !variant.active && "opacity-55")}>
+    <li className={cn("grid gap-3 py-4 md:grid-cols-[72px_minmax(0,1.3fr)_88px_auto] md:items-start", !variant.active && "opacity-55")}>
       <label className="block">
         <span className={cn(labelClass, "md:sr-only")}>Size</span>
         <input value={v.size} onChange={(e) => setV({ ...v, size: e.target.value })} aria-label="Size" className={inputClass} />
@@ -298,30 +297,6 @@ function SizeRow({ productId, variant, threshold }: { productId: string; variant
         <span className={cn(labelClass, "md:sr-only")}>Low stock alert at</span>
         <input value={v.lowStockThreshold} onChange={(e) => setV({ ...v, lowStockThreshold: digits(e.target.value) })} placeholder={String(threshold)} aria-label="Low stock alert at" className={inputClass} />
       </label>
-      <div>
-        <span className={cn(labelClass, "md:sr-only")}>Stock</span>
-        <div className="flex flex-wrap items-center gap-2 text-sm tabular-nums">
-          <span className="text-xs text-king-gray">All shops</span>
-          <StockBadges physical={variant.physical} reserved={variant.reserved} low={low} />
-        </div>
-        <ul className="mt-2 space-y-2">
-          {variant.stock.map((s) => {
-            const avail = s.physical - s.reserved
-            return (
-              <li key={s.storeId} className="rounded-xl border border-white/5 bg-white/[0.02] p-2">
-                <div className="flex flex-wrap items-center gap-2 text-sm tabular-nums">
-                  <span className="min-w-24 text-xs font-medium text-king-white">
-                    {s.storeName}
-                    {!s.shopActive && <span className="text-king-gray"> · inactive</span>}
-                  </span>
-                  <StockBadges physical={s.physical} reserved={s.reserved} low={avail > 0 && avail <= (variant.lowStockThreshold ?? threshold)} />
-                </div>
-                <StockAdjust variantId={variant.id} storeId={s.storeId} physical={s.physical} reserved={s.reserved} />
-              </li>
-            )
-          })}
-        </ul>
-      </div>
       <div className="flex flex-wrap items-start gap-1 md:justify-end">
         <button
           type="button"
@@ -357,6 +332,36 @@ function SizeRow({ productId, variant, threshold }: { productId: string; variant
           <Feedback feedback={feedback} />
         </div>
       </div>
+      {/* Stock: one horizontal row per shop, full width on every screen size. */}
+      <div className="md:col-span-full">
+        <div className="flex flex-wrap items-center gap-2 text-sm tabular-nums">
+          <span className={cn(labelClass, "mb-0")}>Stock</span>
+          <span className="text-xs text-king-gray">All shops</span>
+          <StockBadges physical={variant.physical} reserved={variant.reserved} low={low} />
+          <span className="text-xs text-king-gray">in shop · reserved · can sell</span>
+        </div>
+        <ul className="mt-2 space-y-2">
+          {variant.stock.map((s) => {
+            const avail = s.physical - s.reserved
+            return (
+              <li
+                key={s.storeId}
+                className={cn("flex flex-wrap items-center gap-x-4 gap-y-2 rounded-xl border border-white/5 bg-white/[0.02] px-3 py-2", !s.selling && "opacity-60")}
+              >
+                <span className="w-40 shrink-0 text-xs font-medium text-king-white">
+                  {s.storeName}
+                  {!s.shopActive && <span className="block text-king-gray">Shop inactive</span>}
+                  {s.shopActive && !s.selling && <span className="block text-king-gray">Off for this product · stock kept</span>}
+                </span>
+                <span className="flex items-center gap-2 text-sm tabular-nums">
+                  <StockBadges physical={s.physical} reserved={s.reserved} low={avail > 0 && avail <= (variant.lowStockThreshold ?? threshold)} />
+                </span>
+                <StockAdjust variantId={variant.id} storeId={s.storeId} physical={s.physical} reserved={s.reserved} />
+              </li>
+            )
+          })}
+        </ul>
+      </div>
     </li>
   )
 }
@@ -386,6 +391,7 @@ function AddSizes({ productId, colour, base, next, existing }: { productId: stri
   const [sizes, setSizes] = React.useState("")
   const [stock, setStock] = React.useState("0")
   const [storeId, setStoreId] = React.useState<number | null>(null)
+  const shops = React.useContext(ShopsContext)
   const list = sizes
     .split(",")
     .map((s) => s.trim())
@@ -409,7 +415,8 @@ function AddSizes({ productId, colour, base, next, existing }: { productId: stri
               sortOrder: 0,
               active: true,
               initialStock: Number(stock) || 0,
-              initialStoreId: storeId,
+              // What the picker shows is what is sent: its first shop when untouched.
+              initialStoreId: storeId ?? shops[0]?.id ?? null,
             })
             if (!r.ok) return r
           }
@@ -446,6 +453,7 @@ function AddColour({ productId, base, next, offset, pricing }: { productId: stri
   const [sizes, setSizes] = React.useState("S, M, L, XL")
   const [stock, setStock] = React.useState("0")
   const [storeId, setStoreId] = React.useState<number | null>(null)
+  const shops = React.useContext(ShopsContext)
   const list = sizes.split(",").map((s) => s.trim()).filter(Boolean)
 
   return (
@@ -466,7 +474,8 @@ function AddColour({ productId, base, next, offset, pricing }: { productId: stri
               sortOrder: offset + i,
               active: true,
               initialStock: Number(stock) || 0,
-              initialStoreId: storeId,
+              // What the picker shows is what is sent: its first shop when untouched.
+              initialStoreId: storeId ?? shops[0]?.id ?? null,
             })
             if (!r.ok) return r
           }

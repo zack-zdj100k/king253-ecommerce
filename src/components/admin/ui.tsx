@@ -64,6 +64,7 @@ const STATUS_TONE: Record<string, keyof typeof TONES> = {
   preparing: "info",
   ready_for_delivery: "red",
   delivered: "good",
+  returned: "red",
   cancelled: "muted",
   published: "good",
   draft: "neutral",

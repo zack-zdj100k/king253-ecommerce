@@ -4,6 +4,16 @@ import type { DbOrTx, Tx } from "./db/client"
 import { productStores, productVariants, stockMovements, stockReservations, storeStock, stores } from "./db/schema"
 import { AppError, NotFoundError, OutOfStockError } from "./errors"
 
+/**
+ * "This shop sells this product": its product_stores row is switched on.
+ * A shop switched off for a product keeps its stock but sells nothing of it.
+ * `ss` is the store_stock alias of the surrounding query.
+ */
+export const SELLS_SS = "exists (select 1 from product_stores ps join product_variants pv on pv.product_id = ps.product_id where pv.id = ss.variant_id and ps.store_id = ss.store_id and ps.active)"
+/** Same check for drizzle queries on the store_stock table. */
+const sellsHere = () =>
+  sql`exists (select 1 from product_stores ps join product_variants pv on pv.product_id = ps.product_id where pv.id = ${storeStock.variantId} and ps.store_id = ${storeStock.storeId} and ps.active)`
+
 /*
  * Inventory model
  * ---------------
@@ -103,7 +113,8 @@ export async function reserveStock(
         eq(storeStock.storeId, input.storeId),
         sql`${storeStock.physical} - ${storeStock.reserved} >= ${input.quantity}`,
         sql`exists (select 1 from ${productVariants} where ${productVariants.id} = ${input.variantId} and ${productVariants.active})`,
-        sql`exists (select 1 from ${stores} where ${stores.id} = ${input.storeId} and ${stores.active})`
+        sql`exists (select 1 from ${stores} where ${stores.id} = ${input.storeId} and ${stores.active})`,
+        sellsHere()
       )
     )
     .returning({ physical: storeStock.physical, reserved: storeStock.reserved })
@@ -112,11 +123,11 @@ export async function reserveStock(
     const [variant] = await tx.select({ active: productVariants.active }).from(productVariants).where(eq(productVariants.id, input.variantId))
     if (!variant) throw new NotFoundError("This product option")
     const [current] = await tx
-      .select({ physical: storeStock.physical, reserved: storeStock.reserved, shopActive: stores.active })
+      .select({ physical: storeStock.physical, reserved: storeStock.reserved, shopActive: stores.active, sells: sql<boolean>`${sellsHere()}` })
       .from(storeStock)
       .innerJoin(stores, eq(stores.id, storeStock.storeId))
       .where(and(eq(storeStock.variantId, input.variantId), eq(storeStock.storeId, input.storeId)))
-    const available = variant.active && current?.shopActive ? Math.max(0, current.physical - current.reserved) : 0
+    const available = variant.active && current?.shopActive && current.sells ? Math.max(0, current.physical - current.reserved) : 0
     throw new OutOfStockError(input.variantId, available, input.label)
   }
 
@@ -156,6 +167,12 @@ export async function releaseReservation(tx: Tx, reservationId: string, ref: Ref
   await applyDelta(tx, reservation.variantId, reservation.storeId!, "release", { physical: 0, reserved: -reservation.quantity }, ref)
   await tx.update(stockReservations).set({ status: "released", resolvedAt: new Date() }).where(eq(stockReservations.id, reservationId))
   return true
+}
+
+/** Admin undoes a delivery by hand: the units are back on the shop's shelf (physical += qty). */
+export async function undoDelivery(tx: Tx, input: { variantId: string; storeId: number; quantity: number }, ref: Ref) {
+  await lockShopStock(tx, input.variantId, input.storeId)
+  return applyDelta(tx, input.variantId, input.storeId, "adjustment", { physical: input.quantity, reserved: 0 }, ref)
 }
 
 /** Delivery path: the units physically leave the shop — physical and reserved both decrease. */
@@ -284,28 +301,16 @@ export async function handOverUnits(tx: Tx, input: { variantId: string; storeId:
  * variant; removing one is refused while that shop still has units of it.
  */
 export async function setProductStores(tx: Tx, productId: string, storeIds: number[]) {
+  // Switching a shop off keeps its row and its stock (it just stops selling this
+  // product); switching it on again sells that stock straight away.
   const wanted = [...new Set(storeIds)]
-  const current = await tx.select({ storeId: productStores.storeId }).from(productStores).where(eq(productStores.productId, productId))
-  const removed = current.map((c) => c.storeId).filter((id) => !wanted.includes(id))
   const variants = await tx.select({ id: productVariants.id }).from(productVariants).where(eq(productVariants.productId, productId))
-
-  for (const storeId of removed) {
-    const [left] = await tx
-      .select({ physical: sql<number>`coalesce(sum(${storeStock.physical}), 0)::int`, name: sql<string>`max(${stores.name})` })
-      .from(storeStock)
-      .innerJoin(productVariants, eq(productVariants.id, storeStock.variantId))
-      .innerJoin(stores, eq(stores.id, storeStock.storeId))
-      .where(and(eq(productVariants.productId, productId), eq(storeStock.storeId, storeId)))
-    if (left && left.physical > 0) {
-      throw new AppError("SHOP_HAS_STOCK", `${left.name} still has ${left.physical} unit(s) of this product. Set its stock to 0 first.`)
-    }
-    await tx.delete(productStores).where(and(eq(productStores.productId, productId), eq(productStores.storeId, storeId)))
-    for (const v of variants) {
-      await tx.delete(storeStock).where(and(eq(storeStock.variantId, v.id), eq(storeStock.storeId, storeId)))
-    }
-  }
+  await tx
+    .update(productStores)
+    .set({ active: false })
+    .where(and(eq(productStores.productId, productId), wanted.length ? sql`${productStores.storeId} not in (${sql.join(wanted.map((id) => sql`${id}`), sql`, `)})` : sql`true`))
   for (const storeId of wanted) {
-    await tx.insert(productStores).values({ productId, storeId }).onConflictDoNothing()
+    await tx.insert(productStores).values({ productId, storeId, active: true }).onConflictDoUpdate({ target: [productStores.productId, productStores.storeId], set: { active: true } })
     for (const v of variants) await tx.insert(storeStock).values({ variantId: v.id, storeId }).onConflictDoNothing()
   }
 }
@@ -328,7 +333,7 @@ export async function shopsThatCanFulfil(db: DbOrTx, lines: { variantId: string;
     .select({ storeId: storeStock.storeId, variantId: storeStock.variantId, available: sql<number>`(${storeStock.physical} - ${storeStock.reserved})::int` })
     .from(storeStock)
     .innerJoin(stores, eq(stores.id, storeStock.storeId))
-    .where(and(inArray(storeStock.variantId, [...need.keys()]), eq(stores.active, true)))
+    .where(and(inArray(storeStock.variantId, [...need.keys()]), eq(stores.active, true), sellsHere()))
   const shops = await db.select().from(stores).where(eq(stores.active, true)).orderBy(asc(stores.sortOrder), asc(stores.name))
   return shops.filter((shop) =>
     [...need.entries()].every(([variantId, qty]) => (rows.find((r) => r.storeId === shop.id && r.variantId === variantId)?.available ?? 0) >= qty)
@@ -343,7 +348,7 @@ export async function shopAvailability(db: DbOrTx, variantIds: string[]) {
     .select({ storeId: storeStock.storeId, variantId: storeStock.variantId, available: sql<number>`greatest(${storeStock.physical} - ${storeStock.reserved}, 0)::int` })
     .from(storeStock)
     .innerJoin(stores, eq(stores.id, storeStock.storeId))
-    .where(and(inArray(storeStock.variantId, variantIds), eq(stores.active, true)))
+    .where(and(inArray(storeStock.variantId, variantIds), eq(stores.active, true), sellsHere()))
   for (const r of rows) {
     if (!out.has(r.variantId)) out.set(r.variantId, new Map())
     out.get(r.variantId)!.set(r.storeId, r.available)
@@ -357,7 +362,7 @@ export async function shopAvailability(db: DbOrTx, variantIds: string[]) {
  * across shops). Raw SQL version for queries that alias variants as `v`.
  */
 export const SELLABLE_V = sql.raw(`(select coalesce(max(greatest(ss.physical - ss.reserved, 0)), 0)
-  from store_stock ss join stores s on s.id = ss.store_id and s.active where ss.variant_id = v.id)`)
+  from store_stock ss join stores s on s.id = ss.store_id and s.active where ss.variant_id = v.id and ${SELLS_SS})`)
 
 /**
  * Drop-in for `{ physical, reserved }` in storefront selects on product_variants:
@@ -366,7 +371,7 @@ export const SELLABLE_V = sql.raw(`(select coalesce(max(greatest(ss.physical - s
 export function storefrontStock() {
   return {
     physical: sql<number>`(select coalesce(max(greatest(ss.physical - ss.reserved, 0)), 0)
-      from store_stock ss join stores s on s.id = ss.store_id and s.active where ss.variant_id = "product_variants"."id")::int`,
+      from store_stock ss join stores s on s.id = ss.store_id and s.active where ss.variant_id = "product_variants"."id" and ${sql.raw(SELLS_SS)})::int`,
     reserved: sql<number>`0`,
   }
 }
@@ -385,7 +390,7 @@ export async function productShopStock(db: DbOrTx, productIds: string[]) {
     .from(storeStock)
     .innerJoin(stores, eq(stores.id, storeStock.storeId))
     .innerJoin(productVariants, eq(productVariants.id, storeStock.variantId))
-    .where(and(inArray(productVariants.productId, productIds), eq(stores.active, true)))
+    .where(and(inArray(productVariants.productId, productIds), eq(stores.active, true), sellsHere()))
     .groupBy(productVariants.productId, stores.id, stores.name, stores.sortOrder)
     .orderBy(asc(stores.sortOrder), asc(stores.name))
   for (const r of rows) out.set(r.productId, [...(out.get(r.productId) ?? []), { storeId: r.storeId, name: r.name, available: r.available }])

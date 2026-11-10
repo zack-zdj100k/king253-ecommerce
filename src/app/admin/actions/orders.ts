@@ -5,7 +5,8 @@ import { after } from "next/server"
 import { z } from "zod"
 
 import { db } from "@/server/db"
-import { productVariants, products } from "@/server/db/schema"
+import { orders, productVariants, products } from "@/server/db/schema"
+import { SELLS_SS } from "@/server/inventory"
 import { sendStatusEmail } from "@/server/email/send"
 import { effectivePriceSql } from "@/server/pricing"
 import {
@@ -13,6 +14,8 @@ import {
   applyOrderDiscount,
   changeOrderStatus,
   deleteOrder,
+  FLOW_STATUSES,
+  setOrderStatusManually,
   ORDER_STATUSES,
   removeOrderItem,
   setOrderAdminNotes,
@@ -32,6 +35,18 @@ export async function changeStatusAction(orderId: string, to: string, note: stri
       if (result.changed) after(() => sendStatusEmail(db, result.order.id, status).catch((e) => console.error("[king253] status email", e)))
     },
     { revalidate: [`/admin/orders/${orderId}`, "/admin/orders", "/admin"], message: "Status updated." }
+  )
+}
+
+/** Any status, also backwards (stock follows). Used by "Change status by hand". */
+export async function setStatusManuallyAction(orderId: string, to: string, note: string) {
+  return adminAction(
+    async ({ actor }) => {
+      const status = z.enum(FLOW_STATUSES).parse(to)
+      const result = await setOrderStatusManually(db, { orderId: id.parse(orderId), to: status, actor, note: note.slice(0, 500) })
+      if (result.changed && status === "delivered") after(() => sendStatusEmail(db, result.order.id, status).catch((e) => console.error("[king253] status email", e)))
+    },
+    { revalidate: [`/admin/orders/${orderId}`, "/admin/orders", "/admin", "/admin/inventory"], message: "Status changed. Stock updated." }
   )
 }
 
@@ -111,24 +126,43 @@ export async function saveNotesAction(orderId: string, notes: string) {
   )
 }
 
-/** Variant search for adding items to an order. */
-export async function searchVariantsAction(q: string) {
+/**
+ * Variant search for adding items to an order: by name / SKU / barcode and/or by
+ * category (a main category includes its subcategories). Stock is the order's
+ * departure shop, because the new item is reserved there.
+ */
+export async function searchVariantsAction(input: { orderId: string; q?: string; categoryId?: number | null }) {
   await requireAdmin()
-  const term = String(q).trim().slice(0, 60)
-  if (term.length < 2) return []
+  const orderId = id.parse(input.orderId)
+  const term = String(input.q ?? "").trim().slice(0, 60)
+  const categoryId = input.categoryId ? z.number().int().parse(input.categoryId) : null
+  if (term.length < 2 && !categoryId) return []
+  const [order] = await db.select({ storeId: orders.storeId }).from(orders).where(eq(orders.id, orderId))
+  const storeId = order?.storeId ?? 0
   const pat = `%${term.replace(/[\\%_]/g, (c) => `\\${c}`)}%`
+  const where = [eq(productVariants.active, true), sql`${products.status} <> 'archived'`]
+  if (term.length >= 2) where.push(or(ilike(products.name, pat), ilike(productVariants.sku, pat), ilike(productVariants.barcode, pat))!)
+  if (categoryId) where.push(sql`(${products.categoryId} = ${categoryId} or ${products.categoryId} in (select c.id from categories c where c.parent_id = ${categoryId}))`)
   return db
     .select({
       id: productVariants.id,
       sku: productVariants.sku,
       size: productVariants.size,
       color: productVariants.color,
-      available: sql<number>`greatest(${productVariants.physical} - ${productVariants.reserved}, 0)::int`,
+      colorHex: productVariants.colorHex,
       name: products.name,
+      category: sql<string | null>`(select c.name from categories c where c.id = ${products.categoryId})`,
+      parentCategory: sql<string | null>`(select pc.name from categories c join categories pc on pc.id = c.parent_id where c.id = ${products.categoryId})`,
+      image: sql<string | null>`(select i.url from product_images i where i.product_id = ${products.id}
+        order by (i.color = ${productVariants.color}) desc nulls last, i.is_main desc, i.sort_order limit 1)`,
+      available: sql<number>`coalesce((select greatest(ss.physical - ss.reserved, 0) from store_stock ss
+        where ss.variant_id = ${productVariants.id} and ss.store_id = ${storeId} and ${sql.raw(SELLS_SS)}), 0)::int`,
       price: sql<number | null>`${effectivePriceSql('"product_variants"', '"products"')}`,
     })
     .from(productVariants)
     .innerJoin(products, eq(products.id, productVariants.productId))
-    .where(and(eq(productVariants.active, true), sql`${products.status} <> 'archived'`, or(ilike(products.name, pat), ilike(productVariants.sku, pat))))
-    .limit(20)
+    .where(and(...where))
+    // In stock in this shop first, then by name.
+    .orderBy(sql`(select greatest(ss.physical - ss.reserved, 0) from store_stock ss where ss.variant_id = ${productVariants.id} and ss.store_id = ${storeId}) > 0 desc nulls last`, products.name, productVariants.color, productVariants.sortOrder)
+    .limit(60)
 }

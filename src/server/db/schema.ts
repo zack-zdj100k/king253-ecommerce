@@ -380,6 +380,8 @@ export const productStores = pgTable(
     storeId: integer("store_id")
       .notNull()
       .references(() => stores.id),
+    /** Off = this shop stops selling the product; its stock is kept for when it is switched back on. */
+    active: boolean("active").notNull().default(true),
   },
   (t) => [primaryKey({ columns: [t.productId, t.storeId] })]
 )

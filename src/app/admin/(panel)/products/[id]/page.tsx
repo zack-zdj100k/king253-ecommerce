@@ -43,8 +43,8 @@ export default async function EditProductPage({ params }: PageProps<"/admin/prod
 
       <Panel title="Shops">
         <p className="mb-4 max-w-3xl text-sm text-king-gray">
-          Where this product is sold. Each shop has its own stock per size (below); the total is the sum of all shops. Checkout only offers a shop
-          that has the whole order in stock.
+          Where this product is sold. Each shop has its own stock per size (below). Switch a shop off to stop selling this product there — its
+          stock is kept and sells again when you switch it back on. Customers only see and order from shops that are on and have the whole order.
         </p>
         <ProductShops productId={product.id} shops={shops} selected={shopIds} />
       </Panel>

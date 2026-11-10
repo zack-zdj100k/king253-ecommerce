@@ -1,14 +1,14 @@
 "use client"
 
 import * as React from "react"
-import { Check, ChevronDown } from "lucide-react"
+import { Check, ChevronDown, Search } from "lucide-react"
 
 import { cn } from "@/lib/utils"
-import { GARMENT_COLOURS, isHex } from "@/lib/colours"
+import { GARMENT_COLOURS, isHex, searchColours } from "@/lib/colours"
 
 /**
- * Swatch picker for garment colours: a palette of common shades plus a hex
- * field. Replaces the browser's native colour dialog, which is hard to use
+ * Swatch picker for garment colours: a searchable palette (English, French or
+ * Arabic names) plus a hex field. Replaces the browser's native colour dialog, which is hard to use
  * on small screens.
  */
 export function ColourPicker({
@@ -24,6 +24,9 @@ export function ColourPicker({
 }) {
   const [open, setOpen] = React.useState(false)
   const [draft, setDraft] = React.useState(value)
+  const [query, setQuery] = React.useState("")
+  const found = searchColours(query)
+  const currentName = GARMENT_COLOURS.find((c) => c.hex.toLowerCase() === (isHex(value) ? value : "").toLowerCase())?.name
   const root = React.useRef<HTMLDivElement>(null)
   const current = isHex(value) ? value : "#222222"
   const typed = draft.startsWith("#") ? draft : `#${draft}`
@@ -53,6 +56,7 @@ export function ColourPicker({
         type="button"
         onClick={() => {
           setDraft(current)
+          setQuery("")
           setOpen((o) => !o)
         }}
         aria-haspopup="dialog"
@@ -68,10 +72,35 @@ export function ColourPicker({
         <div
           role="dialog"
           aria-label="Choose a colour"
-          className="absolute top-12 left-0 z-50 w-[min(18.5rem,calc(100vw-2.5rem))] rounded-2xl border border-white/10 bg-king-near-black p-3 shadow-2xl shadow-black/60"
+          className="absolute top-12 left-0 z-50 w-[min(21rem,calc(100vw-2.5rem))] rounded-2xl border border-white/10 bg-king-near-black p-3 shadow-2xl shadow-black/60"
         >
-          <div className="grid grid-cols-7 gap-1.5">
-            {GARMENT_COLOURS.map((c) => {
+          <label className="mb-3 flex h-9 items-center gap-2 rounded-full border border-white/12 bg-black/50 px-3 focus-within:border-king-bright-red">
+            <Search className="size-3.5 shrink-0 text-king-gray" aria-hidden />
+            <input
+              autoFocus
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault()
+                  if (found[0]) {
+                    onChange(found[0].hex, found[0].name)
+                    setOpen(false)
+                  }
+                }
+              }}
+              placeholder="Search: navy, bordeaux, kaki…"
+              aria-label="Search colours"
+              className="min-w-0 flex-1 bg-transparent text-xs text-king-white placeholder:text-king-gray focus-visible:outline-none"
+            />
+          </label>
+          <p className="mb-2 text-xs text-king-gray">
+            {query ? `${found.length} colour${found.length === 1 ? "" : "s"}` : `${GARMENT_COLOURS.length} colours`}
+            {currentName ? ` · now: ${currentName}` : ""}
+          </p>
+          {found.length === 0 && <p className="py-4 text-center text-xs text-king-gray">No colour with that name — type its hex code below.</p>}
+          <div className="grid max-h-56 grid-cols-8 gap-1.5 overflow-y-auto p-0.5">
+            {found.map((c) => {
               const active = c.hex.toLowerCase() === current.toLowerCase()
               return (
                 <button

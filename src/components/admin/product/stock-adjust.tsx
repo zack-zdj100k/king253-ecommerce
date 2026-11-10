@@ -24,7 +24,7 @@ export function StockAdjust({ variantId, storeId, physical, reserved }: { varian
 
   if (!mode) {
     return (
-      <div className="mt-2 flex flex-wrap gap-1.5">
+      <div className="flex flex-wrap gap-1.5">
         <button type="button" onClick={() => setMode("add")} className={cn(chip, "border-emerald-400/30 bg-emerald-400/10 text-emerald-200 hover:bg-emerald-400/20")}>
           <PackagePlus className="size-3.5" aria-hidden /> Add stock
         </button>
@@ -50,7 +50,7 @@ function AddStock({ variantId, storeId, physical, onDone }: { variantId: string;
 
   return (
     <form
-      className="mt-2 space-y-2 rounded-xl border border-emerald-400/20 bg-emerald-400/[0.04] p-3"
+      className="w-full basis-full space-y-2 rounded-xl border border-emerald-400/20 bg-emerald-400/[0.04] p-3"
       onSubmit={(e) => {
         e.preventDefault()
         if (valid) run(() => receiveStockAction(variantId, storeId, n, note), onDone)
@@ -113,7 +113,7 @@ function SetCount({
 
   return (
     <form
-      className="mt-2 space-y-2 rounded-xl border border-white/10 bg-white/[0.03] p-3"
+      className="w-full basis-full space-y-2 rounded-xl border border-white/10 bg-white/[0.03] p-3"
       onSubmit={(e) => {
         e.preventDefault()
         run(() => adjustStockAction(variantId, storeId, next, detail ? `${reason}: ${detail}` : reason), onDone)

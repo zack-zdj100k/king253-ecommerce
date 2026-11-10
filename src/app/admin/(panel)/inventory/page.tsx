@@ -9,7 +9,8 @@ import { listStores } from "@/server/stores"
 import { StockAdjust } from "@/components/admin/product/stock-adjust"
 import { deleteInventoryVariantAction } from "@/app/admin/actions/products"
 import { DeleteButton } from "@/components/admin/delete-button"
-import { Empty, PageHeader, Table, inputClass, td, th, pill } from "@/components/admin/ui"
+import { Empty, PageHeader, Table, td, th, pill } from "@/components/admin/ui"
+import { InventorySearch } from "@/components/admin/inventory-search"
 
 export const metadata: Metadata = { title: "Inventory" }
 
@@ -62,14 +63,11 @@ export default async function InventoryPage({ searchParams }: PageProps<"/admin/
             {label}
           </Link>
         ))}
-        <form action="/admin/inventory" className="ml-auto flex gap-2">
-          <input type="hidden" name="shop" value={shop.id} />
-          <input type="hidden" name="filter" value={f.filter} />
-          <input name="q" defaultValue={f.q} placeholder="Product, SKU or barcode" aria-label="Search inventory" className={`${inputClass} w-64`} />
-        </form>
+        <InventorySearch initial={f.q ?? ""} />
       </div>
       <p className="text-xs text-king-gray">
         {total} variant(s) in {shop.name}
+        {f.q ? ` matching “${f.q}” — all stock levels` : ""}
       </p>
 
       {rows.length === 0 ? (

@@ -5,7 +5,7 @@ import type { Db, DbOrTx, Tx } from "./db/client"
 import { orderItems, orderStatusHistory, orders, productImages, productVariants, products, returnJournal, returnJournalItems, stores } from "./db/schema"
 import { audit, type Actor } from "./audit"
 import { NotFoundError, RuleError } from "./errors"
-import { handOverUnits, restockReturnedUnits } from "./inventory"
+import { handOverUnits, restockReturnedUnits, SELLS_SS } from "./inventory"
 import { refundFor, unitPriceOf } from "./pricing"
 
 /*
@@ -275,6 +275,9 @@ export async function returnableItems(db: DbOrTx, orderId: string) {
     .filter((i) => i.quantity > i.returnedQuantity)
     .map((i) => ({
       id: i.id,
+      variantId: i.variantId,
+      productId: i.productId,
+      image: i.imageUrl,
       name: i.productName,
       size: i.size,
       color: i.color,
@@ -298,7 +301,7 @@ export async function exchangeCatalog(db: DbOrTx) {
       salePriceOverride: productVariants.salePriceOverride,
       stock: sql<{ storeId: number; available: number }[]>`(select coalesce(json_agg(json_build_object('storeId', ss.store_id,
         'available', greatest(ss.physical - ss.reserved, 0))), '[]') from store_stock ss join stores s on s.id = ss.store_id and s.active
-        where ss.variant_id = "product_variants"."id")`,
+        where ss.variant_id = "product_variants"."id" and ${sql.raw(SELLS_SS)})`,
     })
     .from(productVariants)
     .innerJoin(products, eq(products.id, productVariants.productId))

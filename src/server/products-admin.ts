@@ -207,7 +207,13 @@ export async function createVariant(
       const [variant] = await tx.insert(productVariants).values({ ...parsed.data, productId }).returning()
       await addVariantToProductShops(tx, productId, variant.id)
       if (initial > 0 && actor.userId) {
-        const shops = await tx.select({ storeId: productStores.storeId }).from(productStores).where(eq(productStores.productId, productId))
+        // Default = the first shop in the admin's display order that sells it (same as the picker shows).
+        const shops = await tx
+          .select({ storeId: productStores.storeId })
+          .from(productStores)
+          .innerJoin(stores, eq(stores.id, productStores.storeId))
+          .where(and(eq(productStores.productId, productId), eq(productStores.active, true)))
+          .orderBy(asc(stores.sortOrder), asc(stores.name))
         const storeId = raw.initialStoreId ?? shops[0]?.storeId
         if (!storeId) throw new AppError("NO_SHOP", "Choose the shops that sell this product before adding stock.")
         await adjustPhysicalStock(tx, { variantId: variant.id, storeId, newPhysical: initial, reason: "Opening stock", actorUserId: actor.userId })

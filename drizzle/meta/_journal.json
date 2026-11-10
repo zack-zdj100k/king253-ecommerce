@@ -120,6 +120,13 @@
       "when": 1794247206273,
       "tag": "0016_status_flow_return_journal",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1794327360115,
+      "tag": "0017_product_shop_on_off",
+      "breakpoints": true
     }
   ]
 }

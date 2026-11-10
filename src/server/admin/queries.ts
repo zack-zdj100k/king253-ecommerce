@@ -22,6 +22,7 @@ import {
 } from "../db/schema"
 import type { Range } from "../analytics"
 import { netRevenueSql } from "../pricing"
+import { SELLS_SS } from "../inventory"
 
 const escapeLike = (s: string) => s.replace(/[\\%_]/g, (c) => `\\${c}`)
 export const PAGE = 25
@@ -74,6 +75,8 @@ export async function listOrders(db: DbOrTx, f: OrderFilters) {
   // Old in-between statuses belong to the step they were mapped to.
   if (f.status === "pending") where.push(sql`${orders.status} in ('pending', 'contacting')`)
   else if (f.status === "confirmed") where.push(sql`${orders.status} in ('confirmed', 'preparing', 'ready_for_delivery')`)
+  else if (f.status === "delivered") where.push(sql`${orders.status} = 'delivered' and ${orders.paymentStatus} <> 'refused'`)
+  else if (f.status === "returned") where.push(sql`${orders.status} = 'delivered' and ${orders.paymentStatus} = 'refused'`)
   else if (f.status) where.push(sql`${orders.status} = ${f.status}`)
   if (f.from) where.push(gte(orders.createdAt, f.from))
   if (f.to) where.push(lt(orders.createdAt, f.to))
@@ -91,6 +94,7 @@ export async function listOrders(db: DbOrTx, f: OrderFilters) {
       wilayaName: orders.wilayaName,
       deliveryType: orders.deliveryType,
       paymentStatus: orders.paymentStatus,
+      partlyReturned: sql<boolean>`exists (select 1 from order_items oi where oi.order_id = ${orders.id} and oi.returned_quantity > 0)`,
       storeName: sql<string | null>`(select s.name from stores s where s.id = "orders"."store_id")`,
       total: orders.total,
       clothes: sql<number>`(${orders.subtotal} - ${orders.discountAmount})::int`,
@@ -120,7 +124,7 @@ export async function getOrderDetail(db: DbOrTx, id: string) {
         variants: sql<{ id: string; size: string; color: string; available: number; active: boolean }[]>`(
           select coalesce(json_agg(json_build_object('id', v.id, 'size', v.size, 'color', v.color,
             'available', coalesce((select greatest(ss.physical - ss.reserved, 0) from store_stock ss
-              where ss.variant_id = v.id and ss.store_id = ${order.storeId ?? 0}), 0), 'active', v.active) order by v.sort_order, v.color), '[]')
+              where ss.variant_id = v.id and ss.store_id = ${order.storeId ?? 0} and ${sql.raw(SELLS_SS)}), 0), 'active', v.active) order by v.sort_order, v.color), '[]')
           from product_variants v where v.product_id = ${orderItems.productId})`,
       })
       .from(orderItems)
@@ -203,6 +207,8 @@ export async function getCustomerDetail(db: DbOrTx, id: string) {
       id: orders.id,
       number: orders.number,
       status: orders.status,
+      paymentStatus: orders.paymentStatus,
+      partlyReturned: sql<boolean>`exists (select 1 from order_items oi where oi.order_id = "orders"."id" and oi.returned_quantity > 0)`,
       total: orders.total,
       revenue: sql<number>`${netRevenueSql('"orders"')}::int`,
       createdAt: orders.createdAt,
@@ -275,15 +281,17 @@ export async function getProductAdmin(db: DbOrTx, id: string) {
     db.select().from(productVariants).where(eq(productVariants.productId, id)).orderBy(asc(productVariants.sortOrder), asc(productVariants.color)),
     db.select().from(categories).orderBy(asc(categories.sortOrder), asc(categories.name)),
     db.select({ id: stores.id, name: stores.name, active: stores.active }).from(stores).orderBy(asc(stores.sortOrder), asc(stores.name)),
-    db.select({ storeId: productStores.storeId }).from(productStores).where(eq(productStores.productId, id)),
+    db.select({ storeId: productStores.storeId, active: productStores.active }).from(productStores).where(eq(productStores.productId, id)),
     db
       .select({ variantId: storeStock.variantId, storeId: storeStock.storeId, physical: storeStock.physical, reserved: storeStock.reserved })
       .from(storeStock)
       .innerJoin(productVariants, eq(productVariants.id, storeStock.variantId))
       .where(eq(productVariants.productId, id)),
   ])
-  const shopIds = productShops.map((p) => p.storeId)
-  const sold = shops.filter((s) => shopIds.includes(s.id))
+  // shopIds = shops selling it now; stock rows also show shops switched off (stock kept).
+  const shopIds = productShops.filter((p) => p.active).map((p) => p.storeId)
+  const linked = productShops.map((p) => p.storeId)
+  const sold = shops.filter((s) => linked.includes(s.id))
   return {
     product,
     images,
@@ -294,7 +302,7 @@ export async function getProductAdmin(db: DbOrTx, id: string) {
       ...v,
       stock: sold.map((shop) => {
         const row = stock.find((r) => r.variantId === v.id && r.storeId === shop.id)
-        return { storeId: shop.id, storeName: shop.name, shopActive: shop.active, physical: row?.physical ?? 0, reserved: row?.reserved ?? 0 }
+        return { storeId: shop.id, storeName: shop.name, shopActive: shop.active, selling: shopIds.includes(shop.id), physical: row?.physical ?? 0, reserved: row?.reserved ?? 0 }
       }),
     })),
   }
@@ -309,10 +317,12 @@ export async function listInventory(db: DbOrTx, f: { storeId: number; q?: string
   }
   const available = sql`(${storeStock.physical} - ${storeStock.reserved})`
   const threshold = sql`coalesce(${productVariants.lowStockThreshold}, ${f.threshold})`
-  if (f.filter === "instock") where.push(sql`${available} > 0`)
-  if (f.filter === "low") where.push(sql`${available} <= ${threshold} and ${available} > 0`)
-  if (f.filter === "out") where.push(sql`${available} <= 0`)
-  if (f.filter === "reserved") where.push(sql`${storeStock.reserved} > 0`)
+  // A search looks through every stock level; the filter applies when browsing.
+  const filter = f.q ? "" : f.filter
+  if (filter === "instock") where.push(sql`${available} > 0`)
+  if (filter === "low") where.push(sql`${available} <= ${threshold} and ${available} > 0`)
+  if (filter === "out") where.push(sql`${available} <= 0`)
+  if (filter === "reserved") where.push(sql`${storeStock.reserved} > 0`)
   const page = Math.max(1, f.page ?? 1)
   const rows = await db
     .select({

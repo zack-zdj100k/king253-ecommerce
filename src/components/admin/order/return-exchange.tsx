@@ -6,10 +6,20 @@ import { ArrowLeftRight, Minus, Plus, RotateCcw, Trash2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { formatDA } from "@/lib/money"
 import { recordExchangeAction, recordReturnAction } from "@/app/admin/actions/returns"
+import { ProductLine } from "@/components/admin/order/product-line"
 import { Feedback, useAdminAction } from "@/components/admin/use-admin-action"
 import { btnGhost, btnOutline, btnRed, inputClass, labelClass, segment, segmentTrack, selectClass, textareaClass } from "@/components/admin/ui"
 
-type Item = { id: string; name: string; size: string; color: string; left: number; unitValue: number; fromExchange: boolean }
+type Item = {
+  id: string
+  name: string
+  size: string
+  color: string
+  left: number
+  unitValue: number
+  fromExchange: boolean
+  view: { image: string | null; category: string | null; parentCategory: string | null; colorHex: string | null }
+}
 type Shop = { id: number; name: string }
 type Option = { variantId: string; label: string; price: number; stock: { storeId: number; available: number }[] }
 
@@ -76,30 +86,33 @@ export function ReturnExchangePanel({
       </div>
 
       <fieldset className="space-y-2">
-        <legend className={labelClass}>What comes back</legend>
+        <legend className={labelClass}>Which products come back? Use + to choose how many of each</legend>
         <ul className="space-y-2">
           {items.map((i) => {
             const n = qty[i.id] ?? 0
             const set = (v: number) => setQty({ ...qty, [i.id]: Math.max(0, Math.min(i.left, v)) })
             return (
-              <li key={i.id} className={cn("flex flex-wrap items-center justify-between gap-3 rounded-xl border p-3 text-sm", n ? "border-king-bright-red/50 bg-king-red/10" : "border-white/[0.08]")}>
-                <span className="min-w-0">
-                  <span className="block text-king-white">
-                    {i.name} {i.fromExchange && <span className="text-xs text-king-gray">(from an exchange)</span>}
-                  </span>
-                  <span className="text-xs text-king-gray">
-                    {i.color} / {i.size} · {i.left} can come back · paid {formatDA(i.unitValue)} each
-                  </span>
-                </span>
-                <span className="flex items-center gap-1">
-                  <button type="button" onClick={() => set(n - 1)} disabled={!n} className={btnGhost} aria-label={`One less ${i.name}`}>
-                    <Minus className="size-3.5" />
-                  </button>
-                  <span className="w-6 text-center tabular-nums text-king-white">{n}</span>
-                  <button type="button" onClick={() => set(n + 1)} disabled={n >= i.left} className={btnGhost} aria-label={`One more ${i.name}`}>
-                    <Plus className="size-3.5" />
-                  </button>
-                </span>
+              <li key={i.id} className={cn("rounded-xl border p-3 transition-colors", n ? "border-king-bright-red/50 bg-king-red/10" : "border-white/[0.08]")}>
+                <ProductLine
+                  line={{ ...i.view, name: i.name, color: i.color, size: i.size, quantity: i.left }}
+                  quantityLabel="Can come back"
+                  badge={i.fromExchange ? <span className="mb-1 inline-flex rounded-full bg-emerald-400/10 px-2 py-0.5 text-[0.7rem] font-semibold text-emerald-200">From an exchange</span> : null}
+                  aside={
+                    <div className="space-y-1">
+                      <p className="text-xs text-king-gray">Paid {formatDA(i.unitValue)} each</p>
+                      <div className="flex items-center gap-1 sm:justify-end">
+                        <span className="mr-1 text-xs font-medium text-king-muted">Coming back</span>
+                        <button type="button" onClick={() => set(n - 1)} disabled={!n} className={btnGhost} aria-label={`One less ${i.name}`}>
+                          <Minus className="size-3.5" />
+                        </button>
+                        <span className="w-7 text-center text-base font-semibold tabular-nums text-king-white">{n}</span>
+                        <button type="button" onClick={() => set(n + 1)} disabled={n >= i.left} className={btnGhost} aria-label={`One more ${i.name}`}>
+                          <Plus className="size-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  }
+                />
               </li>
             )
           })}
@@ -175,7 +188,7 @@ export function ReturnExchangePanel({
                         max={n}
                         value={a.quantity}
                         onChange={(e) => setAdded(added.map((x) => (x.variantId === a.variantId ? { ...x, quantity: Math.max(1, Number(e.target.value) || 1) } : x)))}
-                        className={`${inputClass} h-9 w-16`}
+                        className={`${inputClass} !h-9 !w-16 !px-2 text-center`}
                         aria-label="Quantity"
                       />
                       <button type="button" onClick={() => setAdded(added.filter((x) => x.variantId !== a.variantId))} className={btnGhost} aria-label="Remove">

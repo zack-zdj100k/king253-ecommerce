@@ -6,6 +6,7 @@ import { formatPhone } from "@/lib/phone"
 import { db } from "@/server/db"
 import { listOrders } from "@/server/admin/queries"
 import { FLOW_STATUSES, STATUS_LABELS } from "@/server/orders/manage"
+import { orderStatusView } from "@/lib/order-status"
 import { deleteOrderAction } from "@/app/admin/actions/orders"
 import { DeleteButton } from "@/components/admin/delete-button"
 import { Badge, Empty, PageHeader, Table, inputClass, selectClass, td, th, btnRed, pill } from "@/components/admin/ui"
@@ -16,7 +17,9 @@ export default async function AdminOrdersPage({ searchParams }: PageProps<"/admi
   const p = await searchParams
   const one = (v: unknown) => (typeof v === "string" ? v : undefined)
   // No "All": the list always shows one status, Pending by default (the orders to call).
-  const status = (FLOW_STATUSES as readonly string[]).includes(one(p.status) ?? "") ? one(p.status)! : "pending"
+  const TABS = [...FLOW_STATUSES, "returned"] as const
+  const LABEL: Record<string, string> = { ...STATUS_LABELS, returned: "Returned" }
+  const status = (TABS as readonly string[]).includes(one(p.status) ?? "") ? one(p.status)! : "pending"
   const filters = { q: one(p.q), status, sort: one(p.sort) ?? (status === "pending" ? "oldest" : "newest"), page: Number(one(p.page)) || 1 }
   const { rows, total, page, pages } = await listOrders(db, filters)
   const qs = (patch: Record<string, string>) => {
@@ -28,14 +31,14 @@ export default async function AdminOrdersPage({ searchParams }: PageProps<"/admi
     <div className="space-y-6">
       <PageHeader eyebrow="Sales" title="Orders">
         <p className="mt-2 text-sm text-king-gray">
-          {total} {STATUS_LABELS[filters.status as keyof typeof STATUS_LABELS].toLowerCase()} order(s)
+          {total} {LABEL[filters.status].toLowerCase()} order(s)
         </p>
       </PageHeader>
 
       <nav aria-label="Status" className="flex flex-wrap gap-2">
-        {FLOW_STATUSES.map((s) => (
+        {TABS.map((s) => (
           <Link key={s} href={qs({ status: s, page: "1", sort: s === "pending" ? "oldest" : "newest" })} className={pill(filters.status === s)}>
-            {STATUS_LABELS[s]}
+            {LABEL[s]}
           </Link>
         ))}
       </nav>
@@ -87,8 +90,7 @@ export default async function AdminOrdersPage({ searchParams }: PageProps<"/admi
                 </td>
                 <td className={td}>{o.items}</td>
                 <td className={td}>
-                  <Badge status={o.status}>{STATUS_LABELS[o.status]}</Badge>
-                  {o.paymentStatus === "refused" && o.status === "delivered" && <span className="mt-1 block text-xs text-king-bright-red">Fully returned</span>}
+                  <Badge status={orderStatusView(o).tone}>{orderStatusView(o).label}</Badge>
                 </td>
                 <td className={`${td} text-right`}>
                   <span className="block text-king-white">{formatDA(o.clothes)}</span>

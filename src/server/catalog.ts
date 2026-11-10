@@ -135,7 +135,8 @@ async function cardQuery(db: DbOrTx, where: SQL[], orderBy: SQL, limit: number, 
       from (
         select ss.store_id, coalesce(sum(greatest(ss.physical - ss.reserved, 0)), 0)::int as available
         from store_stock ss join product_variants sv on sv.id = ss.variant_id and sv.active
-        where sv.product_id = p.id group by ss.store_id
+        where sv.product_id = p.id and exists (select 1 from product_stores ps where ps.product_id = p.id and ps.store_id = ss.store_id and ps.active)
+        group by ss.store_id
       ) x join stores s on s.id = x.store_id and s.active
     ) sh on true
     left join lateral (

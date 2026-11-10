@@ -8,12 +8,13 @@ import {
   productImages,
   productVariants,
   products,
+  returnJournal,
   returnRequests,
   stockReservations,
 } from "../db/schema"
 import { audit, type Actor } from "../audit"
 import { AppError, NotFoundError } from "../errors"
-import { activeReservationsForItem, consumeReservation, releaseReservation, reserveStock } from "../inventory"
+import { activeReservationsForItem, consumeReservation, releaseReservation, reserveStock, undoDelivery } from "../inventory"
 import { computeTotals, unitPriceOf, type DiscountInput } from "../pricing"
 import { handOverDelivery } from "./delivery"
 
@@ -150,6 +151,92 @@ export async function changeOrderStatus(
     })
     await audit(tx, input.actor, "order.status", "order", order.id, { from: order.status, to: input.to, note: input.note ?? null })
     return { order: updated, changed: true, previous: order.status }
+  })
+}
+
+/**
+ * Admin sets any status by hand (Pending, Confirmed, Delivered, Cancelled), also
+ * backwards. Stock always follows: going back from Delivered puts the units back
+ * on the shelf (and reserves them again unless the target is Cancelled); reopening
+ * a cancelled order reserves its units again (refused if the shop lacks stock).
+ * Orders with recorded returns/exchanges cannot leave Delivered.
+ */
+export async function setOrderStatusManually(
+  db: Db,
+  input: { orderId: string; to: FlowStatus; actor: Actor; note?: string | null }
+) {
+  if (!(FLOW_STATUSES as readonly string[]).includes(input.to)) throw new AppError("INVALID_STATUS", "Unknown order status.")
+  return db.transaction(async (tx) => {
+    const order = await lockOrder(tx, input.orderId)
+    const from = order.status
+    const step = (s: OrderStatus): FlowStatus => (s === "contacting" ? "pending" : s === "preparing" || s === "ready_for_delivery" ? "confirmed" : (s as FlowStatus))
+    if (step(from) === input.to) return { order, changed: false }
+
+    const [{ n: journal }] = await tx.select({ n: sql<number>`count(*)::int` }).from(returnJournal).where(eq(returnJournal.orderId, order.id))
+    if (from === "delivered" && journal > 0) {
+      throw new AppError("HAS_RETURNS", "This order has returns or exchanges recorded, so it stays Delivered.")
+    }
+
+    const items = await liveItems(tx, order.id)
+    const storeId = shopOf(order)
+    const ref = { refType: "order", refId: order.id, actorUserId: input.actor.userId, reason: `Order ${order.number}: ${STATUS_LABELS[from]} → ${STATUS_LABELS[input.to]} (by hand)` }
+    const reserveAll = async () => {
+      for (const item of items) {
+        if (!item.variantId) throw new AppError("ITEM_GONE", `${item.productName} (${item.size}) no longer exists in the catalog.`)
+        await reserveStock(tx, {
+          variantId: item.variantId,
+          storeId,
+          quantity: item.quantity,
+          orderItemId: item.id,
+          label: `${item.productName} — ${item.color} / ${item.size}`,
+          ...ref,
+        })
+      }
+    }
+
+    // 1. Leave the current state.
+    if (from === "delivered") {
+      for (const item of items) {
+        if (!item.variantId) throw new AppError("ITEM_GONE", `${item.productName} (${item.size}) no longer exists in the catalog.`)
+        await undoDelivery(tx, { variantId: item.variantId, storeId, quantity: item.quantity }, ref)
+      }
+      if (input.to !== "cancelled") await reserveAll()
+    } else if (from === "cancelled") {
+      await reserveAll()
+    } else if (input.to === "cancelled") {
+      for (const item of items) for (const r of await activeReservationsForItem(tx, item.id)) await releaseReservation(tx, r.id, ref)
+      await handOverDelivery(tx, order)
+    }
+    // 2. Delivered: the reserved units leave the shop.
+    if (input.to === "delivered") {
+      for (const item of items) {
+        const reservations = await activeReservationsForItem(tx, item.id)
+        if (!reservations.length) throw new AppError("NO_RESERVATION", `${item.productName} (${item.size}) has no reserved stock — check this order first.`)
+        for (const r of reservations) await consumeReservation(tx, r.id, ref)
+      }
+    }
+
+    const now = new Date()
+    const [updated] = await tx
+      .update(orders)
+      .set({
+        status: input.to,
+        paymentStatus: input.to === "delivered" ? "paid" : input.to === "cancelled" ? "refused" : "due",
+        deliveredAt: input.to === "delivered" ? now : null,
+        cancelledAt: input.to === "cancelled" ? now : null,
+      })
+      .where(eq(orders.id, order.id))
+      .returning()
+    await tx.insert(orderStatusHistory).values({
+      orderId: order.id,
+      fromStatus: from,
+      toStatus: input.to,
+      note: ["Changed by hand", input.note?.trim()].filter(Boolean).join(" — "),
+      actorUserId: input.actor.userId,
+      actorLabel: input.actor.label,
+    })
+    await audit(tx, input.actor, "order.status", "order", order.id, { from, to: input.to, manual: true, note: input.note ?? null })
+    return { order: updated, changed: true, previous: from }
   })
 }
 

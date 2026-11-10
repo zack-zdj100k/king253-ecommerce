@@ -7,9 +7,9 @@ import { formatDA } from "@/lib/money"
 import { formatPhone, whatsappLink } from "@/lib/phone"
 import { db } from "@/server/db"
 import { getCustomerDetail } from "@/server/admin/queries"
-import { STATUS_LABELS } from "@/server/orders/manage"
 import { deleteCustomerAction } from "@/app/admin/actions/site"
 import { DeleteButton } from "@/components/admin/delete-button"
+import { orderStatusView } from "@/lib/order-status"
 import { Badge, PageHeader, Panel, Stat, Table, td, th, btnRed, btnOutline } from "@/components/admin/ui"
 
 export const metadata: Metadata = { title: "Customer" }
@@ -69,7 +69,7 @@ export default async function CustomerPage({ params }: PageProps<"/admin/custome
                 <td className={td}><Link href={`/admin/orders/${o.id}`} className="font-medium text-king-white hover:text-king-bright-red">{o.number}</Link></td>
                 <td className={td}>{o.createdAt.toLocaleDateString("en-GB")}</td>
                 <td className={td}>{o.items.map((i) => `${i.name} (${i.color}/${i.size}) ×${i.quantity}`).join(", ")}</td>
-                <td className={td}><Badge status={o.status}>{STATUS_LABELS[o.status]}</Badge></td>
+                <td className={td}><Badge status={orderStatusView(o).tone}>{orderStatusView(o).label}</Badge></td>
                 <td className={`${td} text-right text-king-white`}>{formatDA(o.total)}</td>
               </tr>
             ))}

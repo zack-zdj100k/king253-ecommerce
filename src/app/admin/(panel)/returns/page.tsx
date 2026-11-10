@@ -1,12 +1,15 @@
 import type { Metadata } from "next"
+import { sql } from "drizzle-orm"
 import Link from "next/link"
 
 import { formatDA } from "@/lib/money"
 import { formatPhone } from "@/lib/phone"
 import { db } from "@/server/db"
 import { listJournal } from "@/server/returns"
+import { lineInfo } from "@/server/admin/line-info"
+import { ProductLine } from "@/components/admin/order/product-line"
 import { listStores } from "@/server/stores"
-import { Empty, PageHeader, Stat, Table, inputClass, pill, td, th } from "@/components/admin/ui"
+import { Empty, PageHeader, Stat, inputClass, pill } from "@/components/admin/ui"
 
 export const metadata: Metadata = { title: "Returns & exchanges" }
 
@@ -27,7 +30,10 @@ export default async function ReturnsJournalPage({ searchParams }: PageProps<"/a
   const p = await searchParams
   const one = (v: unknown) => (typeof v === "string" ? v : undefined)
   const shops = await listStores(db)
-  const shop = shops.find((s) => String(s.id) === one(p.shop)) ?? shops.find((s) => s.active) ?? shops[0]
+  // No shop chosen: open the shop with the latest return/exchange, so the newest entry is always visible.
+  const [latest] = (await db.execute(sql`select store_id from return_journal where store_id is not null order by created_at desc limit 1`)) as unknown as { store_id: number }[]
+  const shop =
+    shops.find((s) => String(s.id) === one(p.shop)) ?? shops.find((s) => s.id === Number(latest?.store_id)) ?? shops.find((s) => s.active) ?? shops[0]
   const type = TYPES.some(([k]) => k === one(p.type)) ? (one(p.type) as "return" | "exchange") : "return"
   const today = new Date()
   const parse = (v: string | undefined, fallback: Date) => (v && /^\d{4}-\d{2}-\d{2}$/.test(v) ? new Date(`${v}T00:00:00Z`) : fallback)
@@ -52,6 +58,7 @@ export default async function ReturnsJournalPage({ searchParams }: PageProps<"/a
     type,
     page,
   })
+  const info = await lineInfo(db, rows.flatMap((r) => r.items.map((i) => ({ variantId: i.variantId }))))
 
   return (
     <div className="space-y-6">
@@ -105,49 +112,50 @@ export default async function ReturnsJournalPage({ searchParams }: PageProps<"/a
       {rows.length === 0 ? (
         <Empty>Nothing recorded for this shop and period.</Empty>
       ) : (
-        <Table>
-          <thead>
-            <tr>
-              <th className={th}>Date</th>
-              <th className={th}>Order · customer</th>
-              <th className={th}>Items</th>
-              <th className={`${th} text-right`}>Amount</th>
-              <th className={th}>By · reason</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((r) => (
-              <tr key={r.entry.id} className="align-top">
-                <td className={td}>{fmt(r.entry.createdAt)}</td>
-                <td className={td}>
-                  <Link href={`/admin/orders/${r.entry.orderId}#returns`} className="font-medium text-king-white hover:text-king-bright-red">
+        <ul className="space-y-4">
+          {rows.map((r) => (
+            <li key={r.entry.id} className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-4">
+              <div className="flex flex-wrap items-start justify-between gap-3 border-b border-white/[0.06] pb-3">
+                <div>
+                  <Link href={`/admin/orders/${r.entry.orderId}#returns`} className="text-base font-semibold text-king-white hover:text-king-bright-red">
                     {r.orderNumber}
                   </Link>
-                  <span className="block text-xs">
+                  <p className="text-sm text-king-muted">
                     {r.customerName} · {formatPhone(r.customerPhone)}
-                  </span>
-                </td>
-                <td className={td}>
-                  {r.items.map((i) => (
-                    <span key={i.id} className="block text-xs">
-                      {i.direction === "in" ? "↩" : "→"} {i.productName} — {i.color} / {i.size} × {i.quantity}
-                    </span>
-                  ))}
-                </td>
-                <td className={`${td} text-right tabular-nums ${r.entry.amount < 0 ? "text-king-bright-red" : r.entry.amount > 0 ? "text-emerald-300" : ""}`}>
-                  {r.entry.amount < 0 ? `− ${formatDA(-r.entry.amount)}` : r.entry.amount > 0 ? `+ ${formatDA(r.entry.amount)}` : "0"}
-                </td>
-                <td className={td}>
-                  {r.entry.actorLabel}
-                  <span className="block text-xs">
-                    {r.entry.reason ?? ""}
+                  </p>
+                  <p className="mt-1 text-xs text-king-gray">
+                    {fmt(r.entry.createdAt)} · {r.entry.actorLabel}
+                    {r.entry.reason ? ` · ${r.entry.reason}` : ""}
                     {r.entry.note ? ` — ${r.entry.note}` : ""}
-                  </span>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </Table>
+                  </p>
+                </div>
+                <p className={`text-base font-semibold tabular-nums ${r.entry.amount < 0 ? "text-king-bright-red" : r.entry.amount > 0 ? "text-emerald-300" : "text-king-gray"}`}>
+                  {r.entry.amount < 0 ? `Refunded ${formatDA(-r.entry.amount)}` : r.entry.amount > 0 ? `Collected ${formatDA(r.entry.amount)}` : "No difference"}
+                </p>
+              </div>
+              <ul className="mt-3 space-y-3">
+                {r.items.map((i) => (
+                  <li key={i.id}>
+                    <ProductLine
+                      line={{ ...info({ variantId: i.variantId }), name: i.productName, color: i.color, size: i.size, quantity: i.quantity }}
+                      badge={
+                        <span
+                          className={
+                            i.direction === "in"
+                              ? "mb-1 inline-flex rounded-full bg-amber-400/10 px-2 py-0.5 text-[0.7rem] font-semibold text-amber-200"
+                              : "mb-1 inline-flex rounded-full bg-emerald-400/10 px-2 py-0.5 text-[0.7rem] font-semibold text-emerald-200"
+                          }
+                        >
+                          {i.direction === "in" ? "↩ Came back from the customer" : "→ Given to the customer"}
+                        </span>
+                      }
+                    />
+                  </li>
+                ))}
+              </ul>
+            </li>
+          ))}
+        </ul>
       )}
       {pages > 1 && (
         <nav aria-label="Pages" className="flex gap-2">
