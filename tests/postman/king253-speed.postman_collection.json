@@ -1,0 +1,42 @@
+{
+  "info": {
+    "name": "KING 253 — speed and health",
+    "description": "Run with: npx newman run tests/postman/king253-speed.postman_collection.json --env-var base=https://king253.com -n 5. Every request must answer OK and under the time budget.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "event": [
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "const budget = Number(pm.variables.get('budget') || 1500);",
+          "const expected = Number(pm.variables.get('expect') || 200);",
+          "pm.test(`status ${expected}`, () => pm.response.to.have.status(expected));",
+          "pm.test(`answers in under ${budget} ms`, () => pm.expect(pm.response.responseTime).to.be.below(budget));"
+        ]
+      }
+    }
+  ],
+  "variable": [{ "key": "base", "value": "https://king253.com" }],
+  "item": [
+    { "name": "Home (FR)", "request": { "method": "GET", "header": [{ "key": "User-Agent", "value": "Mozilla/5.0 (compatible; KING253-speed-test)" }], "url": "{{base}}/fr" } },
+    { "name": "Home (AR)", "request": { "method": "GET", "url": "{{base}}/ar" } },
+    { "name": "Home (EN)", "request": { "method": "GET", "url": "{{base}}/en" } },
+    { "name": "Clothes", "request": { "method": "GET", "url": "{{base}}/fr/clothes" } },
+    { "name": "Clothes — newest", "request": { "method": "GET", "url": "{{base}}/fr/clothes?sort=newest" } },
+    { "name": "Who is King", "request": { "method": "GET", "url": "{{base}}/fr/who-is-king" } },
+    { "name": "Location", "request": { "method": "GET", "url": "{{base}}/fr/location" } },
+    { "name": "Track order", "request": { "method": "GET", "url": "{{base}}/fr/track" } },
+    { "name": "Sign in", "request": { "method": "GET", "url": "{{base}}/fr/sign-in" } },
+    { "name": "Language page", "request": { "method": "GET", "url": "{{base}}/language" } },
+    { "name": "Sitemap", "request": { "method": "GET", "url": "{{base}}/sitemap.xml" } },
+    { "name": "Robots", "request": { "method": "GET", "url": "{{base}}/robots.txt" } },
+    { "name": "Hero image (resized, webp)", "request": { "method": "GET", "header": [{ "key": "Accept", "value": "image/webp" }], "url": "{{base}}/_next/image?url=%2Fimages%2Fhero%2F2.jpg&w=828&q=90" } },
+    {
+      "name": "Unknown page gives 404",
+      "event": [{ "listen": "prerequest", "script": { "type": "text/javascript", "exec": ["pm.variables.set('expect', 404)"] } }, { "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.variables.set('expect', 200)"] } }],
+      "request": { "method": "GET", "url": "{{base}}/fr/this-page-does-not-exist" }
+    }
+  ]
+}

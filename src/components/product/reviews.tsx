@@ -47,14 +47,14 @@ export function ReviewsSection({
                 <span className="text-5xl font-semibold tracking-tight text-king-white">{rating.average?.toFixed(1)}</span>
                 <span className="pb-2">
                   <Stars value={rating.average ?? 0} />
-                  <span className="king-label mt-1 block text-[0.6rem] text-king-gray">
+                  <span className="king-label mt-1 block text-[0.7rem] text-king-gray">
                     {t("count", { count: rating.total })}
                   </span>
                 </span>
               </p>
               <ul className="mt-6 space-y-2" aria-label={t("distribution")}>
                 {rating.distribution.map((d) => (
-                  <li key={d.stars} className="flex items-center gap-3 text-xs text-king-gray">
+                  <li key={d.stars} className="flex items-center gap-3 text-sm text-king-gray">
                     <span className="w-6">{d.stars}★</span>
                     <span className="h-1.5 flex-1 bg-white/10">
                       <span className="block h-full bg-king-bright-red" style={{ width: `${rating.total ? (d.count / rating.total) * 100 : 0}%` }} />
@@ -65,7 +65,7 @@ export function ReviewsSection({
               </ul>
             </div>
           ) : (
-            <p className="mt-6 text-sm text-king-gray">{t("none")}</p>
+            <p className="mt-6 text-base text-king-gray">{t("none")}</p>
           )}
           <ReviewForm productId={productId} />
         </div>
@@ -75,15 +75,15 @@ export function ReviewsSection({
             <li key={r.id} className="border-b border-white/10 pb-6">
               <div className="flex flex-wrap items-center gap-3">
                 <Stars value={r.rating} />
-                <span className="text-sm font-semibold text-king-white uppercase">{r.authorName}</span>
+                <span className="text-base font-semibold text-king-white uppercase">{r.authorName}</span>
                 {r.verifiedPurchase && (
-                  <span className="king-label inline-flex items-center gap-1 text-[0.55rem] text-king-bright-red">
+                  <span className="king-label inline-flex items-center gap-1 text-[0.65rem] text-king-bright-red">
                     <BadgeCheck className="size-3.5" aria-hidden /> {t("verified")}
                   </span>
                 )}
-                <span className="text-xs text-king-gray">{new Date(r.createdAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</span>
+                <span className="text-sm text-king-gray">{new Date(r.createdAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</span>
               </div>
-              <p className="mt-3 text-sm leading-relaxed text-king-muted">{r.body}</p>
+              <p className="mt-3 text-base leading-relaxed text-king-muted">{r.body}</p>
             </li>
           ))}
         </ul>
@@ -99,7 +99,7 @@ function ReviewForm({ productId }: { productId: string }) {
   const [state, setState] = React.useState<{ status: "idle" | "sending" | "done" | "error"; message?: string }>({ status: "idle" })
 
   if (state.status === "done") {
-    return <p className="mt-8 border border-white/10 p-5 text-sm text-king-muted" role="status">{state.message}</p>
+    return <p className="mt-8 border border-white/10 p-5 text-base text-king-muted" role="status">{state.message}</p>
   }
   if (!open) {
     return (
@@ -132,7 +132,7 @@ function ReviewForm({ productId }: { productId: string }) {
       }}
     >
       <fieldset>
-        <legend className="king-label mb-2 text-[0.6rem] text-king-gray">{t("yourRating")}</legend>
+        <legend className="king-label mb-2 text-[0.7rem] text-king-gray">{t("yourRating")}</legend>
         <div className="flex gap-1">
           {[1, 2, 3, 4, 5].map((n) => (
             <button key={n} type="button" onClick={() => setRating(n)} aria-label={`${n} star${n > 1 ? "s" : ""}`} aria-pressed={rating === n} className="p-1">
@@ -142,21 +142,21 @@ function ReviewForm({ productId }: { productId: string }) {
         </div>
       </fieldset>
       <div className="space-y-2">
-        <Label htmlFor="review-name" className="text-sm text-king-white">{t("name")}</Label>
+        <Label htmlFor="review-name" className="text-base text-king-white">{t("name")}</Label>
         <Input id="review-name" name="name" required minLength={2} maxLength={60} className="h-11 rounded-[4px] border-white/15 bg-black/40 dark:bg-black/40" />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="review-body" className="text-sm text-king-white">{t("review")}</Label>
-        <textarea id="review-body" name="body" required minLength={10} maxLength={2000} rows={4} className="w-full rounded-[4px] border border-white/15 bg-black/40 p-3 text-sm text-king-white focus-visible:border-king-bright-red focus-visible:outline-none" />
+        <Label htmlFor="review-body" className="text-base text-king-white">{t("review")}</Label>
+        <textarea id="review-body" name="body" required minLength={10} maxLength={2000} rows={4} className="w-full rounded-[4px] border border-white/15 bg-black/40 p-3 text-base text-king-white focus-visible:border-king-bright-red focus-visible:outline-none" />
       </div>
-      <details className="text-sm text-king-gray">
+      <details className="text-base text-king-gray">
         <summary className="cursor-pointer">{t("verifyHint")}</summary>
         <div className="mt-3 grid gap-3 sm:grid-cols-2">
           <Input name="order" placeholder="KING253-…" aria-label={t("orderNumber")} className="h-11 rounded-[4px] border-white/15 bg-black/40 dark:bg-black/40" />
           <Input name="phone" placeholder={t("phoneUsed")} aria-label={t("phoneUsed")} inputMode="tel" className="h-11 rounded-[4px] border-white/15 bg-black/40 dark:bg-black/40" />
         </div>
       </details>
-      {state.status === "error" && <p className="text-sm text-king-bright-red" role="alert">{state.message}</p>}
+      {state.status === "error" && <p className="text-base text-king-bright-red" role="alert">{state.message}</p>}
       <Button type="submit" variant="king" size="xl" disabled={state.status === "sending"}>
         {state.status === "sending" ? t("sending") : t("submit")}
       </Button>

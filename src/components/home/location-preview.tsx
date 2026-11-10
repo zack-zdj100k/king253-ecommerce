@@ -22,7 +22,7 @@ export async function LocationPreview({ content }: { content: ShopsContent }) {
             src={content.image}
             alt=""
             fill
-            sizes="(min-width: 768px) 100vw, 200vw"
+            sizes="(min-width: 768px) 100vw, 150vw"
             className="object-cover object-[64%_50%] saturate-[1.15]"
           />
         </div>

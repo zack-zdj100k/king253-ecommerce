@@ -86,7 +86,9 @@ export function MobileMenu({
             type="button"
             onClick={() => {
               close()
-              onSearch()
+              // Open search once the menu has closed: the menu hands focus back to its
+              // button when it closes, which would otherwise pull it out of the search box.
+              window.setTimeout(onSearch, 350)
             }}
             className="king-label flex h-16 items-center justify-center gap-2 border-r border-white/10 text-king-muted hover:text-king-white"
           >

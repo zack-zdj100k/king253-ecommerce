@@ -76,25 +76,25 @@ export function BuyBox({
         <div ref={pickerRef} className={cn("scroll-mt-28 transition-colors", needSize && "rounded-sm ring-1 ring-king-bright-red ring-offset-8 ring-offset-king-black")}>
           <VariantPicker variants={variants} selection={selection} colourImages={colourImages} />
           {needSize && (
-            <p role="alert" className="mt-3 text-sm text-king-bright-red">
+            <p role="alert" className="mt-3 text-base text-king-bright-red">
               {t("chooseSize")}
             </p>
           )}
         </div>
       ) : (
-        <p className="text-sm text-king-gray">{t("sizesSoon")}</p>
+        <p className="text-base text-king-gray">{t("sizesSoon")}</p>
       )}
 
       <AvailabilityLabel available={variant ? variant.available : totalAvailable} />
 
       {canBuy && (
         <div className="flex items-center gap-4">
-          <span className="king-label text-[0.6rem] text-king-gray">{t("quantity")}</span>
+          <span className="king-label text-[0.7rem] text-king-gray">{t("quantity")}</span>
           <div className="flex items-center border border-white/15">
             <button type="button" onClick={() => setQuantity(Math.max(1, qty - 1))} aria-label={t("decrease")} className="grid size-10 place-items-center text-king-muted hover:text-king-white">
               <Minus className="size-3.5" />
             </button>
-            <span className="w-10 text-center text-sm tabular-nums" aria-live="polite">
+            <span className="w-10 text-center text-base tabular-nums" aria-live="polite">
               {qty}
             </span>
             <button
@@ -159,7 +159,7 @@ export function BuyBox({
         </div>
       </div>
 
-      <p className="flex items-start gap-3 border-t border-white/10 pt-5 text-sm text-king-gray">
+      <p className="flex items-start gap-3 border-t border-white/10 pt-5 text-base text-king-gray">
         <Truck className="mt-0.5 size-4 shrink-0 text-king-bright-red" aria-hidden />
         {t("codNote")}
       </p>

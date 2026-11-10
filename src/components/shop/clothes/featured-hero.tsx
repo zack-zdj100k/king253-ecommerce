@@ -111,7 +111,7 @@ export function FeaturedHero({ products: FEATURED, content }: { products: Produc
                     fill
                     quality={90}
                     preload={index === 0}
-                    sizes={portrait ? "(min-width: 1024px) 40vw, 100vw" : "(min-width: 1024px) 90vw, 224vw"}
+                    sizes={portrait ? "(min-width: 1024px) 40vw, 100vw" : "(min-width: 1024px) 90vw, 150vw"}
                     className="object-cover"
                     style={{ objectPosition: `${image.focusX}% 50%` }}
                   />

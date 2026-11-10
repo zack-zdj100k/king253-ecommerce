@@ -21,6 +21,9 @@ const nextConfig: NextConfig = {
   images: {
     // Next 16 only allows quality 75 by default; campaign imagery uses 90.
     qualities: [75, 90],
+    // Resized campaign/product images stay cached 30 days (default 4 hours), so the
+    // 1-CPU server rarely has to resize the same image again.
+    minimumCacheTTL: 60 * 60 * 24 * 30,
   },
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }]

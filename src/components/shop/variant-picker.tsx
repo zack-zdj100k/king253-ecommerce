@@ -94,7 +94,7 @@ export function VariantPicker<V extends PickerVariant>({
     <div className="space-y-5">
       {colours.length > 0 && (
         <fieldset>
-          <legend className="king-label mb-3 flex flex-wrap items-baseline gap-x-2 text-[0.6rem] text-king-gray">
+          <legend className="king-label mb-3 flex flex-wrap items-baseline gap-x-2 text-[0.7rem] text-king-gray">
             {t("colourLegend")} <span className="text-king-white">— {colour}</span>
             {colours.length > 1 && <span className="tracking-normal normal-case">{t("coloursAvailable", { count: colours.length })}</span>}
           </legend>
@@ -120,8 +120,8 @@ export function VariantPicker<V extends PickerVariant>({
                     {photo && <span className="absolute right-0 bottom-0 size-3.5 rounded-full ring-2 ring-king-near-black" style={{ backgroundColor: c.hex ?? "#555" }} />}
                   </span>
                   <span className="flex flex-col leading-tight">
-                    <span className={cn("text-xs font-semibold tracking-wide uppercase", active ? "text-king-white" : "text-king-muted group-hover:text-king-white")}>{c.name}</span>
-                    {!c.available && <span className="text-[0.65rem] text-king-gray">{t("soldOut")}</span>}
+                    <span className={cn("text-sm font-semibold tracking-wide uppercase", active ? "text-king-white" : "text-king-muted group-hover:text-king-white")}>{c.name}</span>
+                    {!c.available && <span className="text-[0.75rem] text-king-gray">{t("soldOut")}</span>}
                   </span>
                 </button>
               )
@@ -130,7 +130,7 @@ export function VariantPicker<V extends PickerVariant>({
         </fieldset>
       )}
       <fieldset>
-        <legend className="king-label mb-3 text-[0.6rem] text-king-gray">
+        <legend className="king-label mb-3 text-[0.7rem] text-king-gray">
           {t("sizeLegend")}{size ? <span className="text-king-white"> — {size}</span> : null}
         </legend>
         <div className="flex flex-wrap gap-2">
@@ -146,7 +146,7 @@ export function VariantPicker<V extends PickerVariant>({
                 aria-pressed={s === size}
                 aria-label={out ? t("sizeOut", { size: s }) : t("sizeLabel", { size: s })}
                 className={cn(
-                  "king-label h-11 border px-4 text-[0.65rem] transition-colors",
+                  "king-label h-11 border px-4 text-[0.75rem] transition-colors",
                   compact ? "min-w-11" : "min-w-12",
                   s === size ? "border-king-bright-red bg-king-red/15 text-king-white" : "border-white/15 text-king-muted hover:border-white/40 hover:text-king-white",
                   out && "cursor-not-allowed text-king-gray line-through opacity-50 hover:border-white/15 hover:text-king-gray"

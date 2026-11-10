@@ -40,7 +40,7 @@ export function AssembleLook({ products, content }: { products: ProductCardData[
 
           <div className="relative isolate p-6 md:p-10">
             <div className="absolute inset-0 -z-10">
-              <Image src={content.background} alt="" fill sizes="70vw" className="object-cover object-[64%_50%] opacity-25 blur-[2px]" />
+              <Image src={content.background} alt="" fill sizes="70vw" className="object-cover object-[64%_50%] opacity-25" />
               <div className="absolute inset-0 bg-gradient-to-r from-king-black/80 via-king-black/60 to-king-black/80" />
             </div>
             <ol className="grid h-full grid-cols-2 items-center gap-5 md:grid-cols-[1fr_auto_1fr_auto_1fr_auto_1fr] md:gap-3">

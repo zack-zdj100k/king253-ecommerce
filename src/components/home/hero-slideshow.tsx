@@ -135,7 +135,7 @@ export function HeroSlideshow({
                       fill
                       quality={90}
                       preload={i === 0}
-                      sizes="(min-width: 1024px) 100vw, 1600px"
+                      sizes="(min-width: 1024px) 100vw, 75vh"
                       style={{ "--pos-m": slide.mobile, "--pos-d": slide.desktop } as React.CSSProperties}
                       className="object-cover object-[var(--pos-m)] lg:object-[var(--pos-d)]"
                     />

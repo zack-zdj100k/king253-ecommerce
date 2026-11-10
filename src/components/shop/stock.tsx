@@ -12,7 +12,7 @@ export function AvailabilityLabel({ available, className }: { available: number;
   const t = useTranslations("stock")
   const out = available <= 0
   return (
-    <p className={cn("king-label flex items-center gap-2 text-[0.6rem]", out ? "text-king-gray" : "text-king-muted", className)} aria-live="polite">
+    <p className={cn("king-label flex items-center gap-2 text-[0.7rem]", out ? "text-king-gray" : "text-king-muted", className)} aria-live="polite">
       <span className={cn("size-1.5 rounded-full", out ? "bg-king-gray" : available <= LOW_STOCK_DISPLAY ? "bg-king-bright-red" : "bg-king-white/70")} aria-hidden />
       {out ? t("out") : available <= LOW_STOCK_DISPLAY ? t("left", { count: available }) : t("available")}
     </p>
@@ -25,7 +25,7 @@ export function PromoBadge({ price, compareAt, className }: { price: number | nu
   if (price === null || !compareAt || price >= compareAt) return null
   const off = Math.round(((compareAt - price) / compareAt) * 100)
   return (
-    <span className={cn("king-label inline-flex h-6 items-center bg-king-red px-2 text-[0.55rem] text-king-white", className)}>
+    <span className={cn("king-label inline-flex h-6 items-center bg-king-red px-2 text-[0.65rem] text-king-white", className)}>
       {off > 0 ? t("promoOff", { off }) : t("promo")}
     </span>
   )

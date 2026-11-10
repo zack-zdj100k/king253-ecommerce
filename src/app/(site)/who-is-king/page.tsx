@@ -128,7 +128,7 @@ function Culture({ content }: { content: ContentOf<"who.culture"> }) {
               src={content.image}
               alt=""
               fill
-              sizes="(min-width: 768px) 70vw, 220vw"
+              sizes="(min-width: 768px) 70vw, 150vw"
               className="object-cover object-[64%_50%]"
             />
           </div>
@@ -204,7 +204,7 @@ function Experience({ content }: { content: ContentOf<"who.experience"> }) {
     <section id="experience" aria-labelledby="experience-title" className="relative isolate flex min-h-svh items-end overflow-hidden bg-king-black">
       <div className="absolute inset-0 -z-10 overflow-hidden">
         <div data-speed="10" className="absolute -inset-y-[12%] inset-x-0">
-          <Image src={content.image} alt="" fill quality={90} sizes="(min-width: 768px) 100vw, 220vw" className="object-cover object-[60%_50%]" />
+          <Image src={content.image} alt="" fill quality={90} sizes="(min-width: 768px) 100vw, 150vw" className="object-cover object-[60%_50%]" />
         </div>
         <div className="absolute inset-0 bg-[linear-gradient(to_top,#050505_5%,rgba(5,5,5,0.7)_40%,rgba(5,5,5,0.2)_75%,rgba(5,5,5,0.5)_100%)]" />
         <div className="absolute inset-0 shadow-[inset_0_0_220px_60px_rgba(0,0,0,0.85)]" />

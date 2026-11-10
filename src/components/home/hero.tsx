@@ -91,7 +91,10 @@ export function Hero({ content }: { content: HeroContent }) {
     [count]
   )
 
+  // The outer div belongs to React; GSAP's pin wraps the <section> inside it, so
+  // leaving the page never asks React to remove a node GSAP has moved.
   return (
+    <div>
     <section
       id="hero"
       ref={ref}
@@ -106,7 +109,7 @@ export function Hero({ content }: { content: HeroContent }) {
             alt=""
             fill
             sizes="100vw"
-            className="object-cover opacity-45 blur-[1px] saturate-[1.1]"
+            className="object-cover opacity-45 saturate-[1.1]"
           />
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_40%,transparent_0%,rgba(5,5,5,0.55)_55%,#050505_100%)]" />
         </div>
@@ -185,5 +188,6 @@ export function Hero({ content }: { content: HeroContent }) {
         </div>
       </div>
     </section>
+    </div>
   )
 }

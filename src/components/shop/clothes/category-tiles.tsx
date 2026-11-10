@@ -27,6 +27,7 @@ export function CategoryTiles({
             <TiltCard max={9} className="aspect-[16/11]">
               <Link
                 href={`/clothes?category=${c.slug}#catalog`}
+                aria-label={c.tagline ? `${c.name} — ${c.tagline}` : c.name}
                 className="king-chamfer group absolute inset-0 block overflow-hidden bg-king-surface-light [--cut:10px]"
               >
                 <ProductImage

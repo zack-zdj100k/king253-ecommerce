@@ -131,7 +131,7 @@ export default async function ProductPage({ params, searchParams }: PageProps<"/
         />
         <div className="relative mx-auto max-w-[1600px] px-4 sm:px-6 lg:px-12">
           <BackButton fallback="/clothes" className="mb-2 -ml-0.5" />
-          <nav aria-label={t("breadcrumb")} className="king-label mb-6 flex flex-wrap items-center gap-2 text-[0.55rem] text-king-gray">
+          <nav aria-label={t("breadcrumb")} className="king-label mb-6 flex flex-wrap items-center gap-2 text-[0.65rem] text-king-gray">
             <Link href="/clothes" className="hover:text-king-white">
               {t("clothes")}
             </Link>
@@ -160,14 +160,14 @@ export default async function ProductPage({ params, searchParams }: PageProps<"/
               <ProductGallery images={crops} name={product.name} />
 
               <div>
-                {category && <p className="king-label text-[0.6rem] text-king-bright-red">{category.name}</p>}
+                {category && <p className="king-label text-[0.7rem] text-king-bright-red">{category.name}</p>}
                 <h1 className="king-display mt-4 text-[clamp(2.5rem,4.5vw,4.75rem)] text-king-white">{product.name}</h1>
                 {rating.total > 0 && (
-                  <a href="#reviews-title" className="mt-4 inline-flex items-center gap-2 text-xs text-king-gray hover:text-king-white">
+                  <a href="#reviews-title" className="mt-4 inline-flex items-center gap-2 text-sm text-king-gray hover:text-king-white">
                     <Stars value={rating.average ?? 0} /> {rating.average?.toFixed(1)} · {t("reviewsCount", { count: rating.total })}
                   </a>
                 )}
-                {product.shortDescription && <p className="mt-5 max-w-md text-base leading-relaxed text-king-muted">{product.shortDescription}</p>}
+                {product.shortDescription && <p className="mt-5 max-w-md text-lg leading-relaxed text-king-muted">{product.shortDescription}</p>}
 
                 <div className="mt-8">
                   <BuyBox
@@ -188,13 +188,13 @@ export default async function ProductPage({ params, searchParams }: PageProps<"/
                   <div className="mt-10 divide-y divide-white/10 border-y border-white/10">
                     {details.map((d, i) => (
                       <details key={d.title} open={i === 0} className="group py-4">
-                        <summary className="king-label flex cursor-pointer list-none items-center justify-between text-[0.65rem] text-king-white">
+                        <summary className="king-label flex cursor-pointer list-none items-center justify-between text-[0.75rem] text-king-white">
                           {d.title}
                           <span aria-hidden className="text-king-bright-red transition-transform group-open:rotate-45">
                             +
                           </span>
                         </summary>
-                        <p className="mt-3 text-sm leading-relaxed whitespace-pre-line text-king-muted">{d.body}</p>
+                        <p className="mt-3 text-base leading-relaxed whitespace-pre-line text-king-muted">{d.body}</p>
                       </details>
                     ))}
                   </div>
@@ -206,7 +206,7 @@ export default async function ProductPage({ params, searchParams }: PageProps<"/
                       <li key={t}>
                         <Link
                           href={`/clothes?q=${encodeURIComponent(t)}#catalog`}
-                          className="king-label inline-flex h-8 items-center border border-white/10 px-3 text-[0.55rem] text-king-gray hover:text-king-white"
+                          className="king-label inline-flex h-8 items-center border border-white/10 px-3 text-[0.65rem] text-king-gray hover:text-king-white"
                         >
                           {t}
                         </Link>

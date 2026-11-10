@@ -9,7 +9,7 @@ export function FinalCTA({ content }: { content: { lines: string; button: string
   return (
     <section id="final-cta" aria-labelledby="final-title" className="relative isolate overflow-hidden bg-king-black py-32 md:py-48">
       <div className="absolute inset-0 -z-10">
-        <Image src={content.background} alt="" fill sizes="100vw" className="object-cover opacity-30 blur-[1px]" />
+        <Image src={content.background} alt="" fill sizes="100vw" className="object-cover opacity-30" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_35%,rgba(163,13,13,0.35)_0%,rgba(5,5,5,0.85)_55%,#050505_100%)]" />
       </div>
 
