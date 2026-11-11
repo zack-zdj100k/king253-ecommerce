@@ -120,10 +120,40 @@ export async function sendTestEmails(db: DbOrTx) {
       results.push({ shop: shop.name, to: shop.email, ok: false, error: "email service is not set up (SMTP_HOST)" })
       continue
     }
-    const subject = `${settings.brandName} — test email for ${shop.name}`
-    const text = `This is a test from ${siteUrl()}/admin/settings.\n\nNew orders shipped from ${shop.name} are sent to this address only.`
+    // A sample order in the real design, clearly marked as a test.
+    const sample = shopNewOrderEmail(
+      settings.brandName,
+      {
+        number: "TEST-0000",
+        status: "pending",
+        customerName: "Client Test",
+        customerPhone: "+213550000000",
+        customerEmail: null,
+        createdAt: new Date(),
+        wilayaName: "Annaba",
+        city: "Annaba",
+        address: "Ceci est un email de test — aucune commande réelle",
+        estimatedDays: settings.deliveryEstimate || null,
+        subtotal: 8900,
+        discountAmount: 0,
+        deliveryFee: 500,
+        freeDelivery: false,
+        deliveryType: "home",
+        deskName: null,
+        deskAddress: null,
+        referralSource: null,
+        storeName: shop.name,
+        shipsWithNumber: null,
+        total: 9400,
+        customerNotes: `Email de test : les nouvelles commandes de ${shop.name} arrivent uniquement à cette adresse.`,
+        items: [{ productName: "Article de test", size: "M", color: "Noir", quantity: 1, unitPrice: 8900, lineTotal: 8900, imageUrl: null, sku: null }],
+      },
+      `${siteUrl()}/admin/orders`
+    )
+    const subject = `[TEST] ${sample.subject}`
+    const text = sample.text
     try {
-      await transport.sendMail({ from: fromAddress(settings.brandName), to: shop.email, subject, text })
+      await transport.sendMail({ from: fromAddress(settings.brandName), to: shop.email, subject, text, html: sample.html })
       await db.insert(notifications).values({ recipient: shop.email, subject, template: "test", status: "sent" })
       results.push({ shop: shop.name, to: shop.email, ok: true })
     } catch (error) {

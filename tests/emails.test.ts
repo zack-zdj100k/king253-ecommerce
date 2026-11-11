@@ -44,7 +44,10 @@ describe("Emails", () => {
     expect(sent[0].subject).toContain(order.number)
     expect(sent[0].html).toContain("TikTok")
     expect(sent[0].html).toContain("À domicile")
-    expect(sent[0].html).toContain("taille M × 1")
+    expect(sent[0].html).toContain("Taille : <strong")
+    // One-tap call + WhatsApp to the customer's number.
+    expect(sent[0].html).toMatch(/href="tel:\+213\d{9}"/)
+    expect(sent[0].html).toContain("https://wa.me/213")
   })
 
   it("the customer gets only the Delivered email, in their language, and only with an email", async () => {
