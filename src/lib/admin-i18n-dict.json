@@ -1,0 +1,3986 @@
+{
+"(Return column)": [
+"(عمود الإرجاع)",
+"(colonne Retour)"
+],
+"(change it in Settings or per variant).": [
+"(غيّره من الإعدادات أو لكل نوع).",
+"(modifiable dans Paramètres ou par variante)."
+],
+"0 = every order. Orders that ship together count together.": [
+"0 = كل الطلبات. الطلبات التي تُشحن معاً تُحسب معاً.",
+"0 = toutes les commandes. Les commandes expédiées ensemble comptent ensemble."
+],
+"A category cannot be inside itself.": [
+"لا يمكن أن يكون الصنف داخل نفسه.",
+"Une catégorie ne peut pas être dans elle-même."
+],
+"A category with this slug already exists.": [
+"يوجد صنف بهذا الرابط مسبقاً.",
+"Une catégorie avec ce lien existe déjà."
+],
+"A percentage discount cannot exceed 100%.": [
+"التخفيض بالنسبة لا يمكن أن يتجاوز 100%.",
+"Une remise en pourcentage ne peut pas dépasser 100 %."
+],
+"Abandoned bag deleted.": [
+"تم حذف السلة المتروكة.",
+"Panier abandonné supprimé."
+],
+"Abandoned carts": [
+"السلال المتروكة",
+"Paniers abandonnés"
+],
+"Account": [
+"الحساب",
+"Compte"
+],
+"Account blocked and signed out.": [
+"تم حظر الحساب وتسجيل خروجه.",
+"Compte bloqué et déconnecté."
+],
+"Account deleted.": [
+"تم حذف الحساب.",
+"Compte supprimé."
+],
+"Account unblocked.": [
+"تم رفع الحظر عن الحساب.",
+"Compte débloqué."
+],
+"Accounts": [
+"الحسابات",
+"Comptes"
+],
+"Accounts created on the website (sign up) and admin accounts. People who only ordered without an account are in Customers.": [
+"الحسابات المنشأة في الموقع (التسجيل) وحسابات المسؤولين. من طلب دون حساب تجده في الزبائن.",
+"Comptes créés sur le site (inscription) et comptes admin. Ceux qui ont commandé sans compte sont dans Clients."
+],
+"Actions": [
+"إجراءات",
+"Actions"
+],
+"Active — holds stock and ships orders": [
+"نشط — يحمل مخزوناً ويشحن الطلبات",
+"Active — garde du stock et expédie les commandes"
+],
+"Add": [
+"إضافة",
+"Ajouter"
+],
+"Add a colour": [
+"إضافة لون",
+"Ajouter une couleur"
+],
+"Add a customer": [
+"إضافة زبون",
+"Ajouter un client"
+],
+"Add a desk": [
+"إضافة مكتب",
+"Ajouter un bureau"
+],
+"Add a product to this order": [
+"إضافة منتج لهذا الطلب",
+"Ajouter un produit à cette commande"
+],
+"Add a shop": [
+"إضافة متجر",
+"Ajouter une boutique"
+],
+"Add a subcategory to": [
+"إضافة صنف فرعي إلى",
+"Ajouter une sous-catégorie à"
+],
+"Add a testimonial": [
+"إضافة شهادة",
+"Ajouter un témoignage"
+],
+"Add an admin": [
+"إضافة مسؤول",
+"Ajouter un admin"
+],
+"Add category": [
+"إضافة صنف",
+"Ajouter une catégorie"
+],
+"Add colour": [
+"إضافة اللون",
+"Ajouter la couleur"
+],
+"Add desk": [
+"إضافة المكتب",
+"Ajouter le bureau"
+],
+"Add it in Shops": [
+"أضفه في المتاجر",
+"Ajoutez-le dans Boutiques"
+],
+"Add item": [
+"إضافة قطعة",
+"Ajouter un article"
+],
+"Add shop": [
+"إضافة المتجر",
+"Ajouter la boutique"
+],
+"Add sizes to": [
+"إضافة مقاسات إلى",
+"Ajouter des tailles à"
+],
+"Add stock": [
+"إضافة مخزون",
+"Ajouter du stock"
+],
+"Add subcategory": [
+"إضافة صنف فرعي",
+"Ajouter une sous-catégorie"
+],
+"Add testimonial": [
+"إضافة الشهادة",
+"Ajouter le témoignage"
+],
+"Add this colour first.": [
+"أضف هذا اللون أولاً.",
+"Ajoutez d'abord cette couleur."
+],
+"Address": [
+"العنوان",
+"Adresse"
+],
+"Admin": [
+"الإدارة",
+"Admin"
+],
+"Admin account created. They can sign in at /admin/login.": [
+"تم إنشاء حساب المسؤول. يمكنه الدخول من /admin/login.",
+"Compte admin créé. Connexion sur /admin/login."
+],
+"Admin accounts are removed from Admin → Users by another admin.": [
+"حسابات المسؤولين يحذفها مسؤول آخر من الإدارة ← المستخدمون.",
+"Les comptes admin se suppriment dans Admin → Utilisateurs par un autre admin."
+],
+"Admin notes": [
+"ملاحظات الإدارة",
+"Notes admin"
+],
+"Admin sign in": [
+"دخول الإدارة",
+"Connexion admin"
+],
+"Admin tabs": [
+"تبويبات الإدارة",
+"Onglets admin"
+],
+"Admins": [
+"المسؤولون",
+"Admins"
+],
+"Age": [
+"العمر",
+"Âge"
+],
+"All": [
+"الكل",
+"Tous"
+],
+"All colours": [
+"كل الألوان",
+"Toutes les couleurs"
+],
+"All sections": [
+"كل الأقسام",
+"Toutes les sections"
+],
+"All shops": [
+"كل المتاجر",
+"Toutes les boutiques"
+],
+"Alt text (describe the photo)": [
+"نص بديل (صف الصورة)",
+"Texte alternatif (décrire la photo)"
+],
+"An account with this email already exists. Sign in instead.": [
+"يوجد حساب بهذا الإيميل. سجّل الدخول.",
+"Un compte existe déjà avec cet email. Connectez-vous."
+],
+"An account with this phone number already exists. Sign in instead.": [
+"يوجد حساب بهذا الرقم. سجّل الدخول.",
+"Un compte existe déjà avec ce numéro. Connectez-vous."
+],
+"An order needs at least one item. Cancel the order instead.": [
+"الطلب يحتاج قطعة واحدة على الأقل. ألغِ الطلب بدلاً من ذلك.",
+"Une commande doit avoir au moins un article. Annulez plutôt la commande."
+],
+"Another account already uses this email.": [
+"حساب آخر يستعمل هذا الإيميل.",
+"Un autre compte utilise cet email."
+],
+"Another account signs in with this phone number.": [
+"حساب آخر يدخل بهذا الرقم.",
+"Un autre compte se connecte avec ce numéro."
+],
+"Answers": [
+"الإجابات",
+"Réponses"
+],
+"Any": [
+"أي",
+"Tous"
+],
+"Apply": [
+"تطبيق",
+"Appliquer"
+],
+"Apply discount": [
+"تطبيق التخفيض",
+"Appliquer la remise"
+],
+"Approve": [
+"قبول",
+"Approuver"
+],
+"Apr": [
+"أبريل",
+"Avr"
+],
+"Archived": [
+"مؤرشف",
+"Archivé"
+],
+"Archived (hidden, kept for history)": [
+"مؤرشف (مخفي، محفوظ للسجل)",
+"Archivé (caché, conservé pour l'historique)"
+],
+"At current prices": [
+"بالأسعار الحالية",
+"Aux prix actuels"
+],
+"Audit log": [
+"سجل العمليات",
+"Journal d'audit"
+],
+"Aug": [
+"أغسطس",
+"Août"
+],
+"Available": [
+"متوفر",
+"Disponible"
+],
+"Avg order": [
+"متوسط الطلب",
+"Panier moyen"
+],
+"Avg. order": [
+"متوسط الطلب",
+"Panier moyen"
+],
+"Back into the stock of": [
+"يعود إلى مخزون",
+"Retour dans le stock de"
+],
+"Back to waiting for the phone call. The units are reserved in the shop.": [
+"عاد لانتظار المكالمة. القطع محجوزة في المتجر.",
+"Retour en attente d'appel. Les pièces sont réservées en boutique."
+],
+"Bag only": [
+"سلة فقط",
+"Panier seulement"
+],
+"Bags with items and no activity for": [
+"سلال فيها قطع دون نشاط منذ",
+"Paniers avec articles sans activité depuis"
+],
+"Barcode": [
+"الباركود",
+"Code-barres"
+],
+"Barcode (optional)": [
+"الباركود (اختياري)",
+"Code-barres (facultatif)"
+],
+"Basics": [
+"الأساسيات",
+"Essentiel"
+],
+"Belongs to": [
+"ينتمي إلى",
+"Appartient à"
+],
+"Block": [
+"حظر",
+"Bloquer"
+],
+"Blocked": [
+"محظور",
+"Bloqué"
+],
+"Bought": [
+"مشتريات",
+"Achats"
+],
+"Brand & contact": [
+"العلامة والتواصل",
+"Marque & contact"
+],
+"Brand name": [
+"اسم العلامة",
+"Nom de la marque"
+],
+"Built-in": [
+"مدمج",
+"Intégré"
+],
+"By phone": [
+"بالهاتف",
+"Par téléphone"
+],
+"CSV file": [
+"ملف CSV",
+"Fichier CSV"
+],
+"CSV made from the couriers' PDF lists. Prices:": [
+"CSV مُعدّ من ملفات PDF لشركات التوصيل. الأسعار:",
+"CSV fait à partir des PDF des transporteurs. Prix :"
+],
+"Call": [
+"اتصال",
+"Appeler"
+],
+"Can come back": [
+"يمكن إرجاعه",
+"Peut revenir"
+],
+"Can't go below the": [
+"لا يمكن النزول تحت",
+"Impossible de descendre sous les"
+],
+"Cancel": [
+"إلغاء",
+"Annuler"
+],
+"Cancel order": [
+"إلغاء الطلب",
+"Annuler la commande"
+],
+"Cancelled": [
+"ملغى",
+"Annulée"
+],
+"Cancelling releases the reserved units back to the shop. Not counted in revenue.": [
+"الإلغاء يعيد القطع المحجوزة إلى المتجر. لا يُحسب في المداخيل.",
+"L'annulation rend les pièces réservées à la boutique. Non comptée dans le chiffre."
+],
+"Card photo": [
+"صورة البطاقة",
+"Photo de la carte"
+],
+"Care instructions": [
+"تعليمات العناية",
+"Conseils d'entretien"
+],
+"Cart counts as abandoned after (hours)": [
+"تُعتبر السلة متروكة بعد (ساعات)",
+"Panier considéré abandonné après (heures)"
+],
+"Cash on delivery": [
+"الدفع عند الاستلام",
+"Paiement à la livraison"
+],
+"Catalog": [
+"الكتالوج",
+"Catalogue"
+],
+"Catalog · product": [
+"الكتالوج · منتج",
+"Catalogue · produit"
+],
+"Categories": [
+"الأصناف",
+"Catégories"
+],
+"Category": [
+"الصنف",
+"Catégorie"
+],
+"Category deleted — its products were kept.": [
+"تم حذف الصنف — منتجاته محفوظة.",
+"Catégorie supprimée — ses produits sont conservés."
+],
+"Category name": [
+"اسم الصنف",
+"Nom de la catégorie"
+],
+"Category saved.": [
+"تم حفظ الصنف.",
+"Catégorie enregistrée."
+],
+"Change colour / size": [
+"تغيير اللون / المقاس",
+"Changer couleur / taille"
+],
+"Change photo": [
+"تغيير الصورة",
+"Changer la photo"
+],
+"Change status by hand": [
+"تغيير الحالة يدوياً",
+"Changer le statut à la main"
+],
+"Change the words and images of the website. Empty fields keep the approved copy (shown in grey). The design and layout stay exactly the same.": [
+"غيّر نصوص وصور الموقع. الحقول الفارغة تحتفظ بالنص المعتمد (بالرمادي). التصميم يبقى كما هو.",
+"Modifiez les textes et images du site. Les champs vides gardent le texte validé (en gris). Le design reste identique."
+],
+"Changed my mind": [
+"غيّر رأيه",
+"A changé d'avis"
+],
+"Chart metric": [
+"مقياس الرسم",
+"Mesure du graphique"
+],
+"Check the settings.": [
+"تحقق من الإعدادات.",
+"Vérifiez les paramètres."
+],
+"Check the shop details.": [
+"تحقق من بيانات المتجر.",
+"Vérifiez les infos de la boutique."
+],
+"Choose 1 to 5 stars.": [
+"اختر من 1 إلى 5 نجوم.",
+"Choisissez de 1 à 5 étoiles."
+],
+"Choose a category or type at least 2 letters.": [
+"اختر صنفاً أو اكتب حرفين على الأقل.",
+"Choisissez une catégorie ou tapez au moins 2 lettres."
+],
+"Choose a colour": [
+"اختر لوناً",
+"Choisir une couleur"
+],
+"Choose a product, colour and size…": [
+"اختر منتجاً ولوناً ومقاساً…",
+"Choisissez produit, couleur et taille…"
+],
+"Choose a quantity.": [
+"اختر الكمية.",
+"Choisissez une quantité."
+],
+"Choose an existing main category.": [
+"اختر صنفاً رئيسياً موجوداً.",
+"Choisissez une catégorie principale existante."
+],
+"Choose at least one item that comes back.": [
+"اختر قطعة واحدة على الأقل ترجع.",
+"Choisissez au moins un article qui revient."
+],
+"Choose at least one new item.": [
+"اختر قطعة جديدة واحدة على الأقل.",
+"Choisissez au moins un nouvel article."
+],
+"Choose files": [
+"اختيار الملفات",
+"Choisir des fichiers"
+],
+"Choose the shop that receives the items.": [
+"اختر المتجر الذي يستلم القطع.",
+"Choisissez la boutique qui reçoit les articles."
+],
+"Choose the shops that sell this product before adding stock.": [
+"اختر المتاجر التي تبيع هذا المنتج قبل إضافة المخزون.",
+"Choisissez les boutiques qui vendent ce produit avant d'ajouter du stock."
+],
+"Choose the wilaya.": [
+"اختر الولاية.",
+"Choisissez la wilaya."
+],
+"Choose your commune.": [
+"اختر البلدية.",
+"Choisissez la commune."
+],
+"Choose your wilaya and commune too.": [
+"اختر الولاية والبلدية أيضاً.",
+"Choisissez aussi la wilaya et la commune."
+],
+"Choose your wilaya from the list.": [
+"اختر الولاية من القائمة.",
+"Choisissez la wilaya dans la liste."
+],
+"Choose your wilaya.": [
+"اختر الولاية.",
+"Choisissez la wilaya."
+],
+"Choose…": [
+"اختر…",
+"Choisir…"
+],
+"City": [
+"المدينة",
+"Ville"
+],
+"City / role (optional)": [
+"المدينة / الصفة (اختياري)",
+"Ville / rôle (facultatif)"
+],
+"Clear search": [
+"مسح البحث",
+"Effacer la recherche"
+],
+"Close": [
+"إغلاق",
+"Fermer"
+],
+"Close the shop": [
+"إغلاق المتجر",
+"Fermer la boutique"
+],
+"Close the shop (vacation mode)": [
+"إغلاق المتجر (وضع العطلة)",
+"Fermer la boutique (mode vacances)"
+],
+"Closed to visitors": [
+"مغلق أمام الزوار",
+"Fermée aux visiteurs"
+],
+"Closes on (Algeria time)": [
+"يُغلق في (توقيت الجزائر)",
+"Ferme le (heure d'Algérie)"
+],
+"Closure scheduled": [
+"إغلاق مبرمج",
+"Fermeture programmée"
+],
+"Clothes": [
+"الملابس",
+"Vêtements"
+],
+"Clothes total": [
+"مجموع الملابس",
+"Total vêtements"
+],
+"Clothes · delivery": [
+"الملابس · التوصيل",
+"Vêtements · livraison"
+],
+"Code or name": [
+"الرمز أو الاسم",
+"Code ou nom"
+],
+"Collected (exchanges)": [
+"المحصّل (التبديلات)",
+"Encaissé (échanges)"
+],
+"Collection": [
+"المجموعة",
+"Collection"
+],
+"Colour": [
+"اللون",
+"Couleur"
+],
+"Colour is required.": [
+"اللون مطلوب.",
+"La couleur est obligatoire."
+],
+"Colour name": [
+"اسم اللون",
+"Nom de la couleur"
+],
+"Colour saved.": [
+"تم حفظ اللون.",
+"Couleur enregistrée."
+],
+"Colour shown in this photo": [
+"اللون الظاهر في هذه الصورة",
+"Couleur visible sur cette photo"
+],
+"Colour swatch must look like #1a1a1a.": [
+"رمز اللون يجب أن يكون مثل #1a1a1a.",
+"Le code couleur doit ressembler à #1a1a1a."
+],
+"Colours, photos, prices & stock": [
+"الألوان والصور والأسعار والمخزون",
+"Couleurs, photos, prix & stock"
+],
+"Coming back": [
+"قادم للإرجاع",
+"En retour"
+],
+"Commune": [
+"البلدية",
+"Commune"
+],
+"Confirmed": [
+"مؤكد",
+"Confirmée"
+],
+"Confirmed with the customer. The units are reserved in the shop.": [
+"تم التأكيد مع الزبون. القطع محجوزة في المتجر.",
+"Confirmée avec le client. Les pièces sont réservées en boutique."
+],
+"Contact": [
+"التواصل",
+"Contact"
+],
+"Contact email": [
+"إيميل التواصل",
+"Email de contact"
+],
+"Contact phone": [
+"هاتف التواصل",
+"Téléphone de contact"
+],
+"Content": [
+"المحتوى",
+"Contenu"
+],
+"Content management": [
+"إدارة المحتوى",
+"Gestion du contenu"
+],
+"Coordinates power the map and “Find the closest shop”. In Google Maps, right-click the shop and click the numbers to copy them, then paste into Latitude — both fields fill in.": [
+"الإحداثيات تشغّل الخريطة و«أقرب متجر». في Google Maps اضغط بالزر الأيمن على المتجر وانسخ الأرقام، ثم الصقها في خط العرض — يمتلئ الحقلان.",
+"Les coordonnées alimentent la carte et « Trouver la boutique la plus proche ». Dans Google Maps, clic droit sur la boutique, copiez les chiffres, collez dans Latitude — les deux champs se remplissent."
+],
+"Could not find a free URL slug. Choose one manually.": [
+"تعذّر إيجاد رابط حر. اختر رابطاً يدوياً.",
+"Impossible de trouver un lien libre. Choisissez-en un."
+],
+"Could not make a unique slug for this shop.": [
+"تعذّر إنشاء رابط فريد لهذا المتجر.",
+"Impossible de créer un lien unique pour cette boutique."
+],
+"Counted on the shelf": [
+"المعدود على الرف",
+"Compté en rayon"
+],
+"Courier prices depend on the shop the parcel leaves from. At checkout the customer sees every shop that has the whole order, with its price for their wilaya and delivery type, and the cheapest is pre-selected.": [
+"أسعار التوصيل تعتمد على المتجر الذي يخرج منه الطرد. عند الطلب يرى الزبون كل متجر يملك كامل الطلب مع سعره لولايته ونوع التوصيل، والأرخص مختار مسبقاً.",
+"Les prix dépendent de la boutique d'où part le colis. À la commande, le client voit chaque boutique qui a toute la commande, avec son prix pour sa wilaya et le type de livraison ; la moins chère est présélectionnée."
+],
+"Create admin": [
+"إنشاء مسؤول",
+"Créer l'admin"
+],
+"Create customer": [
+"إنشاء زبون",
+"Créer le client"
+],
+"Create product": [
+"إنشاء المنتج",
+"Créer le produit"
+],
+"Crop": [
+"قص",
+"Recadrer"
+],
+"Currency: Algerian dinar (DA). Payment: cash on delivery.": [
+"العملة: الدينار الجزائري (DA). الدفع: عند الاستلام.",
+"Devise : dinar algérien (DA). Paiement : à la livraison."
+],
+"Customer": [
+"الزبون",
+"Client"
+],
+"Customer account created. They sign in with their phone number and this password.": [
+"تم إنشاء حساب الزبون. يدخل برقم هاتفه وكلمة المرور هذه.",
+"Compte client créé. Il se connecte avec son numéro et ce mot de passe."
+],
+"Customer deleted.": [
+"تم حذف الزبون.",
+"Client supprimé."
+],
+"Customer note:": [
+"ملاحظة الزبون:",
+"Note du client :"
+],
+"Customer profile deleted": [
+"تم حذف ملف الزبون",
+"Fiche client supprimée"
+],
+"Customer profile ·": [
+"ملف الزبون ·",
+"Fiche client ·"
+],
+"Customers": [
+"الزبائن",
+"Clients"
+],
+"DA": [
+"دج",
+"DA"
+],
+"DA in": [
+"دج في",
+"DA dans"
+],
+"Damaged / lost": [
+"تالف / مفقود",
+"Abîmé / perdu"
+],
+"Dashboard": [
+"لوحة التحكم",
+"Tableau de bord"
+],
+"Date": [
+"التاريخ",
+"Date"
+],
+"Dec": [
+"ديسمبر",
+"Déc"
+],
+"Default": [
+"افتراضي",
+"Par défaut"
+],
+"Default low-stock alert": [
+"تنبيه المخزون المنخفض الافتراضي",
+"Alerte stock bas par défaut"
+],
+"Defaults to the main photo.": [
+"افتراضياً الصورة الرئيسية.",
+"Par défaut la photo principale."
+],
+"Defaults to the product name.": [
+"افتراضياً اسم المنتج.",
+"Par défaut le nom du produit."
+],
+"Delete": [
+"حذف",
+"Supprimer"
+],
+"Delete abandoned bag": [
+"حذف السلة المتروكة",
+"Supprimer le panier abandonné"
+],
+"Delete account?": [
+"حذف الحساب؟",
+"Supprimer le compte ?"
+],
+"Delete and release its reserved stock?": [
+"حذف وتحرير المخزون المحجوز؟",
+"Supprimer et libérer le stock réservé ?"
+],
+"Delete bag?": [
+"حذف السلة؟",
+"Supprimer le panier ?"
+],
+"Delete customer": [
+"حذف الزبون",
+"Supprimer le client"
+],
+"Delete customer?": [
+"حذف الزبون؟",
+"Supprimer le client ?"
+],
+"Delete desk?": [
+"حذف المكتب؟",
+"Supprimer le bureau ?"
+],
+"Delete image": [
+"حذف الصورة",
+"Supprimer l'image"
+],
+"Delete order": [
+"حذف الطلب",
+"Supprimer la commande"
+],
+"Delete order?": [
+"حذف الطلب؟",
+"Supprimer la commande ?"
+],
+"Delete permanently?": [
+"حذف نهائي؟",
+"Supprimer définitivement ?"
+],
+"Delete product": [
+"حذف المنتج",
+"Supprimer le produit"
+],
+"Delete product?": [
+"حذف المنتج؟",
+"Supprimer le produit ?"
+],
+"Delete review?": [
+"حذف التقييم؟",
+"Supprimer l'avis ?"
+],
+"Delete shop": [
+"حذف المتجر",
+"Supprimer la boutique"
+],
+"Delete this category?": [
+"حذف هذا الصنف؟",
+"Supprimer cette catégorie ?"
+],
+"Delete this order permanently?": [
+"حذف هذا الطلب نهائياً؟",
+"Supprimer définitivement cette commande ?"
+],
+"Delete this product, its variants and images?": [
+"حذف هذا المنتج وأنواعه وصوره؟",
+"Supprimer ce produit, ses variantes et ses images ?"
+],
+"Delete this size/colour and its ledger?": [
+"حذف هذا المقاس/اللون وسجله؟",
+"Supprimer cette taille/couleur et son historique ?"
+],
+"Delete this subcategory?": [
+"حذف هذا الصنف الفرعي؟",
+"Supprimer cette sous-catégorie ?"
+],
+"Delete this testimonial?": [
+"حذف هذه الشهادة؟",
+"Supprimer ce témoignage ?"
+],
+"Delete variant": [
+"حذف النوع",
+"Supprimer la variante"
+],
+"Delete variant?": [
+"حذف النوع؟",
+"Supprimer la variante ?"
+],
+"Delete?": [
+"حذف؟",
+"Supprimer ?"
+],
+"Delete? Subcategories become main categories.": [
+"حذف؟ الأصناف الفرعية تصبح رئيسية.",
+"Supprimer ? Les sous-catégories deviennent principales."
+],
+"Delete? Their orders stay in Orders.": [
+"حذف؟ طلباته تبقى في الطلبات.",
+"Supprimer ? Ses commandes restent dans Commandes."
+],
+"Deliver together with": [
+"التوصيل مع",
+"Livrer avec"
+],
+"Delivered": [
+"تم التوصيل",
+"Livrée"
+],
+"Delivered orders": [
+"الطلبات المسلّمة",
+"Commandes livrées"
+],
+"Delivered spend": [
+"إنفاق المسلّم",
+"Dépense livrée"
+],
+"Delivered, after returns": [
+"المسلّم بعد الإرجاعات",
+"Livré, après retours"
+],
+"Delivered: the units leave the shop's physical stock and the payment counts as collected.": [
+"تم التوصيل: القطع تخرج من المخزون والدفع يُحسب محصّلاً.",
+"Livrée : les pièces sortent du stock et le paiement compte comme encaissé."
+],
+"Delivery": [
+"التوصيل",
+"Livraison"
+],
+"Delivery changed": [
+"تغيّر التوصيل",
+"Livraison modifiée"
+],
+"Delivery fee": [
+"سعر التوصيل",
+"Frais de livraison"
+],
+"Delivery fee (DA)": [
+"سعر التوصيل (دج)",
+"Frais de livraison (DA)"
+],
+"Delivery fee must be 0 or more.": [
+"سعر التوصيل يجب أن يكون 0 أو أكثر.",
+"Les frais de livraison doivent être de 0 ou plus."
+],
+"Delivery prices saved.": [
+"تم حفظ أسعار التوصيل.",
+"Prix de livraison enregistrés."
+],
+"Delivery time shown at checkout": [
+"مدة التوصيل المعروضة عند الطلب",
+"Délai de livraison affiché à la commande"
+],
+"Delivery updated.": [
+"تم تحديث التوصيل.",
+"Livraison mise à jour."
+],
+"Demo products are loaded (SKUs starting with DEMO-). Ask your developer to remove them before going live.": [
+"منتجات تجريبية محمّلة (رموز تبدأ بـ DEMO-). اطلب من المطوّر حذفها قبل الإطلاق.",
+"Des produits de démo sont chargés (SKU DEMO-). Demandez au développeur de les retirer avant le lancement."
+],
+"Description shown in search results.": [
+"الوصف الظاهر في نتائج البحث.",
+"Description affichée dans les résultats de recherche."
+],
+"Desk deleted.": [
+"تم حذف المكتب.",
+"Bureau supprimé."
+],
+"Desk name": [
+"اسم المكتب",
+"Nom du bureau"
+],
+"Desk saved.": [
+"تم حفظ المكتب.",
+"Bureau enregistré."
+],
+"Desk · empty rows": [
+"المكتب · الصفوف الفارغة",
+"Bureau · lignes vides"
+],
+"Desks": [
+"المكاتب",
+"Bureaux"
+],
+"Details": [
+"التفاصيل",
+"Détails"
+],
+"Details (optional)": [
+"التفاصيل (اختياري)",
+"Détails (facultatif)"
+],
+"Developer credit (footer)": [
+"حقوق المطوّر (أسفل الصفحة)",
+"Crédit développeur (pied de page)"
+],
+"Developer email": [
+"إيميل المطوّر",
+"Email du développeur"
+],
+"Developer name": [
+"اسم المطوّر",
+"Nom du développeur"
+],
+"Developer phone": [
+"هاتف المطوّر",
+"Téléphone du développeur"
+],
+"Different per size": [
+"مختلف حسب المقاس",
+"Différent selon la taille"
+],
+"Discount": [
+"التخفيض",
+"Remise"
+],
+"Discount amount": [
+"قيمة التخفيض",
+"Montant de la remise"
+],
+"Discount applied.": [
+"تم تطبيق التخفيض.",
+"Remise appliquée."
+],
+"Discount cannot be negative.": [
+"التخفيض لا يمكن أن يكون سالباً.",
+"La remise ne peut pas être négative."
+],
+"Discount changed": [
+"تغيّر التخفيض",
+"Remise modifiée"
+],
+"Discount must be a positive whole number.": [
+"التخفيض يجب أن يكون عدداً صحيحاً موجباً.",
+"La remise doit être un nombre entier positif."
+],
+"Discount type": [
+"نوع التخفيض",
+"Type de remise"
+],
+"Discount value": [
+"قيمة التخفيض",
+"Valeur de la remise"
+],
+"Done.": [
+"تم.",
+"Fait."
+],
+"Draft": [
+"مسودة",
+"Brouillon"
+],
+"Draft — hidden from the shop": [
+"مسودة — مخفي من المتجر",
+"Brouillon — caché de la boutique"
+],
+"Drop photos here, or": [
+"اسحب الصور هنا، أو",
+"Déposez les photos ici, ou"
+],
+"Each shop has its own stock. Available = physical − reserved. Orders reserve stock in their departure shop; delivery removes it from physical; cancellation only releases the reservation. Default low-stock alert:": [
+"لكل متجر مخزونه. المتوفر = الفعلي − المحجوز. الطلبات تحجز في متجر الانطلاق؛ التوصيل يُخرجها من الفعلي؛ الإلغاء يحرر الحجز فقط. تنبيه المخزون المنخفض الافتراضي:",
+"Chaque boutique a son stock. Disponible = physique − réservé. Les commandes réservent dans la boutique de départ ; la livraison retire du physique ; l'annulation libère seulement la réservation. Alerte stock bas par défaut :"
+],
+"Edit product": [
+"تعديل المنتج",
+"Modifier le produit"
+],
+"Edited": [
+"معدّل",
+"Modifié"
+],
+"Email": [
+"الإيميل",
+"Email"
+],
+"Email (optional)": [
+"الإيميل (اختياري)",
+"Email (facultatif)"
+],
+"Email service:": [
+"خدمة الإيميل:",
+"Service email :"
+],
+"Emails": [
+"الإيميلات",
+"Emails"
+],
+"Empty = right away.": [
+"فارغ = فوراً.",
+"Vide = tout de suite."
+],
+"Empty fields show the built-in translation (in grey).": [
+"الحقول الفارغة تُظهر الترجمة المدمجة (بالرمادي).",
+"Les champs vides affichent la traduction intégrée (en gris)."
+],
+"Empty home price = price confirmed by phone. Return = what the courier charges the shop to bring a refused or returned parcel back.": [
+"سعر المنزل فارغ = يُؤكَّد بالهاتف. الإرجاع = ما تأخذه شركة التوصيل من المتجر لإعادة طرد مرفوض أو مُرجَع.",
+"Prix domicile vide = confirmé par téléphone. Retour = ce que le transporteur facture à la boutique pour ramener un colis refusé ou retourné."
+],
+"English (+ images)": [
+"الإنجليزية (+ الصور)",
+"Anglais (+ images)"
+],
+"Enter": [
+"إدخال",
+"Entrée"
+],
+"Enter a category name.": [
+"اكتب اسم الصنف.",
+"Saisissez un nom de catégorie."
+],
+"Enter a colour and at least one size.": [
+"اكتب لوناً ومقاساً واحداً على الأقل.",
+"Saisissez une couleur et au moins une taille."
+],
+"Enter a product name.": [
+"اكتب اسم المنتج.",
+"Saisissez un nom de produit."
+],
+"Enter a valid Algerian mobile number (05, 06 or 07 followed by 8 digits).": [
+"اكتب رقم هاتف جزائري صحيح (05 أو 06 أو 07 ثم 8 أرقام).",
+"Saisissez un mobile algérien valide (05, 06 ou 07 suivi de 8 chiffres)."
+],
+"Enter a valid age.": [
+"اكتب عمراً صحيحاً.",
+"Saisissez un âge valide."
+],
+"Enter a valid email address.": [
+"اكتب إيميلاً صحيحاً.",
+"Saisissez un email valide."
+],
+"Enter a valid email for new-order notifications.": [
+"اكتب إيميلاً صحيحاً لإشعارات الطلبات الجديدة.",
+"Saisissez un email valide pour les alertes de nouvelles commandes."
+],
+"Enter a wilaya, a city and a street address.": [
+"اكتب الولاية والمدينة والعنوان.",
+"Saisissez la wilaya, la ville et l'adresse."
+],
+"Enter an email or a phone number to sign in with.": [
+"اكتب إيميلاً أو رقم هاتف للدخول به.",
+"Saisissez un email ou un numéro pour se connecter."
+],
+"Enter at least one new size.": [
+"اكتب مقاساً جديداً واحداً على الأقل.",
+"Saisissez au moins une nouvelle taille."
+],
+"Enter both latitude and longitude, or leave both empty.": [
+"اكتب خط العرض وخط الطول معاً، أو اتركهما فارغين.",
+"Saisissez latitude et longitude, ou laissez les deux vides."
+],
+"Enter how many units arrived (1 or more).": [
+"اكتب عدد القطع الواصلة (1 أو أكثر).",
+"Indiquez combien de pièces sont arrivées (1 ou plus)."
+],
+"Enter the city.": [
+"اكتب المدينة.",
+"Saisissez la ville."
+],
+"Enter the colour name.": [
+"اكتب اسم اللون.",
+"Saisissez le nom de la couleur."
+],
+"Enter the commune.": [
+"اكتب البلدية.",
+"Saisissez la commune."
+],
+"Enter the desk name.": [
+"اكتب اسم المكتب.",
+"Saisissez le nom du bureau."
+],
+"Enter the order number exactly as shown, e.g. KING253-20261004-001.": [
+"اكتب رقم الطلب كما يظهر، مثل KING253-20261004-001.",
+"Saisissez le numéro de commande tel qu'affiché, ex. KING253-20261004-001."
+],
+"Enter the person's name.": [
+"اكتب اسم الشخص.",
+"Saisissez le nom de la personne."
+],
+"Enter the shop name.": [
+"اكتب اسم المتجر.",
+"Saisissez le nom de la boutique."
+],
+"Enter the street address.": [
+"اكتب العنوان.",
+"Saisissez l'adresse."
+],
+"Enter the wilaya.": [
+"اكتب الولاية.",
+"Saisissez la wilaya."
+],
+"Enter your email or phone number.": [
+"اكتب إيميلك أو رقم هاتفك.",
+"Saisissez votre email ou téléphone."
+],
+"Enter your full name.": [
+"اكتب اسمك الكامل.",
+"Saisissez votre nom complet."
+],
+"Enter your name (2–60 characters).": [
+"اكتب اسمك (2–60 حرفاً).",
+"Saisissez votre nom (2–60 caractères)."
+],
+"Enter your name.": [
+"اكتب اسمك.",
+"Saisissez votre nom."
+],
+"Enter your street address.": [
+"اكتب عنوانك.",
+"Saisissez votre adresse."
+],
+"Entered details": [
+"البيانات المُدخلة",
+"Infos saisies"
+],
+"Escape": [
+"خروج",
+"Échap"
+],
+"Estimated:": [
+"المتوقع:",
+"Estimé :"
+],
+"Every admin section": [
+"كل أقسام الإدارة",
+"Toutes les sections admin"
+],
+"Every colour has its own photos, price and stock per size. Customers switch colours on the product page and see that colour's photos.": [
+"لكل لون صوره وسعره ومخزونه لكل مقاس. الزبون يبدّل الألوان في صفحة المنتج ويرى صور ذلك اللون.",
+"Chaque couleur a ses photos, son prix et son stock par taille. Le client change de couleur sur la fiche produit et voit ses photos."
+],
+"Every item of this order has already come back.": [
+"كل قطع هذا الطلب رجعت مسبقاً.",
+"Tous les articles de cette commande sont déjà revenus."
+],
+"Every movement": [
+"كل حركة",
+"Chaque mouvement"
+],
+"Everything came back — this order is returned and out of revenue.": [
+"كل شيء رجع — هذا الطلب مُرجَع وخارج المداخيل.",
+"Tout est revenu — cette commande est retournée et hors chiffre."
+],
+"Everything the customer received comes back to the shop. The order leaves revenue.": [
+"كل ما استلمه الزبون يرجع للمتجر. الطلب يخرج من المداخيل.",
+"Tout ce que le client a reçu revient en boutique. La commande sort du chiffre."
+],
+"Exchange": [
+"تبديل",
+"Échange"
+],
+"Exchange recorded. Stock updated both ways.": [
+"تم تسجيل التبديل. المخزون تحدّث في الاتجاهين.",
+"Échange enregistré. Stock mis à jour dans les deux sens."
+],
+"Exchange shipped": [
+"تم شحن التبديل",
+"Échange expédié"
+],
+"Exchanges": [
+"التبديلات",
+"Échanges"
+],
+"Facebook URL": [
+"رابط فيسبوك",
+"Lien Facebook"
+],
+"Featured (Latest drop & collection hero)": [
+"مميز (آخر إصدار وواجهة المجموعة)",
+"En avant (dernier drop & héros collection)"
+],
+"Feb": [
+"فبراير",
+"Fév"
+],
+"File type": [
+"نوع الملف",
+"Type de fichier"
+],
+"Files": [
+"الملفات",
+"Fichiers"
+],
+"Fill empty rows": [
+"ملء الصفوف الفارغة",
+"Remplir les lignes vides"
+],
+"Filter": [
+"تصفية",
+"Filtrer"
+],
+"Find a wilaya": [
+"ابحث عن ولاية",
+"Chercher une wilaya"
+],
+"Fit": [
+"المقاس",
+"Coupe"
+],
+"Fixed (DA)": [
+"ثابت (دج)",
+"Fixe (DA)"
+],
+"Focus — horizontal": [
+"التركيز — أفقي",
+"Cadrage — horizontal"
+],
+"Focus — vertical": [
+"التركيز — عمودي",
+"Cadrage — vertical"
+],
+"Found us via": [
+"عرفنا عبر",
+"Nous a connus via"
+],
+"Français": [
+"الفرنسية",
+"Français"
+],
+"Free delivery": [
+"توصيل مجاني",
+"Livraison gratuite"
+],
+"Free delivery from (clothes total, DA)": [
+"توصيل مجاني ابتداءً من (مجموع الملابس، دج)",
+"Livraison gratuite dès (total vêtements, DA)"
+],
+"Free delivery promotion — the shop pays the courier (prices per shop and wilaya: Admin → Delivery)": [
+"عرض التوصيل المجاني — المتجر يدفع لشركة التوصيل (الأسعار لكل متجر وولاية: الإدارة ← التوصيل)",
+"Promo livraison gratuite — la boutique paie le transporteur (prix par boutique et wilaya : Admin → Livraison)"
+],
+"Free for the customer": [
+"مجاني للزبون",
+"Gratuit pour le client"
+],
+"From": [
+"من",
+"Du"
+],
+"From an exchange": [
+"من تبديل",
+"D'un échange"
+],
+"From social media": [
+"من الشبكات الاجتماعية",
+"Des réseaux sociaux"
+],
+"Full description": [
+"الوصف الكامل",
+"Description complète"
+],
+"Full name": [
+"الاسم الكامل",
+"Nom complet"
+],
+"Gender": [
+"الجنس",
+"Genre"
+],
+"GitHub (username or URL)": [
+"GitHub (الاسم أو الرابط)",
+"GitHub (nom ou lien)"
+],
+"Give a reason for this stock change.": [
+"اكتب سبب تغيير المخزون.",
+"Indiquez la raison de ce changement de stock."
+],
+"Give full admin access?": [
+"منح صلاحية الإدارة الكاملة؟",
+"Donner l'accès admin complet ?"
+],
+"Give the customer their password. They sign in on the website with their phone number.": [
+"أعطِ الزبون كلمة المرور. يدخل في الموقع برقم هاتفه.",
+"Donnez son mot de passe au client. Il se connecte sur le site avec son numéro."
+],
+"Give them their password in person. They sign in at /admin/login and have the same access as you.": [
+"أعطه كلمة المرور شخصياً. يدخل من /admin/login وله نفس صلاحياتك.",
+"Donnez-lui son mot de passe en personne. Il se connecte sur /admin/login avec les mêmes accès que vous."
+],
+"Google Maps link (optional)": [
+"رابط Google Maps (اختياري)",
+"Lien Google Maps (facultatif)"
+],
+"Has reservations": [
+"عليه حجوزات",
+"A des réservations"
+],
+"Has subcategories, so it stays a main category": [
+"له أصناف فرعية، فيبقى صنفاً رئيسياً",
+"A des sous-catégories, reste donc principale"
+],
+"Header and texts around the shop list. Shop addresses, hours and phones are in Locations.": [
+"العنوان والنصوص حول قائمة المتاجر. العناوين والأوقات والهواتف في المواقع.",
+"Titre et textes autour de la liste des boutiques. Adresses, horaires et téléphones dans Emplacements."
+],
+"Heard about us via": [
+"عرفنا عبر",
+"Nous a connus via"
+],
+"Heard about us via:": [
+"عرفنا عبر:",
+"Nous a connus via :"
+],
+"Held by open orders": [
+"محجوز لطلبات مفتوحة",
+"Réservé par des commandes ouvertes"
+],
+"Hero, brand statement, editorial, categories, story, shops preview and the final call to action.": [
+"الواجهة، رسالة العلامة، المقالات، الأصناف، القصة، المتاجر والدعوة الأخيرة.",
+"Héros, message de marque, éditorial, catégories, histoire, aperçu boutiques et appel final."
+],
+"Hex colour": [
+"رمز اللون",
+"Couleur hex"
+],
+"Hide password": [
+"إخفاء كلمة المرور",
+"Masquer le mot de passe"
+],
+"Highest total": [
+"الأعلى مجموعاً",
+"Total le plus élevé"
+],
+"History": [
+"السجل",
+"Historique"
+],
+"History / inspiration": [
+"التاريخ / الإلهام",
+"Histoire / inspiration"
+],
+"Home": [
+"الرئيسية",
+"Accueil"
+],
+"Home (DA)": [
+"المنزل (دج)",
+"Domicile (DA)"
+],
+"Home delivery": [
+"توصيل للمنزل",
+"Livraison à domicile"
+],
+"Home · empty rows": [
+"المنزل · الصفوف الفارغة",
+"Domicile · lignes vides"
+],
+"Image deleted.": [
+"تم حذف الصورة.",
+"Image supprimée."
+],
+"Image library": [
+"مكتبة الصور",
+"Médiathèque"
+],
+"Image removed.": [
+"تمت إزالة الصورة.",
+"Image retirée."
+],
+"Image saved.": [
+"تم حفظ الصورة.",
+"Image enregistrée."
+],
+"Images added.": [
+"تمت إضافة الصور.",
+"Images ajoutées."
+],
+"Import": [
+"استيراد",
+"Importer"
+],
+"Import done.": [
+"تم الاستيراد.",
+"Import terminé."
+],
+"Import price lists (all shops)": [
+"استيراد قوائم الأسعار (كل المتاجر)",
+"Importer les grilles de prix (toutes les boutiques)"
+],
+"In stock": [
+"متوفر",
+"En stock"
+],
+"In the list below": [
+"في القائمة أدناه",
+"Dans la liste ci-dessous"
+],
+"In this shop": [
+"في هذا المتجر",
+"Dans cette boutique"
+],
+"Included in": [
+"مُضمّن في",
+"Inclus dans"
+],
+"Insight": [
+"ملاحظة",
+"Aperçu"
+],
+"Instagram (@handle or URL)": [
+"Instagram (@الحساب أو الرابط)",
+"Instagram (@compte ou lien)"
+],
+"Internal notes — never shown to the customer": [
+"ملاحظات داخلية — لا تظهر للزبون أبداً",
+"Notes internes — jamais montrées au client"
+],
+"Invalid reopening date.": [
+"تاريخ إعادة الفتح غير صحيح.",
+"Date de réouverture invalide."
+],
+"Invalid start date.": [
+"تاريخ البداية غير صحيح.",
+"Date de début invalide."
+],
+"Inventory": [
+"المخزون",
+"Inventaire"
+],
+"Item added": [
+"أضيفت قطعة",
+"Article ajouté"
+],
+"Item added and reserved.": [
+"أضيفت القطعة وحُجزت.",
+"Article ajouté et réservé."
+],
+"Item changed": [
+"تغيّرت قطعة",
+"Article modifié"
+],
+"Item removed": [
+"أزيلت قطعة",
+"Article retiré"
+],
+"Item removed and stock released.": [
+"أزيلت القطعة وتحرر المخزون.",
+"Article retiré et stock libéré."
+],
+"Item updated and stock moved.": [
+"تحدّثت القطعة ونُقل المخزون.",
+"Article mis à jour et stock déplacé."
+],
+"Items": [
+"القطع",
+"Articles"
+],
+"JPEG, PNG, WebP or AVIF · max 10 MB each · optimised automatically": [
+"JPEG أو PNG أو WebP أو AVIF · حتى 10 ميغا لكل صورة · تُحسّن تلقائياً",
+"JPEG, PNG, WebP ou AVIF · 10 Mo max chacune · optimisées automatiquement"
+],
+"Jan": [
+"يناير",
+"Jan"
+],
+"Joined": [
+"انضم",
+"Inscrit"
+],
+"Journal": [
+"السجل",
+"Journal"
+],
+"Journal of every return and exchange. Record them from a delivered order (Orders → order → Returns & exchanges). Refunds come off revenue; an order whose every item came back counts as refused and leaves the statistics.": [
+"سجل كل إرجاع وتبديل. سجّلها من طلب مسلّم (الطلبات ← الطلب ← الإرجاعات والتبديلات). المبالغ المسترجعة تُخصم من المداخيل؛ الطلب الذي رجعت كل قطعه يُحسب مرفوضاً ويخرج من الإحصائيات.",
+"Journal de chaque retour et échange. Enregistrez-les depuis une commande livrée (Commandes → commande → Retours & échanges). Les remboursements sortent du chiffre ; une commande dont tout est revenu compte comme refusée et sort des statistiques."
+],
+"Jul": [
+"يوليو",
+"Juil"
+],
+"Jun": [
+"يونيو",
+"Juin"
+],
+"KB": [
+"ك.ب",
+"Ko"
+],
+"KING253 → KING253-20261004-001": [
+"KING253 ← KING253-20261004-001",
+"KING253 → KING253-20261004-001"
+],
+"Keep your phone number — you sign in with it. Add an email first to remove it.": [
+"احتفظ برقم هاتفك — تدخل به. أضف إيميلاً أولاً لتحذفه.",
+"Gardez votre numéro — vous vous connectez avec. Ajoutez d'abord un email pour le retirer."
+],
+"Language": [
+"اللغة",
+"Langue"
+],
+"Last 30 days": [
+"آخر 30 يوماً",
+"30 derniers jours"
+],
+"Last activity": [
+"آخر نشاط",
+"Dernière activité"
+],
+"Last order": [
+"آخر طلب",
+"Dernière commande"
+],
+"Last sign-in": [
+"آخر دخول",
+"Dernière connexion"
+],
+"Latest address": [
+"آخر عنوان",
+"Dernière adresse"
+],
+"Latitude (optional)": [
+"خط العرض (اختياري)",
+"Latitude (facultatif)"
+],
+"Leave empty to generate from the name.": [
+"اتركه فارغاً ليُنشأ من الاسم.",
+"Laissez vide pour le générer depuis le nom."
+],
+"Leave empty to use the contact email.": [
+"اتركه فارغاً لاستعمال إيميل التواصل.",
+"Laissez vide pour utiliser l'email de contact."
+],
+"Ledger": [
+"سجل الحركات",
+"Registre"
+],
+"Library": [
+"المكتبة",
+"Bibliothèque"
+],
+"Longitude (optional)": [
+"خط الطول (اختياري)",
+"Longitude (facultatif)"
+],
+"Low": [
+"منخفض",
+"Bas"
+],
+"Low alert": [
+"تنبيه منخفض",
+"Alerte basse"
+],
+"Low stock": [
+"مخزون منخفض",
+"Stock bas"
+],
+"Low stock alert at": [
+"تنبيه المخزون المنخفض عند",
+"Alerte stock bas à"
+],
+"Low stock —": [
+"مخزون منخفض —",
+"Stock bas —"
+],
+"Lowest total": [
+"الأقل مجموعاً",
+"Total le plus bas"
+],
+"Main category": [
+"صنف رئيسي",
+"Catégorie principale"
+],
+"Main image set.": [
+"تم تعيين الصورة الرئيسية.",
+"Image principale définie."
+],
+"Make admin": [
+"جعله مسؤولاً",
+"Rendre admin"
+],
+"Manage": [
+"إدارة",
+"Gérer"
+],
+"Manual adjustment": [
+"تعديل يدوي",
+"Ajustement manuel"
+],
+"Mar": [
+"مارس",
+"Mars"
+],
+"Marketing": [
+"التسويق",
+"Marketing"
+],
+"Material / fabric": [
+"الخامة / القماش",
+"Matière / tissu"
+],
+"Maximum 20 per item.": [
+"20 كحد أقصى لكل قطعة.",
+"20 maximum par article."
+],
+"May": [
+"ماي",
+"Mai"
+],
+"Men": [
+"رجال",
+"Homme"
+],
+"Message for visitors (optional)": [
+"رسالة للزوار (اختياري)",
+"Message aux visiteurs (facultatif)"
+],
+"Monthly": [
+"شهري",
+"Mensuel"
+],
+"More": [
+"المزيد",
+"Plus"
+],
+"Name": [
+"الاسم",
+"Nom"
+],
+"Name/phone known": [
+"الاسم/الهاتف معروف",
+"Nom/téléphone connu"
+],
+"Net revenue": [
+"صافي المداخيل",
+"Chiffre net"
+],
+"New": [
+"جديد",
+"Nouveau"
+],
+"New accounts per day": [
+"حسابات جديدة يومياً",
+"Nouveaux comptes par jour"
+],
+"New admin (manager)": [
+"مسؤول جديد (مدير)",
+"Nouvel admin (gérant)"
+],
+"New customer account": [
+"حساب زبون جديد",
+"Nouveau compte client"
+],
+"New delivery": [
+"توصيل جديد",
+"Nouvelle livraison"
+],
+"New image": [
+"صورة جديدة",
+"Nouvelle image"
+],
+"New item": [
+"قطعة جديدة",
+"Nouvel article"
+],
+"New items": [
+"قطع جديدة",
+"Nouveaux articles"
+],
+"New main category": [
+"صنف رئيسي جديد",
+"Nouvelle catégorie principale"
+],
+"New physical stock": [
+"المخزون الفعلي الجديد",
+"Nouveau stock physique"
+],
+"New product": [
+"منتج جديد",
+"Nouveau produit"
+],
+"New reviews stay hidden until approved. &ldquo;Verified purchase&rdquo; is set automatically only when the order number + phone match a delivered order with this product.": [
+"التقييمات الجديدة تبقى مخفية حتى تُقبل. «شراء مؤكد» يُضاف تلقائياً فقط إذا تطابق رقم الطلب والهاتف مع طلب مسلّم لهذا المنتج.",
+"Les nouveaux avis restent cachés jusqu'à approbation. « Achat vérifié » est mis automatiquement seulement si numéro de commande + téléphone correspondent à une commande livrée de ce produit."
+],
+"New — last 24 hours": [
+"جديد — آخر 24 ساعة",
+"Nouveau — dernières 24 h"
+],
+"New — last 30 days": [
+"جديد — آخر 30 يوماً",
+"Nouveau — 30 derniers jours"
+],
+"New — last 7 days": [
+"جديد — آخر 7 أيام",
+"Nouveau — 7 derniers jours"
+],
+"New-order alerts go to": [
+"تنبيهات الطلبات الجديدة تُرسل إلى",
+"Alertes nouvelles commandes envoyées à"
+],
+"New-order email": [
+"إيميل الطلب الجديد",
+"Email nouvelle commande"
+],
+"New-order emails are not fully set up — a new order does not reach anyone by email yet.": [
+"إيميلات الطلبات الجديدة غير مكتملة — الطلب الجديد لا يصل لأحد بالإيميل بعد.",
+"Les emails de nouvelle commande ne sont pas configurés — une nouvelle commande n'arrive encore à personne par email."
+],
+"Newest first": [
+"الأحدث أولاً",
+"Plus récents d'abord"
+],
+"No": [
+"لا",
+"Non"
+],
+"No abandoned carts in this period.": [
+"لا سلال متروكة في هذه الفترة.",
+"Aucun panier abandonné sur cette période."
+],
+"No accounts match.": [
+"لا توجد حسابات مطابقة.",
+"Aucun compte ne correspond."
+],
+"No active shop": [
+"لا متجر نشط",
+"Aucune boutique active"
+],
+"No active shop yet. Add one in Admin → Shops.": [
+"لا يوجد متجر نشط بعد. أضفه في الإدارة ← المتاجر.",
+"Aucune boutique active. Ajoutez-en une dans Admin → Boutiques."
+],
+"No active shop.": [
+"لا متجر نشط.",
+"Aucune boutique active."
+],
+"No answers yet": [
+"لا إجابات بعد",
+"Pas encore de réponses"
+],
+"No answers yet — they appear as soon as new customers create an account.": [
+"لا إجابات بعد — تظهر عندما ينشئ زبائن جدد حساباتهم.",
+"Pas encore de réponses — elles apparaissent dès que de nouveaux clients créent un compte."
+],
+"No categories yet — add the first one below.": [
+"لا أصناف بعد — أضف أولها أدناه.",
+"Aucune catégorie — ajoutez la première ci-dessous."
+],
+"No changes yet.": [
+"لا تغييرات بعد.",
+"Aucun changement."
+],
+"No colour with that name — type its hex code below.": [
+"لا يوجد لون بهذا الاسم — اكتب رمزه أدناه.",
+"Aucune couleur de ce nom — saisissez son code hex ci-dessous."
+],
+"No colours yet — the product shows &ldquo;sizes coming soon&rdquo; until you add one below.": [
+"لا ألوان بعد — المنتج يُظهر «المقاسات قريباً» حتى تضيف لوناً أدناه.",
+"Aucune couleur — le produit affiche « tailles bientôt » jusqu'à ce que vous en ajoutiez une ci-dessous."
+],
+"No customers yet — they appear with their first order.": [
+"لا زبائن بعد — يظهرون مع أول طلب.",
+"Aucun client — ils apparaissent avec leur première commande."
+],
+"No desks yet — customers can only choose home delivery from this shop.": [
+"لا مكاتب بعد — الزبائن يختارون التوصيل للمنزل فقط من هذا المتجر.",
+"Aucun bureau — les clients ne peuvent choisir que la livraison à domicile depuis cette boutique."
+],
+"No difference": [
+"لا فرق",
+"Pas de différence"
+],
+"No discount": [
+"بدون تخفيض",
+"Sans remise"
+],
+"No emails for this order (no customer email, or no admin email configured).": [
+"لا إيميلات لهذا الطلب (لا إيميل للزبون أو للإدارة).",
+"Aucun email pour cette commande (pas d'email client ni admin)."
+],
+"No images yet.": [
+"لا صور بعد.",
+"Pas encore d'images."
+],
+"No notification email for:": [
+"لا إيميل إشعارات لـ:",
+"Aucun email d'alerte pour :"
+],
+"No orders match.": [
+"لا طلبات مطابقة.",
+"Aucune commande ne correspond."
+],
+"No products yet. Create the first one.": [
+"لا منتجات بعد. أنشئ أولها.",
+"Aucun produit. Créez le premier."
+],
+"No promo": [
+"بدون عرض",
+"Sans promo"
+],
+"No promo running.": [
+"لا عرض جارٍ.",
+"Aucune promo en cours."
+],
+"No shop": [
+"بدون متجر",
+"Sans boutique"
+],
+"No shop yet.": [
+"لا متجر بعد.",
+"Pas encore de boutique."
+],
+"No shops yet — add one in Admin → Shops.": [
+"لا متاجر بعد — أضف واحداً في الإدارة ← المتاجر.",
+"Aucune boutique — ajoutez-en une dans Admin → Boutiques."
+],
+"No shops yet. Add your first shop below.": [
+"لا متاجر بعد. أضف أول متجر أدناه.",
+"Aucune boutique. Ajoutez la première ci-dessous."
+],
+"No single shop has every item of your order in stock. Remove an item or lower a quantity.": [
+"لا يوجد متجر واحد فيه كل قطع طلبك. احذف قطعة أو قلّل الكمية.",
+"Aucune boutique n'a tous les articles en stock. Retirez un article ou baissez une quantité."
+],
+"None in 30 days": [
+"لا شيء خلال 30 يوماً",
+"Aucun sur 30 jours"
+],
+"Not asked": [
+"لم يُسأل",
+"Non demandé"
+],
+"Not enough stock in this shop for a new item.": [
+"المخزون غير كافٍ في هذا المتجر لقطعة جديدة.",
+"Stock insuffisant dans cette boutique pour un nouvel article."
+],
+"Not in the product promo (own price). Empty its price to include it.": [
+"ليس ضمن عرض المنتج (سعر خاص). أفرغ سعره ليدخل.",
+"Hors promo du produit (prix propre). Videz son prix pour l'inclure."
+],
+"Not sent: the email could not be delivered.": [
+"لم يُرسل: تعذّر توصيل الإيميل.",
+"Non envoyé : l'email n'a pas pu être livré."
+],
+"Not sent: the email service is not set up yet.": [
+"لم يُرسل: خدمة الإيميل غير مفعّلة بعد.",
+"Non envoyé : le service email n'est pas encore configuré."
+],
+"Not set": [
+"غير محدد",
+"Non défini"
+],
+"Not set yet — add it in": [
+"غير محدد بعد — أضفه في",
+"Pas encore défini — ajoutez-le dans"
+],
+"Not sold: reserved units are released (a delivered parcel goes back on the shelf). Not counted in revenue.": [
+"لم يُبع: القطع المحجوزة تتحرر (الطرد المسلّم يعود للرف). لا يُحسب في المداخيل.",
+"Non vendu : les pièces réservées sont libérées (un colis livré revient en rayon). Non compté dans le chiffre."
+],
+"Note": [
+"ملاحظة",
+"Note"
+],
+"Note (optional)": [
+"ملاحظة (اختياري)",
+"Note (facultatif)"
+],
+"Note for the timeline (optional)": [
+"ملاحظة للسجل (اختياري)",
+"Note pour l'historique (facultatif)"
+],
+"Notes edited": [
+"عُدّلت الملاحظات",
+"Notes modifiées"
+],
+"Notes saved.": [
+"تم حفظ الملاحظات.",
+"Notes enregistrées."
+],
+"Nothing found.": [
+"لم يُعثر على شيء.",
+"Rien trouvé."
+],
+"Nothing here.": [
+"لا شيء هنا.",
+"Rien ici."
+],
+"Nothing left to return on this order.": [
+"لا شيء بقي للإرجاع في هذا الطلب.",
+"Plus rien à retourner sur cette commande."
+],
+"Nothing recorded for this shop and period.": [
+"لا شيء مسجل لهذا المتجر وهذه الفترة.",
+"Rien d'enregistré pour cette boutique et cette période."
+],
+"Nov": [
+"نوفمبر",
+"Nov"
+],
+"Now a customer account.": [
+"صار حساب زبون.",
+"Maintenant un compte client."
+],
+"Now an admin.": [
+"صار مسؤولاً.",
+"Maintenant admin."
+],
+"Oct": [
+"أكتوبر",
+"Oct"
+],
+"Off for this product · stock kept": [
+"متوقف لهذا المنتج · المخزون محفوظ",
+"Désactivée pour ce produit · stock conservé"
+],
+"Oldest first": [
+"الأقدم أولاً",
+"Plus anciens d'abord"
+],
+"On sale": [
+"للبيع",
+"En vente"
+],
+"One line per row: Days | Hours": [
+"سطر لكل صف: الأيام | الساعات",
+"Une ligne par rangée : Jours | Heures"
+],
+"One of the new items can no longer be sold.": [
+"إحدى القطع الجديدة لم تعد تُباع.",
+"Un des nouveaux articles n'est plus en vente."
+],
+"One parcel with": [
+"طرد واحد مع",
+"Un seul colis avec"
+],
+"Only a delivered order can be returned.": [
+"لا يمكن إرجاع إلا طلب مسلّم.",
+"Seule une commande livrée peut être retournée."
+],
+"Only cancelled orders, or orders fully returned and accepted by the shop, can be removed.": [
+"لا تُحذف إلا الطلبات الملغاة أو المُرجعة كلياً والمقبولة من المتجر.",
+"Seules les commandes annulées, ou entièrement retournées et acceptées par la boutique, peuvent être supprimées."
+],
+"Only uploaded images can be deleted.": [
+"لا تُحذف إلا الصور المرفوعة.",
+"Seules les images importées peuvent être supprimées."
+],
+"Only write facts you can stand behind — no invented collaborations or endorsements.": [
+"اكتب فقط حقائق تتحمل مسؤوليتها — لا تعاونات أو شهادات مختلقة.",
+"N'écrivez que des faits vérifiables — pas de collaborations ou recommandations inventées."
+],
+"Open": [
+"مفتوح",
+"Ouverte"
+],
+"Open — customers can order": [
+"مفتوح — الزبائن يمكنهم الطلب",
+"Ouverte — les clients peuvent commander"
+],
+"Opening hours (optional)": [
+"أوقات العمل (اختياري)",
+"Horaires d'ouverture (facultatif)"
+],
+"Opening stock must be 0 or more.": [
+"المخزون الافتتاحي يجب أن يكون 0 أو أكثر.",
+"Le stock initial doit être de 0 ou plus."
+],
+"Or type the name, SKU or barcode": [
+"أو اكتب الاسم أو الرمز أو الباركود",
+"Ou tapez le nom, le SKU ou le code-barres"
+],
+"Order": [
+"الطلب",
+"Commande"
+],
+"Order deleted": [
+"حُذف الطلب",
+"Commande supprimée"
+],
+"Order deleted.": [
+"تم حذف الطلب.",
+"Commande supprimée."
+],
+"Order history": [
+"سجل الطلبات",
+"Historique des commandes"
+],
+"Order number prefix": [
+"بادئة رقم الطلب",
+"Préfixe du numéro de commande"
+],
+"Order on the page": [
+"الترتيب في الصفحة",
+"Ordre sur la page"
+],
+"Order steps": [
+"مراحل الطلب",
+"Étapes de la commande"
+],
+"Ordered other items": [
+"طلب قطعاً أخرى",
+"A commandé d'autres articles"
+],
+"Orders": [
+"الطلبات",
+"Commandes"
+],
+"Orders & stock": [
+"الطلبات والمخزون",
+"Commandes & stock"
+],
+"Orders shipped from this shop are emailed here. Empty = the admin email in Settings.": [
+"طلبات هذا المتجر تُرسل إلى هذا الإيميل. فارغ = إيميل الإدارة في الإعدادات.",
+"Les commandes de cette boutique sont envoyées ici. Vide = l'email admin dans Paramètres."
+],
+"Other": [
+"أخرى",
+"Autre"
+],
+"Out": [
+"نفد",
+"Épuisé"
+],
+"Out of stock": [
+"نفد المخزون",
+"Rupture de stock"
+],
+"Overview": [
+"نظرة عامة",
+"Vue d'ensemble"
+],
+"Pages": [
+"الصفحات",
+"Pages"
+],
+"Paid": [
+"مدفوع",
+"Payée"
+],
+"Password": [
+"كلمة المرور",
+"Mot de passe"
+],
+"Password (10+ characters, letters and a number)": [
+"كلمة المرور (10 أحرف فأكثر، حروف ورقم)",
+"Mot de passe (10+ caractères, lettres et un chiffre)"
+],
+"Paste a full link starting with https://": [
+"الصق رابطاً كاملاً يبدأ بـ https://",
+"Collez un lien complet commençant par https://"
+],
+"Payment refused — not counted in revenue": [
+"الدفع مرفوض — لا يُحسب في المداخيل",
+"Paiement refusé — non compté dans le chiffre"
+],
+"Peak": [
+"الذروة",
+"Pic"
+],
+"Pending": [
+"قيد الانتظار",
+"En attente"
+],
+"Pending orders": [
+"الطلبات المنتظرة",
+"Commandes en attente"
+],
+"People": [
+"الأشخاص",
+"Personnes"
+],
+"Per shop": [
+"لكل متجر",
+"Par boutique"
+],
+"Percent": [
+"نسبة",
+"Pourcentage"
+],
+"Percent (%)": [
+"نسبة (%)",
+"Pourcentage (%)"
+],
+"Period": [
+"الفترة",
+"Période"
+],
+"Phone": [
+"الهاتف",
+"Téléphone"
+],
+"Photo (optional)": [
+"صورة (اختياري)",
+"Photo (facultatif)"
+],
+"Photo moved.": [
+"نُقلت الصورة.",
+"Photo déplacée."
+],
+"Photos for every colour": [
+"صور لكل الألوان",
+"Photos pour toutes les couleurs"
+],
+"Physical": [
+"الفعلي",
+"Physique"
+],
+"Physical / reserved / available": [
+"الفعلي / المحجوز / المتوفر",
+"Physique / réservé / disponible"
+],
+"Physical stock": [
+"المخزون الفعلي",
+"Stock physique"
+],
+"Physical stock must be a whole number of 0 or more.": [
+"المخزون الفعلي يجب أن يكون عدداً صحيحاً 0 أو أكثر.",
+"Le stock physique doit être un nombre entier de 0 ou plus."
+],
+"Physical · all shops": [
+"الفعلي · كل المتاجر",
+"Physique · toutes les boutiques"
+],
+"Pick an image to reuse it. Uploads that nothing uses any more can be deleted.": [
+"اختر صورة لإعادة استعمالها. الصور غير المستعملة يمكن حذفها.",
+"Choisissez une image pour la réutiliser. Les images inutilisées peuvent être supprimées."
+],
+"Placed by hour · last 7 days vs the 2 weeks before": [
+"حسب الساعة · آخر 7 أيام مقابل الأسبوعين قبلها",
+"Par heure · 7 derniers jours vs les 2 semaines d'avant"
+],
+"Potential revenue": [
+"المداخيل المحتملة",
+"Chiffre potentiel"
+],
+"Previous weeks": [
+"الأسابيع السابقة",
+"Semaines précédentes"
+],
+"Price": [
+"السعر",
+"Prix"
+],
+"Price (DA)": [
+"السعر (دج)",
+"Prix (DA)"
+],
+"Price cannot be negative.": [
+"السعر لا يمكن أن يكون سالباً.",
+"Le prix ne peut pas être négatif."
+],
+"Prices per wilaya": [
+"الأسعار حسب الولاية",
+"Prix par wilaya"
+],
+"Pricing (DA)": [
+"الأسعار (دج)",
+"Prix (DA)"
+],
+"Product": [
+"المنتج",
+"Produit"
+],
+"Product deleted.": [
+"تم حذف المنتج.",
+"Produit supprimé."
+],
+"Product issue": [
+"مشكلة في المنتج",
+"Problème produit"
+],
+"Product name": [
+"اسم المنتج",
+"Nom du produit"
+],
+"Product name, SKU or barcode": [
+"اسم المنتج أو الرمز أو الباركود",
+"Nom du produit, SKU ou code-barres"
+],
+"Product price": [
+"سعر المنتج",
+"Prix du produit"
+],
+"Product story": [
+"قصة المنتج",
+"Histoire du produit"
+],
+"Product title": [
+"عنوان المنتج",
+"Titre du produit"
+],
+"Product translation": [
+"ترجمة المنتجات",
+"Traduction des produits"
+],
+"Product · variant": [
+"المنتج · النوع",
+"Produit · variante"
+],
+"Products": [
+"المنتجات",
+"Produits"
+],
+"Progress": [
+"التقدم",
+"Progression"
+],
+"Promo price": [
+"سعر العرض",
+"Prix promo"
+],
+"Promo price (DA)": [
+"سعر العرض (دج)",
+"Prix promo (DA)"
+],
+"Promo price (optional)": [
+"سعر العرض (اختياري)",
+"Prix promo (facultatif)"
+],
+"Published": [
+"منشور",
+"Publié"
+],
+"Published — shown on the Clothes page": [
+"منشور — يظهر في صفحة الملابس",
+"Publié — visible sur la page Vêtements"
+],
+"Qty": [
+"الكمية",
+"Qté"
+],
+"Quality information": [
+"معلومات الجودة",
+"Infos qualité"
+],
+"Quantity": [
+"الكمية",
+"Quantité"
+],
+"Quantity must be at least 1.": [
+"الكمية يجب أن تكون 1 على الأقل.",
+"La quantité doit être d'au moins 1."
+],
+"Quantity must be between 1 and 50.": [
+"الكمية يجب أن تكون بين 1 و50.",
+"La quantité doit être entre 1 et 50."
+],
+"Reason": [
+"السبب",
+"Raison"
+],
+"Reason · by": [
+"السبب · بواسطة",
+"Raison · par"
+],
+"Record exchange": [
+"تسجيل التبديل",
+"Enregistrer l'échange"
+],
+"Record return": [
+"تسجيل الإرجاع",
+"Enregistrer le retour"
+],
+"Refunded": [
+"المسترجع",
+"Remboursé"
+],
+"Refused at the door": [
+"رُفض عند الباب",
+"Refusée à la porte"
+],
+"Regular price": [
+"السعر العادي",
+"Prix normal"
+],
+"Regular price (DA)": [
+"السعر العادي (دج)",
+"Prix normal (DA)"
+],
+"Reject": [
+"رفض",
+"Rejeter"
+],
+"Released (cancel / edit)": [
+"محرّر (إلغاء / تعديل)",
+"Libéré (annulation / modif.)"
+],
+"Remove": [
+"إزالة",
+"Retirer"
+],
+"Remove admin": [
+"إزالة المسؤول",
+"Retirer l'admin"
+],
+"Remove from the order?": [
+"إزالة من الطلب؟",
+"Retirer de la commande ?"
+],
+"Remove photo": [
+"إزالة الصورة",
+"Retirer la photo"
+],
+"Remove?": [
+"إزالة؟",
+"Retirer ?"
+],
+"Removed:": [
+"أزيل:",
+"Retiré :"
+],
+"Reopen now": [
+"إعادة الفتح الآن",
+"Rouvrir maintenant"
+],
+"Reopens on (Algeria time)": [
+"يُعاد الفتح في (توقيت الجزائر)",
+"Rouvre le (heure d'Algérie)"
+],
+"Reserved": [
+"محجوز",
+"Réservé"
+],
+"Reserved (order)": [
+"محجوز (طلب)",
+"Réservé (commande)"
+],
+"Reset to default": [
+"العودة للافتراضي",
+"Rétablir par défaut"
+],
+"Return": [
+"إرجاع",
+"Retour"
+],
+"Return (DA)": [
+"الإرجاع (دج)",
+"Retour (DA)"
+],
+"Return fee (courier) ·": [
+"تكلفة الإرجاع (التوصيل) ·",
+"Frais de retour (transporteur) ·"
+],
+"Return fee:": [
+"تكلفة الإرجاع:",
+"Frais de retour :"
+],
+"Return fees paid": [
+"تكاليف الإرجاع المدفوعة",
+"Frais de retour payés"
+],
+"Return or exchange": [
+"إرجاع أو تبديل",
+"Retour ou échange"
+],
+"Return or exchange ↓": [
+"إرجاع أو تبديل ↓",
+"Retour ou échange ↓"
+],
+"Return recorded. Stock is back in the shop.": [
+"تم تسجيل الإرجاع. المخزون عاد للمتجر.",
+"Retour enregistré. Le stock est de retour en boutique."
+],
+"Return restocked": [
+"أُعيد للمخزون",
+"Retour remis en stock"
+],
+"Return · empty rows": [
+"الإرجاع · الصفوف الفارغة",
+"Retour · lignes vides"
+],
+"Returned": [
+"مُرجَع",
+"Retournée"
+],
+"Returned items": [
+"القطع المُرجعة",
+"Articles retournés"
+],
+"Returned to supplier": [
+"أُعيد للمورّد",
+"Renvoyé au fournisseur"
+],
+"Returns": [
+"الإرجاعات",
+"Retours"
+],
+"Returns & exchanges": [
+"الإرجاعات والتبديلات",
+"Retours & échanges"
+],
+"Returns and exchanges are only possible on delivered orders.": [
+"الإرجاع والتبديل ممكنان فقط للطلبات المسلّمة.",
+"Retours et échanges uniquement sur les commandes livrées."
+],
+"Returns or exchanges are recorded on this order, so it can only become fully Returned.": [
+"سُجلت إرجاعات أو تبديلات لهذا الطلب، فلا يمكن أن يصبح إلا مُرجَعاً كلياً.",
+"Des retours ou échanges sont enregistrés sur cette commande : elle ne peut devenir que totalement Retournée."
+],
+"Revenue": [
+"المداخيل",
+"Chiffre d'affaires"
+],
+"Review hidden.": [
+"تم إخفاء التقييم.",
+"Avis masqué."
+],
+"Review published.": [
+"تم نشر التقييم.",
+"Avis publié."
+],
+"Review removed.": [
+"تم حذف التقييم.",
+"Avis supprimé."
+],
+"Reviews": [
+"التقييمات",
+"Avis"
+],
+"Role": [
+"الدور",
+"Rôle"
+],
+"SEO description": [
+"وصف SEO",
+"Description SEO"
+],
+"SEO title": [
+"عنوان SEO",
+"Titre SEO"
+],
+"SKU": [
+"الرمز (SKU)",
+"SKU"
+],
+"SKU / barcode": [
+"الرمز / الباركود",
+"SKU / code-barres"
+],
+"SKU is required.": [
+"الرمز مطلوب.",
+"Le SKU est obligatoire."
+],
+"SKU: letters, numbers, dashes, dots, underscores.": [
+"الرمز: حروف، أرقام، شرطات، نقاط، شرطات سفلية.",
+"SKU : lettres, chiffres, tirets, points, tirets bas."
+],
+"SKUs:": [
+"الرموز:",
+"SKU :"
+],
+"Sales": [
+"المبيعات",
+"Ventes"
+],
+"Sales by category": [
+"المبيعات حسب الصنف",
+"Ventes par catégorie"
+],
+"Sales from these accounts": [
+"مبيعات هذه الحسابات",
+"Ventes de ces comptes"
+],
+"Sat–Thu | 10:00–20:00 Fri | Closed": [
+"السبت–الخميس | 10:00–20:00 الجمعة | مغلق",
+"Sam–Jeu | 10:00–20:00 Ven | Fermé"
+],
+"Save": [
+"حفظ",
+"Enregistrer"
+],
+"Save changes": [
+"حفظ التغييرات",
+"Enregistrer les modifications"
+],
+"Save colour": [
+"حفظ اللون",
+"Enregistrer la couleur"
+],
+"Save count": [
+"حفظ العدد",
+"Enregistrer le compte"
+],
+"Save crop": [
+"حفظ القص",
+"Enregistrer le recadrage"
+],
+"Save delivery": [
+"حفظ التوصيل",
+"Enregistrer la livraison"
+],
+"Save first, then add sizes/colours, stock and photos.": [
+"احفظ أولاً، ثم أضف المقاسات/الألوان والمخزون والصور.",
+"Enregistrez d'abord, puis ajoutez tailles/couleurs, stock et photos."
+],
+"Save notes": [
+"حفظ الملاحظات",
+"Enregistrer les notes"
+],
+"Save product": [
+"حفظ المنتج",
+"Enregistrer le produit"
+],
+"Save settings": [
+"حفظ الإعدادات",
+"Enregistrer les paramètres"
+],
+"Save shop": [
+"حفظ المتجر",
+"Enregistrer la boutique"
+],
+"Save shop status": [
+"حفظ حالة المتجر",
+"Enregistrer l'état de la boutique"
+],
+"Save shops": [
+"حفظ المتاجر",
+"Enregistrer les boutiques"
+],
+"Saved as DRAFT — it is hidden from the shop. Set Status to Published to show it.": [
+"حُفظ كمسودة — مخفي من المتجر. اجعل الحالة «منشور» لإظهاره.",
+"Enregistré en BROUILLON — caché de la boutique. Passez le statut à Publié pour l'afficher."
+],
+"Saved as archived — hidden from the shop.": [
+"حُفظ كمؤرشف — مخفي من المتجر.",
+"Enregistré comme archivé — caché de la boutique."
+],
+"Saved — live on the website now.": [
+"تم الحفظ — ظاهر في الموقع الآن.",
+"Enregistré — en ligne maintenant."
+],
+"Saved — this product is in the shop (Clothes page).": [
+"تم الحفظ — المنتج في المتجر (صفحة الملابس).",
+"Enregistré — ce produit est en boutique (page Vêtements)."
+],
+"Saving…": [
+"جارٍ الحفظ…",
+"Enregistrement…"
+],
+"Search": [
+"بحث",
+"Rechercher"
+],
+"Search colours": [
+"بحث في الألوان",
+"Chercher une couleur"
+],
+"Search customers": [
+"بحث في الزبائن",
+"Chercher un client"
+],
+"Search inventory": [
+"بحث في المخزون",
+"Chercher dans l'inventaire"
+],
+"Search name or slug": [
+"ابحث بالاسم أو الرابط",
+"Chercher nom ou lien"
+],
+"Search name, email or phone": [
+"ابحث بالاسم أو الإيميل أو الهاتف",
+"Chercher nom, email ou téléphone"
+],
+"Search name, phone or email": [
+"ابحث بالاسم أو الهاتف أو الإيميل",
+"Chercher nom, téléphone ou email"
+],
+"Search number, name or phone": [
+"ابحث بالرقم أو الاسم أو الهاتف",
+"Chercher numéro, nom ou téléphone"
+],
+"Search orders": [
+"بحث في الطلبات",
+"Chercher une commande"
+],
+"Search products": [
+"بحث في المنتجات",
+"Chercher un produit"
+],
+"Search users": [
+"بحث في المستخدمين",
+"Chercher un utilisateur"
+],
+"Search: navy, bordeaux, kaki…": [
+"ابحث: كحلي، بوردو، كاكي…",
+"Chercher : marine, bordeaux, kaki…"
+],
+"Searching…": [
+"جارٍ البحث…",
+"Recherche…"
+],
+"Seasonality": [
+"الموسمية",
+"Saisonnalité"
+],
+"Send a test email to each shop": [
+"إرسال إيميل تجربة لكل متجر",
+"Envoyer un email test à chaque boutique"
+],
+"Send order emails to customers who gave an email": [
+"إرسال إيميلات الطلب للزبائن الذين أعطوا إيميلاً",
+"Envoyer les emails de commande aux clients qui ont donné un email"
+],
+"Sender name": [
+"اسم المرسِل",
+"Nom de l'expéditeur"
+],
+"Sending…": [
+"جارٍ الإرسال…",
+"Envoi…"
+],
+"Sent.": [
+"أُرسل.",
+"Envoyé."
+],
+"Sep": [
+"سبتمبر",
+"Sep"
+],
+"Set a price before publishing.": [
+"حدد سعراً قبل النشر.",
+"Fixez un prix avant de publier."
+],
+"Set count": [
+"تحديد العدد",
+"Fixer le compte"
+],
+"Set to": [
+"تحديد إلى",
+"Fixer à"
+],
+"Settings": [
+"الإعدادات",
+"Paramètres"
+],
+"Settings saved.": [
+"تم حفظ الإعدادات.",
+"Paramètres enregistrés."
+],
+"Ships with": [
+"يُشحن مع",
+"Expédiée avec"
+],
+"Shop": [
+"المتجر",
+"Boutique"
+],
+"Shop deleted.": [
+"تم حذف المتجر.",
+"Boutique supprimée."
+],
+"Shop inactive": [
+"المتجر غير نشط",
+"Boutique inactive"
+],
+"Shop name": [
+"اسم المتجر",
+"Nom de la boutique"
+],
+"Shop of the exchange (stock in and out)": [
+"متجر التبديل (المخزون الداخل والخارج)",
+"Boutique de l'échange (stock entrant et sortant)"
+],
+"Shop phone (optional)": [
+"هاتف المتجر (اختياري)",
+"Téléphone de la boutique (facultatif)"
+],
+"Shop saved.": [
+"تم حفظ المتجر.",
+"Boutique enregistrée."
+],
+"Shop status": [
+"حالة المتجر",
+"État de la boutique"
+],
+"Shop → wilaya": [
+"المتجر ← الولاية",
+"Boutique → wilaya"
+],
+"Shops": [
+"المتاجر",
+"Boutiques"
+],
+"Shops saved.": [
+"تم حفظ المتاجر.",
+"Boutiques enregistrées."
+],
+"Short code": [
+"الرمز القصير",
+"Code court"
+],
+"Short description": [
+"الوصف القصير",
+"Description courte"
+],
+"Show drafts": [
+"إظهار المسودات",
+"Afficher les brouillons"
+],
+"Show on the public Location page": [
+"إظهار في صفحة المواقع العامة",
+"Afficher sur la page Emplacements publique"
+],
+"Show password": [
+"إظهار كلمة المرور",
+"Afficher le mot de passe"
+],
+"Shown as “Developed by …” at the bottom of every page. Leave everything empty to hide it.": [
+"يظهر «Developed by …» أسفل كل صفحة. اترك الكل فارغاً لإخفائه.",
+"Affiché « Developed by … » en bas de chaque page. Laissez tout vide pour le masquer."
+],
+"Shown in the shop": [
+"ظاهر في المتجر",
+"Visible en boutique"
+],
+"Shown on Home and Who Is King only when published. Only add words real customers gave you (with their permission) — the section stays hidden while none are published.": [
+"تظهر في الرئيسية و Who Is King عند النشر فقط. أضف فقط كلمات زبائن حقيقيين (بإذنهم) — القسم يبقى مخفياً حتى تنشر واحدة.",
+"Affichés sur Accueil et Who Is King une fois publiés. N'ajoutez que de vrais avis clients (avec leur accord) — la section reste cachée tant qu'aucun n'est publié."
+],
+"Shown whatever colour is picked (detail shots, lifestyle photos). The ★ photo is the one on product cards.": [
+"تظهر مهما كان اللون المختار (صور التفاصيل والأجواء). الصورة ★ هي التي على بطاقات المنتجات.",
+"Affichées quelle que soit la couleur (détails, photos d'ambiance). La photo ★ est celle des cartes produit."
+],
+"Sign in": [
+"دخول",
+"Se connecter"
+],
+"Sign out": [
+"خروج",
+"Se déconnecter"
+],
+"Sign-ups by source": [
+"التسجيلات حسب المصدر",
+"Inscriptions par source"
+],
+"Sign-ups — last 30 days": [
+"التسجيلات — آخر 30 يوماً",
+"Inscriptions — 30 derniers jours"
+],
+"Site": [
+"الموقع",
+"Site"
+],
+"Size": [
+"المقاس",
+"Taille"
+],
+"Size is required.": [
+"المقاس مطلوب.",
+"La taille est obligatoire."
+],
+"Sizes (comma separated)": [
+"المقاسات (مفصولة بفاصلة)",
+"Tailles (séparées par des virgules)"
+],
+"Slug": [
+"الرابط",
+"Lien"
+],
+"Slug: lowercase letters, digits and dashes only.": [
+"الرابط: حروف صغيرة وأرقام وشرطات فقط.",
+"Lien : minuscules, chiffres et tirets uniquement."
+],
+"Slug: lowercase, numbers, dashes.": [
+"الرابط: حروف صغيرة، أرقام، شرطات.",
+"Lien : minuscules, chiffres, tirets."
+],
+"Social links": [
+"روابط التواصل",
+"Réseaux sociaux"
+],
+"Social media": [
+"الشبكات الاجتماعية",
+"Réseaux sociaux"
+],
+"Social preview image URL": [
+"رابط صورة المعاينة في الشبكات",
+"Lien de l'image d'aperçu social"
+],
+"Social proof": [
+"الثقة",
+"Preuve sociale"
+],
+"Sort": [
+"ترتيب",
+"Trier"
+],
+"Source": [
+"المصدر",
+"Source"
+],
+"Started checkout": [
+"بدأ إتمام الطلب",
+"A commencé la commande"
+],
+"Status": [
+"الحالة",
+"Statut"
+],
+"Status changed": [
+"تغيّرت الحالة",
+"Statut modifié"
+],
+"Status changed. Stock updated.": [
+"تغيّرت الحالة. تحدّث المخزون.",
+"Statut modifié. Stock mis à jour."
+],
+"Status note": [
+"ملاحظة الحالة",
+"Note de statut"
+],
+"Status updated.": [
+"تم تحديث الحالة.",
+"Statut mis à jour."
+],
+"Stays closed until you reopen it.": [
+"يبقى مغلقاً حتى تعيد فتحه.",
+"Reste fermée jusqu'à ce que vous la rouvriez."
+],
+"Stock": [
+"المخزون",
+"Stock"
+],
+"Stock added.": [
+"تمت إضافة المخزون.",
+"Stock ajouté."
+],
+"Stock count correction": [
+"تصحيح عدد المخزون",
+"Correction du stock"
+],
+"Stock ledger": [
+"سجل المخزون",
+"Registre de stock"
+],
+"Stock updated.": [
+"تم تحديث المخزون.",
+"Stock mis à jour."
+],
+"Stop desk (DA)": [
+"Stop desk (دج)",
+"Stop desk (DA)"
+],
+"Stop desks": [
+"مكاتب Stop desk",
+"Stop desks"
+],
+"Story": [
+"القصة",
+"Histoire"
+],
+"Street / address": [
+"الشارع / العنوان",
+"Rue / adresse"
+],
+"Street address": [
+"العنوان",
+"Adresse"
+],
+"Style": [
+"الأسلوب",
+"Style"
+],
+"Sub of": [
+"فرعي من",
+"Sous de"
+],
+"Subcategory": [
+"صنف فرعي",
+"Sous-catégorie"
+],
+"Subcategory name": [
+"اسم الصنف الفرعي",
+"Nom de la sous-catégorie"
+],
+"Swatch": [
+"عيّنة اللون",
+"Pastille"
+],
+"System": [
+"النظام",
+"Système"
+],
+"Tagline": [
+"الشعار",
+"Accroche"
+],
+"Tagline (optional)": [
+"الشعار (اختياري)",
+"Accroche (facultatif)"
+],
+"Tags (comma separated)": [
+"الوسوم (مفصولة بفاصلة)",
+"Tags (séparés par des virgules)"
+],
+"Testimonial deleted.": [
+"تم حذف الشهادة.",
+"Témoignage supprimé."
+],
+"Testimonial saved.": [
+"تم حفظ الشهادة.",
+"Témoignage enregistré."
+],
+"Testimonials": [
+"الشهادات",
+"Témoignages"
+],
+"Texts and images around the products. Products themselves are managed in Products.": [
+"النصوص والصور حول المنتجات. المنتجات نفسها تُدار في المنتجات.",
+"Textes et images autour des produits. Les produits se gèrent dans Produits."
+],
+"That product option is not available.": [
+"هذا الخيار غير متوفر.",
+"Cette option de produit n'est pas disponible."
+],
+"The brand story page — header, origin, culture, style and the studio experience.": [
+"صفحة قصة العلامة — العنوان، الأصل، الثقافة، الأسلوب وتجربة الاستوديو.",
+"Page histoire de la marque — en-tête, origine, culture, style et studio."
+],
+"The customer confirmed by phone. The units stay reserved in the departure shop.": [
+"أكد الزبون بالهاتف. القطع تبقى محجوزة في متجر الانطلاق.",
+"Le client a confirmé par téléphone. Les pièces restent réservées dans la boutique de départ."
+],
+"The customer pays only the clothes; the shop pays the courier.": [
+"الزبون يدفع الملابس فقط؛ المتجر يدفع لشركة التوصيل.",
+"Le client paie seulement les vêtements ; la boutique paie le transporteur."
+],
+"The discount cannot be larger than the products subtotal.": [
+"التخفيض لا يمكن أن يتجاوز مجموع المنتجات.",
+"La remise ne peut pas dépasser le sous-total produits."
+],
+"The email account (SMTP) is not connected on the server, so emails are only recorded, not sent.": [
+"حساب الإيميل (SMTP) غير متصل في السيرفر، فالإيميلات تُسجل فقط ولا تُرسل.",
+"Le compte email (SMTP) n'est pas connecté sur le serveur : les emails sont seulement enregistrés, pas envoyés."
+],
+"The file has a header but no rows.": [
+"الملف فيه رأس لكن بدون صفوف.",
+"Le fichier a un en-tête mais aucune ligne."
+],
+"The order total cannot be negative.": [
+"مجموع الطلب لا يمكن أن يكون سالباً.",
+"Le total de la commande ne peut pas être négatif."
+],
+"The parcel was handed over: the units leave the shop and the payment counts as collected.": [
+"سُلّم الطرد: القطع تخرج من المتجر والدفع يُحسب محصّلاً.",
+"Colis remis : les pièces quittent la boutique et le paiement compte comme encaissé."
+],
+"The reopening date must be after the closing date.": [
+"تاريخ إعادة الفتح يجب أن يكون بعد تاريخ الإغلاق.",
+"La date de réouverture doit être après la date de fermeture."
+],
+"The sale price must be lower than the regular price.": [
+"سعر العرض يجب أن يكون أقل من السعر العادي.",
+"Le prix promo doit être inférieur au prix normal."
+],
+"The shop is taking a short break. Orders are paused for now — thank you for your patience.": [
+"المتجر في استراحة قصيرة. الطلبات متوقفة مؤقتاً — شكراً لصبركم.",
+"La boutique fait une courte pause. Les commandes sont suspendues — merci de votre patience."
+],
+"The shop you chose no longer has everything in your order. Please choose another shop.": [
+"المتجر الذي اخترته لم يعد يملك كل طلبك. اختر متجراً آخر.",
+"La boutique choisie n'a plus toute votre commande. Choisissez-en une autre."
+],
+"This SKU is already used by another variant.": [
+"هذا الرمز مستعمل لنوع آخر.",
+"Ce SKU est déjà utilisé par une autre variante."
+],
+"This account": [
+"هذا الحساب",
+"Ce compte"
+],
+"This account does not have admin access.": [
+"هذا الحساب ليس له صلاحية الإدارة.",
+"Ce compte n'a pas d'accès admin."
+],
+"This bag was already removed.": [
+"هذه السلة حُذفت مسبقاً.",
+"Ce panier a déjà été supprimé."
+],
+"This barcode is already used.": [
+"هذا الباركود مستعمل.",
+"Ce code-barres est déjà utilisé."
+],
+"This category": [
+"هذا الصنف",
+"Cette catégorie"
+],
+"This category has subcategories, so it must stay a main category.": [
+"لهذا الصنف أصناف فرعية، فيجب أن يبقى رئيسياً.",
+"Cette catégorie a des sous-catégories : elle doit rester principale."
+],
+"This colour": [
+"هذا اللون",
+"Cette couleur"
+],
+"This customer": [
+"هذا الزبون",
+"Ce client"
+],
+"This desk": [
+"هذا المكتب",
+"Ce bureau"
+],
+"This image": [
+"هذه الصورة",
+"Cette image"
+],
+"This image was already removed.": [
+"هذه الصورة حُذفت مسبقاً.",
+"Cette image a déjà été retirée."
+],
+"This is the last active admin. Make someone else admin first.": [
+"هذا آخر مسؤول نشط. اجعل شخصاً آخر مسؤولاً أولاً.",
+"C'est le dernier admin actif. Nommez d'abord quelqu'un d'autre admin."
+],
+"This is the price on the product card. Colours without their own price use it (and its promo). A colour can have its own price and promo in “Colours, photos, prices & stock” above.": [
+"هذا السعر على بطاقة المنتج. الألوان بدون سعر خاص تستعمله (وعرضه). يمكن للون أن يكون له سعر وعرض خاص في «الألوان والصور والأسعار والمخزون» أعلاه.",
+"C'est le prix de la carte produit. Les couleurs sans prix propre l'utilisent (avec sa promo). Une couleur peut avoir son prix et sa promo dans « Couleurs, photos, prix & stock » ci-dessus."
+],
+"This item is no longer available.": [
+"هذه القطعة لم تعد متوفرة.",
+"Cet article n'est plus disponible."
+],
+"This order": [
+"هذا الطلب",
+"Cette commande"
+],
+"This order has returns or exchanges recorded, so it stays Delivered.": [
+"سُجلت إرجاعات أو تبديلات لهذا الطلب، فيبقى «تم التوصيل».",
+"Des retours ou échanges sont enregistrés : la commande reste Livrée."
+],
+"This order has returns/exchanges recorded.": [
+"سُجلت إرجاعات/تبديلات لهذا الطلب.",
+"Retours/échanges enregistrés sur cette commande."
+],
+"This order item": [
+"قطعة الطلب هذه",
+"Cet article de commande"
+],
+"This product": [
+"هذا المنتج",
+"Ce produit"
+],
+"This product is not available for reviews.": [
+"هذا المنتج غير متاح للتقييم.",
+"Ce produit n'accepte pas d'avis."
+],
+"This product is not sold in any shop yet — tick at least one shop in “Shops” above, then add stock.": [
+"هذا المنتج لا يُباع في أي متجر بعد — اختر متجراً واحداً على الأقل في «المتاجر» أعلاه، ثم أضف المخزون.",
+"Ce produit n'est vendu dans aucune boutique — cochez au moins une boutique dans « Boutiques » ci-dessus, puis ajoutez du stock."
+],
+"This product is not sold in any shop. Tick its shops on the product page.": [
+"هذا المنتج لا يُباع في أي متجر. اختر متاجره في صفحة المنتج.",
+"Ce produit n'est vendu dans aucune boutique. Cochez ses boutiques sur la fiche produit."
+],
+"This product option": [
+"خيار المنتج هذا",
+"Cette option de produit"
+],
+"This reservation has no shop.": [
+"هذا الحجز بدون متجر.",
+"Cette réservation n'a pas de boutique."
+],
+"This shop": [
+"هذا المتجر",
+"Cette boutique"
+],
+"This shop already has a desk with that name in this wilaya.": [
+"لهذا المتجر مكتب بهذا الاسم في هذه الولاية مسبقاً.",
+"Cette boutique a déjà un bureau de ce nom dans cette wilaya."
+],
+"This shop has products, stock or orders, so it cannot be deleted. Untick “Active” to stop using it — its history is kept.": [
+"لهذا المتجر منتجات أو مخزون أو طلبات، فلا يمكن حذفه. ألغِ «نشط» لإيقافه — سجله يبقى.",
+"Cette boutique a des produits, du stock ou des commandes : impossible de la supprimer. Décochez « Active » pour l'arrêter — son historique est conservé."
+],
+"This shop's stock": [
+"مخزون هذا المتجر",
+"Stock de cette boutique"
+],
+"This size + colour already exists for this product.": [
+"هذا المقاس + اللون موجود لهذا المنتج.",
+"Cette taille + couleur existe déjà pour ce produit."
+],
+"This size is out of stock.": [
+"هذا المقاس نفد.",
+"Cette taille est épuisée."
+],
+"This variant": [
+"هذا النوع",
+"Cette variante"
+],
+"This variant has orders. Keep its size/colour and create a new variant instead.": [
+"لهذا النوع طلبات. احتفظ بمقاسه/لونه وأنشئ نوعاً جديداً.",
+"Cette variante a des commandes. Gardez sa taille/couleur et créez plutôt une nouvelle variante."
+],
+"TikTok (@handle or URL)": [
+"TikTok (@الحساب أو الرابط)",
+"TikTok (@compte ou lien)"
+],
+"Timeline": [
+"السجل الزمني",
+"Historique"
+],
+"To": [
+"إلى",
+"Au"
+],
+"To call and confirm": [
+"للاتصال والتأكيد",
+"À appeler et confirmer"
+],
+"To collect": [
+"للتحصيل",
+"À encaisser"
+],
+"To collect at delivery": [
+"للتحصيل عند التوصيل",
+"À encaisser à la livraison"
+],
+"To confirm by phone": [
+"للتأكيد بالهاتف",
+"À confirmer par téléphone"
+],
+"To deliver": [
+"للتوصيل",
+"À livrer"
+],
+"To refund": [
+"للإرجاع",
+"À rembourser"
+],
+"To refund the customer": [
+"للإرجاع للزبون",
+"À rembourser au client"
+],
+"Today": [
+"اليوم",
+"Aujourd'hui"
+],
+"Top source": [
+"المصدر الأول",
+"Source principale"
+],
+"Total": [
+"المجموع",
+"Total"
+],
+"Total spent": [
+"مجموع الإنفاق",
+"Total dépensé"
+],
+"Translate every product now": [
+"ترجمة كل المنتجات الآن",
+"Traduire tous les produits maintenant"
+],
+"Translation is not set up yet (DEEPL_API_KEY in the server .env).": [
+"الترجمة غير مفعّلة بعد (DEEPL_API_KEY في .env السيرفر).",
+"La traduction n'est pas configurée (DEEPL_API_KEY dans le .env du serveur)."
+],
+"Translation service:": [
+"خدمة الترجمة:",
+"Service de traduction :"
+],
+"Type": [
+"النوع",
+"Type"
+],
+"URL slug": [
+"رابط الصفحة",
+"Lien de la page"
+],
+"Unblock": [
+"رفع الحظر",
+"Débloquer"
+],
+"Unisex": [
+"للجنسين",
+"Unisexe"
+],
+"Units": [
+"القطع",
+"Pièces"
+],
+"Units received": [
+"القطع المستلمة",
+"Pièces reçues"
+],
+"Unknown": [
+"غير معروف",
+"Inconnu"
+],
+"Unknown order status.": [
+"حالة طلب غير معروفة.",
+"Statut de commande inconnu."
+],
+"Unknown section.": [
+"قسم غير معروف.",
+"Section inconnue."
+],
+"Unsaved changes": [
+"تغييرات غير محفوظة",
+"Modifications non enregistrées"
+],
+"Until I reopen": [
+"حتى أعيد الفتح",
+"Jusqu'à réouverture"
+],
+"Until then, check Orders → Pending: the sidebar badge shows new orders.": [
+"إلى ذلك الحين، راجع الطلبات ← قيد الانتظار: الشارة الجانبية تُظهر الطلبات الجديدة.",
+"En attendant, voyez Commandes → En attente : le badge latéral montre les nouvelles commandes."
+],
+"Upload": [
+"رفع",
+"Importer"
+],
+"Upload failed.": [
+"فشل الرفع.",
+"Échec de l'envoi."
+],
+"Uploading…": [
+"جارٍ الرفع…",
+"Envoi…"
+],
+"Use": [
+"استعمال",
+"Utiliser"
+],
+"Use 2–16 capital letters or digits.": [
+"استعمل 2–16 حرفاً كبيراً أو رقماً.",
+"Utilisez 2 à 16 majuscules ou chiffres."
+],
+"Use an uploaded image.": [
+"استعمل صورة مرفوعة.",
+"Utilisez une image importée."
+],
+"Use as the product card photo": [
+"استعمالها كصورة بطاقة المنتج",
+"Utiliser comme photo de la carte produit"
+],
+"Use default": [
+"استعمال الافتراضي",
+"Utiliser la valeur par défaut"
+],
+"Use lowercase letters, numbers and dashes only.": [
+"استعمل حروفاً صغيرة وأرقاماً وشرطات فقط.",
+"Utilisez uniquement minuscules, chiffres et tirets."
+],
+"Use this for holidays or a break: the site closes and reopens on its own.": [
+"للعطل أو الاستراحة: الموقع يُغلق ويُفتح وحده.",
+"Pour les vacances ou une pause : le site ferme et rouvre tout seul."
+],
+"Used by search and related products.": [
+"يُستعمل في البحث والمنتجات المشابهة.",
+"Utilisé par la recherche et les produits similaires."
+],
+"Used in imports (delivery prices). Empty = made from the wilaya.": [
+"يُستعمل في الاستيراد (أسعار التوصيل). فارغ = من الولاية.",
+"Utilisé dans les imports (prix de livraison). Vide = d'après la wilaya."
+],
+"Users": [
+"المستخدمون",
+"Utilisateurs"
+],
+"Value": [
+"القيمة",
+"Valeur"
+],
+"Variant added.": [
+"تمت إضافة النوع.",
+"Variante ajoutée."
+],
+"Variant deleted.": [
+"تم حذف النوع.",
+"Variante supprimée."
+],
+"Variant saved.": [
+"تم حفظ النوع.",
+"Variante enregistrée."
+],
+"Variants": [
+"الأنواع",
+"Variantes"
+],
+"Verified purchase": [
+"شراء مؤكد",
+"Achat vérifié"
+],
+"View on page": [
+"عرض في الصفحة",
+"Voir sur la page"
+],
+"View on site ↗": [
+"عرض في الموقع ↗",
+"Voir sur le site ↗"
+],
+"View site": [
+"عرض الموقع",
+"Voir le site"
+],
+"Visitors see a “We’ll be back” page and can’t order. You keep full access to the admin.": [
+"الزوار يرون صفحة «سنعود قريباً» ولا يمكنهم الطلب. تبقى لك صلاحية الإدارة كاملة.",
+"Les visiteurs voient une page « On revient bientôt » et ne peuvent pas commander. Vous gardez tout l'accès admin."
+],
+"Website content": [
+"محتوى الموقع",
+"Contenu du site"
+],
+"Weekly": [
+"أسبوعي",
+"Hebdo"
+],
+"What it says about KING 253": [
+"ماذا يقول عن KING 253",
+"Ce que ça dit de KING 253"
+],
+"What the customer gets instead (any product and size in stock)": [
+"ما يأخذه الزبون بدلاً منه (أي منتج ومقاس متوفر)",
+"Ce que le client reçoit à la place (tout produit et taille en stock)"
+],
+"WhatsApp number": [
+"رقم WhatsApp",
+"Numéro WhatsApp"
+],
+"WhatsApp opens with a prepared message — nothing is sent until you press send.": [
+"WhatsApp يُفتح برسالة جاهزة — لا يُرسل شيء حتى تضغط إرسال.",
+"WhatsApp s'ouvre avec un message prêt — rien n'est envoyé avant que vous appuyiez sur envoyer."
+],
+"When": [
+"متى",
+"Quand"
+],
+"Where did you hear about us?": [
+"كيف تعرّفت علينا؟",
+"Comment nous as-tu connus ?"
+],
+"Where new customers say they found KING 253 (asked when they create an account), and what those customers bought.": [
+"من أين عرف الزبائن الجدد KING 253 (يُسأل عند إنشاء الحساب)، وماذا اشتروا.",
+"Où les nouveaux clients disent avoir connu KING 253 (demandé à la création du compte), et ce qu'ils ont acheté."
+],
+"Which products come back? Use + to choose how many of each": [
+"أي منتجات ترجع؟ استعمل + لاختيار الكمية لكل واحد",
+"Quels produits reviennent ? Utilisez + pour choisir combien de chacun"
+],
+"Whole order returned. Stock is back in the shop and the order is out of revenue.": [
+"رجع الطلب كاملاً. المخزون عاد للمتجر والطلب خارج المداخيل.",
+"Commande entièrement retournée. Le stock est revenu en boutique et la commande sort du chiffre."
+],
+"Why? (optional, shown in the timeline)": [
+"لماذا؟ (اختياري، يظهر في السجل)",
+"Pourquoi ? (facultatif, affiché dans l'historique)"
+],
+"Wilaya": [
+"الولاية",
+"Wilaya"
+],
+"Wilaya's": [
+"سعر الولاية",
+"De la wilaya"
+],
+"Women": [
+"نساء",
+"Femme"
+],
+"Words (as the customer said them)": [
+"الكلمات (كما قالها الزبون)",
+"Les mots (tels que dits par le client)"
+],
+"Write at least 10 characters.": [
+"اكتب 10 أحرف على الأقل.",
+"Écrivez au moins 10 caractères."
+],
+"Write each product’s description once, in Arabic, French or English. When you save, it is translated automatically into the two other languages, and each visitor reads it in the language they chose.": [
+"اكتب وصف كل منتج مرة واحدة، بالعربية أو الفرنسية أو الإنجليزية. عند الحفظ يُترجم تلقائياً للغتين الأخريين، وكل زائر يقرأه باللغة التي اختارها.",
+"Écrivez la description de chaque produit une seule fois, en arabe, français ou anglais. À l'enregistrement elle est traduite automatiquement dans les deux autres langues, et chaque visiteur la lit dans sa langue."
+],
+"Write the testimonial (10+ characters).": [
+"اكتب الشهادة (10 أحرف فأكثر).",
+"Écrivez le témoignage (10+ caractères)."
+],
+"Wrong colour": [
+"لون خاطئ",
+"Mauvaise couleur"
+],
+"Wrong size": [
+"مقاس خاطئ",
+"Mauvaise taille"
+],
+"Yearly": [
+"سنوي",
+"Annuel"
+],
+"Yes": [
+"نعم",
+"Oui"
+],
+"Yes, delete": [
+"نعم، احذف",
+"Oui, supprimer"
+],
+"Yes, make admin": [
+"نعم، اجعله مسؤولاً",
+"Oui, rendre admin"
+],
+"Yes, remove": [
+"نعم، أزل",
+"Oui, retirer"
+],
+"You": [
+"أنت",
+"Vous"
+],
+"You can't change or delete your own account here.": [
+"لا يمكنك تغيير أو حذف حسابك هنا.",
+"Vous ne pouvez pas modifier ou supprimer votre propre compte ici."
+],
+"You must be at least 13 to order.": [
+"يجب أن يكون عمرك 13 سنة على الأقل للطلب.",
+"Il faut avoir au moins 13 ans pour commander."
+],
+"Your bag is empty.": [
+"سلتك فارغة.",
+"Votre panier est vide."
+],
+"Your current password is not correct.": [
+"كلمة المرور الحالية غير صحيحة.",
+"Votre mot de passe actuel est incorrect."
+],
+"Your order can no longer be cancelled online — call us.": [
+"لم يعد إلغاء طلبك ممكناً عبر الموقع — اتصل بنا.",
+"Votre commande ne peut plus être annulée en ligne — appelez-nous."
+],
+"Your password is not correct.": [
+"كلمة المرور غير صحيحة.",
+"Votre mot de passe est incorrect."
+],
+"Zoom": [
+"تكبير",
+"Zoom"
+],
+"draft product(s) are NOT in the shop.": [
+"منتج(ات) مسودة ليست في المتجر.",
+"produit(s) en brouillon ne sont PAS en boutique."
+],
+"e.g. 2–5 days. Leave empty to hide.": [
+"مثلاً 2–5 أيام. اتركه فارغاً لإخفائه.",
+"ex. 2–5 jours. Laissez vide pour masquer."
+],
+"h. Adding to a bag never reserves stock. No messages are sent automatically.": [
+"ساعة. الإضافة للسلة لا تحجز المخزون أبداً. لا تُرسل رسائل تلقائياً.",
+"h. Ajouter au panier ne réserve jamais de stock. Aucun message n'est envoyé automatiquement."
+],
+"in shop · reserved · can sell": [
+"في المتجر · محجوز · قابل للبيع",
+"en boutique · réservé · vendable"
+],
+"is the short code from Shops (": [
+"هو الرمز القصير من المتاجر (",
+"est le code court de Boutiques ("
+],
+"not set up yet — no emails are sent for now. Ask your developer to activate it.": [
+"غير مفعّلة بعد — لا تُرسل إيميلات حالياً. اطلب من المطوّر تفعيلها.",
+"pas encore configuré — aucun email n'est envoyé pour l'instant. Demandez au développeur de l'activer."
+],
+"not set up yet — products show the text as written. Add DEEPL_API_KEY to the server .env.": [
+"غير مفعّلة بعد — المنتجات تُظهر النص كما كُتب. أضف DEEPL_API_KEY في .env السيرفر.",
+"pas encore configuré — les produits affichent le texte tel qu'écrit. Ajoutez DEEPL_API_KEY au .env du serveur."
+],
+"product(s). Only published products with a price appear in the shop.": [
+"منتج(ات). لا تظهر في المتجر إلا المنتجات المنشورة ذات السعر.",
+"produit(s). Seuls les produits publiés avec un prix apparaissent en boutique."
+],
+"± returns": [
+"± الإرجاعات",
+"± retours"
+],
+"· Desks:": [
+"· المكاتب:",
+"· Bureaux :"
+],
+"· available": [
+"· متوفر",
+"· disponible"
+],
+"· featured": [
+"· مميز",
+"· en avant"
+],
+"· inactive": [
+"· غير نشط",
+"· inactive"
+],
+"· not on Location page": [
+"· ليس في صفحة المواقع",
+"· pas sur la page Emplacements"
+],
+"· paid by the customer": [
+"· يدفعه الزبون",
+"· payé par le client"
+],
+"· reserved": [
+"· محجوز",
+"· réservé"
+],
+"· sells at": [
+"· يُباع بـ",
+"· vendu à"
+],
+"· shop pays": [
+"· يدفعه المتجر",
+"· payé par la boutique"
+],
+"· vs previous 30 days": [
+"· مقابل الـ 30 يوماً السابقة",
+"· vs les 30 jours précédents"
+],
+"— now:": [
+"— الآن:",
+"— maintenant :"
+],
+"— returning customer": [
+"— زبون عائد",
+"— client fidèle"
+],
+"— same customer, one parcel, this order carries the delivery fee.": [
+"— نفس الزبون، طرد واحد، هذا الطلب يحمل سعر التوصيل.",
+"— même client, un seul colis, cette commande porte les frais de livraison."
+],
+"— shown when the customer picks this colour": [
+"— يظهر عندما يختار الزبون هذا اللون",
+"— affiché quand le client choisit cette couleur"
+],
+"← All customers": [
+"→ كل الزبائن",
+"← Tous les clients"
+],
+"← All orders": [
+"→ كل الطلبات",
+"← Toutes les commandes"
+],
+"← All products": [
+"→ كل المنتجات",
+"← Tous les produits"
+],
+"← Product": [
+"→ المنتج",
+"← Produit"
+],
+"→ Given to the customer": [
+"← أُعطي للزبون",
+"→ Remis au client"
+],
+"↩ Came back from the customer": [
+"↩ رجع من الزبون",
+"↩ Revenu du client"
+],
+"− delivery": [
+"− التوصيل",
+"− livraison"
+],
+"Refused": [
+"مرفوض",
+"Refusée"
+],
+"English": [
+"الإنجليزية",
+"Anglais"
+],
+"Arabic": [
+"العربية",
+"Arabe"
+],
+"French": [
+"الفرنسية",
+"Français"
+],
+"Back": [
+"رجوع",
+"Retour"
+],
+"(all)": [
+"(الكل)",
+"(tous)"
+],
+"(no address)": [
+"(بدون عنوان)",
+"(sans adresse)"
+],
+"+ delivery to confirm": [
+"+ توصيل للتأكيد",
+"+ livraison à confirmer"
+],
+"/ day": [
+"/ يوم",
+"/ jour"
+],
+"30 days": [
+"30 يوماً",
+"30 jours"
+],
+"7 days": [
+"7 أيام",
+"7 jours"
+],
+"90 days": [
+"90 يوماً",
+"90 jours"
+],
+"A friend": [
+"صديق",
+"Un ami"
+],
+"Accent line": [
+"سطر التمييز",
+"Ligne d'accent"
+],
+"Accent word (red)": [
+"كلمة التمييز (أحمر)",
+"Mot d'accent (rouge)"
+],
+"Also used on the Clothes page category tiles.": [
+"يُستعمل أيضاً في مربعات الأصناف بصفحة الملابس.",
+"Aussi utilisé sur les tuiles catégories de la page Vêtements."
+],
+"Background (brick wall)": [
+"الخلفية (جدار الطوب)",
+"Fond (mur de briques)"
+],
+"Background image": [
+"صورة الخلفية",
+"Image de fond"
+],
+"Before 2026-11 (old workflow)": [
+"قبل 2026-11 (الطريقة القديمة)",
+"Avant 2026-11 (ancien fonctionnement)"
+],
+"Brand statement": [
+"رسالة العلامة",
+"Message de marque"
+],
+"Button": [
+"الزر",
+"Bouton"
+],
+"Caption — left": [
+"التعليق — يسار",
+"Légende — gauche"
+],
+"Caption — right": [
+"التعليق — يمين",
+"Légende — droite"
+],
+"Description": [
+"الوصف",
+"Description"
+],
+"Editorial — attitude": [
+"المقال — الأسلوب",
+"Éditorial — attitude"
+],
+"Every active shop holds its own stock, ships orders, has its own delivery prices and receives its own new-order emails. A shop you add here appears automatically in products, checkout, delivery prices and statistics. Untick “Active” to stop using a shop without losing its history.": [
+"كل متجر نشط له مخزونه ويشحن الطلبات وله أسعار توصيله ويستقبل إيميلات طلباته. المتجر الذي تضيفه هنا يظهر تلقائياً في المنتجات وإتمام الطلب وأسعار التوصيل والإحصائيات. ألغِ «نشط» لإيقاف متجر دون فقدان سجله.",
+"Chaque boutique active a son stock, expédie les commandes, a ses prix de livraison et reçoit ses propres emails de commande. Une boutique ajoutée ici apparaît automatiquement dans les produits, la commande, les prix de livraison et les statistiques. Décochez « Active » pour l'arrêter sans perdre son historique."
+],
+"Eyebrow": [
+"العنوان الصغير",
+"Surtitre"
+],
+"Final call to action": [
+"الدعوة الأخيرة",
+"Appel final"
+],
+"Headline": [
+"العنوان الرئيسي",
+"Titre principal"
+],
+"Headline (one line per row)": [
+"العنوان الرئيسي (سطر لكل صف)",
+"Titre principal (une ligne par rangée)"
+],
+"Hero": [
+"الواجهة",
+"Héros"
+],
+"Image": [
+"الصورة",
+"Image"
+],
+"Latest drop": [
+"آخر إصدار",
+"Dernier drop"
+],
+"Link to all clothes": [
+"رابط كل الملابس",
+"Lien vers tous les vêtements"
+],
+"Location": [
+"المواقع",
+"Emplacements"
+],
+"Main categories (e.g. Pants) can have subcategories (Jeans, Baggy jeans, Classic…). In the shop, choosing Pants shows every pant; the subcategories appear as extra filters. Hidden categories disappear from the shop; their products stay. Deleting a category never deletes products.": [
+"الأصناف الرئيسية (مثل السراويل) يمكن أن تكون لها أصناف فرعية (جينز، جينز واسع، كلاسيك…). في المتجر، اختيار السراويل يُظهر كل السراويل؛ والأصناف الفرعية تظهر كفلاتر إضافية. الأصناف المخفية تختفي من المتجر وتبقى منتجاتها. حذف صنف لا يحذف المنتجات أبداً.",
+"Les catégories principales (ex. Pantalons) peuvent avoir des sous-catégories (Jeans, Baggy, Classique…). En boutique, choisir Pantalons montre tous les pantalons ; les sous-catégories deviennent des filtres. Les catégories masquées disparaissent de la boutique ; leurs produits restent. Supprimer une catégorie ne supprime jamais les produits."
+],
+"Main image": [
+"الصورة الرئيسية",
+"Image principale"
+],
+"Monthly avg": [
+"المتوسط الشهري",
+"Moyenne mensuelle"
+],
+"Year total": [
+"مجموع السنة",
+"Total de l'année"
+],
+"New reviews stay hidden until approved. “Verified purchase” is set automatically only when the order number + phone match a delivered order with this product.": [
+"التقييمات الجديدة تبقى مخفية حتى تُقبل. «شراء مؤكد» يُضاف تلقائياً فقط إذا تطابق رقم الطلب والهاتف مع طلب مسلّم لهذا المنتج.",
+"Les nouveaux avis restent cachés jusqu'à approbation. « Achat vérifié » est mis automatiquement seulement si numéro de commande + téléphone correspondent à une commande livrée de ce produit."
+],
+"Order placed — cash on delivery": [
+"تم الطلب — الدفع عند الاستلام",
+"Commande passée — paiement à la livraison"
+],
+"Pillars (one per line, 3 recommended)": [
+"الركائز (واحدة لكل سطر، 3 مُستحسنة)",
+"Piliers (un par ligne, 3 conseillés)"
+],
+"Primary button": [
+"الزر الرئيسي",
+"Bouton principal"
+],
+"Secondary button": [
+"الزر الثانوي",
+"Bouton secondaire"
+],
+"Secondary line": [
+"السطر الثانوي",
+"Ligne secondaire"
+],
+"Shops preview": [
+"معاينة المتاجر",
+"Aperçu des boutiques"
+],
+"Small image (desktop)": [
+"صورة صغيرة (الكمبيوتر)",
+"Petite image (ordinateur)"
+],
+"Story preview": [
+"معاينة القصة",
+"Aperçu de l'histoire"
+],
+"Subtitle": [
+"العنوان الفرعي",
+"Sous-titre"
+],
+"Testimonials header": [
+"عنوان الشهادات",
+"En-tête des témoignages"
+],
+"Text when no product is featured": [
+"النص عندما لا يوجد منتج مميز",
+"Texte quand aucun produit n'est mis en avant"
+],
+"This order is cancelled and closed.": [
+"هذا الطلب ملغى ومغلق.",
+"Cette commande est annulée et close."
+],
+"Title": [
+"العنوان",
+"Titre"
+],
+"Title (one line per row)": [
+"العنوان (سطر لكل صف)",
+"Titre (une ligne par rangée)"
+],
+"Where this product is sold. Each shop has its own stock per size (below). Switch a shop off to stop selling this product there — its stock is kept and sells again when you switch it back on. Customers only see and order from shops that are on and have the whole order.": [
+"أين يُباع هذا المنتج. لكل متجر مخزونه لكل مقاس (أدناه). أوقف متجراً لتتوقف عن بيع المنتج فيه — مخزونه يبقى ويُباع مجدداً عند إعادة تشغيله. الزبائن يرون ويطلبون فقط من المتاجر المفعّلة التي تملك كامل الطلب.",
+"Où ce produit est vendu. Chaque boutique a son stock par taille (ci-dessous). Désactivez une boutique pour arrêter de le vendre là — son stock est gardé et se revend quand vous la réactivez. Les clients ne voient et ne commandent que dans les boutiques actives qui ont toute la commande."
+],
+"account(s)": [
+"حساب",
+"compte(s)"
+],
+"active — emails are sent.": [
+"مفعّلة — الإيميلات تُرسل.",
+"actif — les emails sont envoyés."
+],
+"approved": [
+"مقبول",
+"approuvé"
+],
+"available": [
+"متوفر",
+"disponible"
+],
+"customer(s). Returning customers are recognised by phone number.": [
+"زبون. الزبائن العائدون يُعرفون برقم الهاتف.",
+"client(s). Les clients fidèles sont reconnus par leur numéro."
+],
+"day": [
+"يوم",
+"jour"
+],
+"days": [
+"أيام",
+"jours"
+],
+"free delivery": [
+"توصيل مجاني",
+"livraison gratuite"
+],
+"in": [
+"في",
+"dans"
+],
+"new": [
+"جديد",
+"nouveau"
+],
+"not set": [
+"غير محدد",
+"non défini"
+],
+"order(s)": [
+"طلب",
+"commande(s)"
+],
+"pending": [
+"قيد الانتظار",
+"en attente"
+],
+"photos": [
+"صور",
+"photos"
+],
+"piece(s) chosen by the customer": [
+"قطعة اختارها الزبون",
+"pièce(s) choisie(s) par le client"
+],
+"prices": [
+"الأسعار",
+"prix"
+],
+"product": [
+"منتج",
+"produit"
+],
+"product(s)": [
+"منتج",
+"produit(s)"
+],
+"published": [
+"منشور",
+"publié"
+],
+"rejected": [
+"مرفوض",
+"rejeté"
+],
+"return(s)": [
+"إرجاع",
+"retour(s)"
+],
+"returning": [
+"عائد",
+"fidèle"
+],
+"reviews.": [
+"تقييمات.",
+"avis."
+],
+"left": [
+"متبقٍ",
+"restant"
+],
+"). Existing rows are updated, nothing is deleted; any wrong line stops the import.": [
+"). الصفوف الموجودة تُحدّث، لا شيء يُحذف؛ أي سطر خاطئ يوقف الاستيراد.",
+"). Les lignes existantes sont mises à jour, rien n'est supprimé ; toute ligne fausse arrête l'import."
+],
+"shop": [
+"المتجر",
+"boutique"
+],
+"size": [
+"المقاس",
+"taille"
+],
+"skipped": [
+"لم يُرسل",
+"non envoyé"
+],
+"to": [
+"إلى",
+"à"
+],
+"variant(s) in": [
+"نوع في",
+"variante(s) dans"
+],
+"wilaya": [
+"الولاية",
+"wilaya"
+],
+"— Recorded and approved by the shop": [
+"— مسجّل ومقبول من المتجر",
+"— Enregistré et accepté par la boutique"
+],
+"— real off": [
+"— تخفيض فعلي",
+"— réduction réelle"
+],
+"sent": [
+"أُرسل",
+"envoyé"
+],
+"failed": [
+"فشل",
+"échec"
+],
+"Who Is King": [
+"Who Is King",
+"Who Is King"
+],
+"week": [
+"الأسبوع",
+"semaine"
+],
+"month": [
+"الشهر",
+"mois"
+],
+"year": [
+"العام",
+"année"
+]
+}

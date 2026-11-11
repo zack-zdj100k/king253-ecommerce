@@ -1,4 +1,7 @@
 import type { Metadata } from "next"
+import { cookies } from "next/headers"
+
+import { ADMIN_LANG_COOKIE, isAdminLang } from "@/lib/admin-lang"
 
 import { db } from "@/server/db"
 import { requireAdminPage } from "@/server/auth/session"
@@ -20,8 +23,10 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     from: c.state === "scheduled" ? formatClosureDate(c.from) : null,
     until: c.state !== "open" && c.until ? formatClosureDate(c.until) : null,
   }
+  const raw = (await cookies()).get(ADMIN_LANG_COOKIE)?.value
+  const lang = isAdminLang(raw) ? raw : "en"
   return (
-    <AdminShell user={{ name: user.name, email: user.email ?? user.loginPhone ?? "" }} badges={badges} closure={closure}>
+    <AdminShell lang={lang} user={{ name: user.name, email: user.email ?? user.loginPhone ?? "" }} badges={badges} closure={closure}>
       {children}
     </AdminShell>
   )

@@ -28,6 +28,8 @@ import {
 } from "lucide-react"
 
 import { cn } from "@/lib/utils"
+import type { AdminLang } from "@/lib/admin-lang"
+import { AdminLangSwitch } from "@/components/admin/admin-lang-switch"
 import { signOutAction } from "@/app/actions/auth"
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from "@/components/ui/sheet"
 import { BackButton } from "@/components/ui/back-button"
@@ -245,7 +247,7 @@ function TabBar({ badges, onMore, moreOpen }: { badges: Badges; onMore: () => vo
 
 type ClosureNotice = { state: "open" | "closed" | "scheduled"; from: string | null; until: string | null }
 
-export function AdminShell({ user, badges, closure, children }: { user: { name: string; email: string }; badges: Badges; closure?: ClosureNotice; children: React.ReactNode }) {
+export function AdminShell({ user, badges, closure, lang = "en", children }: { user: { name: string; email: string }; badges: Badges; closure?: ClosureNotice; lang?: AdminLang; children: React.ReactNode }) {
   const [more, setMore] = React.useState(false)
   const pathname = usePathname()
 
@@ -253,8 +255,9 @@ export function AdminShell({ user, badges, closure, children }: { user: { name: 
     <div className="ios-admin min-h-svh bg-black text-white lg:grid lg:grid-cols-[280px_minmax(0,1fr)]">
       {/* iPad / desktop sidebar */}
       <aside className="sticky top-0 hidden h-svh flex-col bg-[color:var(--ios-cell)] lg:flex">
-        <div className="px-5 pt-6 pb-5">
+        <div className="flex flex-col gap-3 px-5 pt-6 pb-5">
           <Brand />
+          <AdminLangSwitch lang={lang} className="self-start" />
         </div>
         <nav aria-label="Admin" className="flex-1 overflow-y-auto pb-4">
           <SidebarList badges={badges} />
@@ -268,6 +271,7 @@ export function AdminShell({ user, badges, closure, children }: { user: { name: 
         {/* iPhone navigation bar (translucent material) */}
         <header className="sticky top-0 z-40 flex h-14 items-center border-b border-white/[0.08] bg-black/70 px-4 backdrop-blur-2xl backdrop-saturate-150 lg:hidden">
           <Brand compact />
+          <AdminLangSwitch lang={lang} className="ms-auto" />
         </header>
 
         {closure && closure.state !== "open" && (
