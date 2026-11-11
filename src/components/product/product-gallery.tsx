@@ -13,24 +13,10 @@ import { imagesForColour, useProductSelection } from "@/components/shop/variant-
 type GalleryImage = Crop & { color?: string | null }
 
 /** Shows the selected colour's photos (then the shared ones); restarts at photo 1 on colour change. */
-export function ProductGallery({ images, name, videoUrl }: { images: GalleryImage[]; name: string; videoUrl?: string | null }) {
+export function ProductGallery({ images, name }: { images: GalleryImage[]; name: string }) {
   const colour = useProductSelection()?.colour ?? null
   const shown = imagesForColour(images, colour)
-  return (
-    <div>
-      <Gallery key={colour ?? "all"} images={shown} name={colour ? `${name} — ${colour}` : name} />
-      {videoUrl ? (
-        <video
-          src={`${videoUrl}#t=0.1`}
-          controls
-          playsInline
-          preload="metadata"
-          aria-label={`${name} — video`}
-          className="king-chamfer mt-4 max-h-[70svh] w-full bg-black object-contain [--cut:14px]"
-        />
-      ) : null}
-    </div>
-  )
+  return <Gallery key={colour ?? "all"} images={shown} name={colour ? `${name} — ${colour}` : name} />
 }
 
 /** Gallery: hover-zoom on desktop, swipe on mobile, fullscreen viewer. */
