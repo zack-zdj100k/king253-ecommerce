@@ -1,7 +1,7 @@
 import type { Metadata } from "next"
 import Link from "next/link"
 import { notFound } from "next/navigation"
-import { Mail, MessageCircle, Phone } from "lucide-react"
+import { Mail, MessageCircle, Phone, Printer } from "lucide-react"
 
 import { formatDA } from "@/lib/money"
 import { orderStatusView } from "@/lib/order-status"
@@ -108,12 +108,20 @@ export default async function AdminOrderPage({ params }: PageProps<"/admin/order
         eyebrow={`Order · ${fmt(order.createdAt)}`}
         title={order.number}
         actions={
+          <div className="flex flex-wrap items-center gap-2">
+            {/* A confirmed (or delivered) order can be printed for the parcel. */}
+            {(order.status === "confirmed" || order.status === "delivered") && (
+              <a href={`/admin/print/orders/${order.id}`} target="_blank" rel="noopener" className={btnRed}>
+                <Printer className="size-4" aria-hidden /> Print order
+              </a>
+            )}
           <DeleteButton
             label="Delete order"
             confirm={editable ? "Delete and release its reserved stock?" : "Delete this order permanently?"}
             action={deleteOrderAction.bind(null, order.id)}
             redirectTo="/admin/orders"
           />
+          </div>
         }
       >
         <div className="mt-3 flex flex-wrap items-center gap-3">
