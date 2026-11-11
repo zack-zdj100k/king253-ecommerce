@@ -118,9 +118,10 @@ export function CheckoutForm({
   const shops = quote?.ok ? quote.shops : []
   const chosen = shops.find((q) => q.storeId === storeId) ?? null
   const chosenDesk = chosen?.desks.find((d) => d.id === deskId) ?? null
-  const courierFee = type === "desk" ? (chosenDesk?.price ?? null) : (chosen?.price ?? null)
+  // Desk: the chosen desk's price; with no listed desk (address confirmed by phone) the wilaya's desk price.
+  const courierFee = type === "desk" ? (chosenDesk ? chosenDesk.price : (chosen?.price ?? null)) : (chosen?.price ?? null)
   const deliveryFee = free ? 0 : (courierFee ?? 0)
-  const deliveryLabel = !chosen ? "—" : free ? t("free") : courierFee === null ? t("byPhone") : formatDA(courierFee)
+  const deliveryLabel = !chosen ? t("chooseWilaya") : free ? t("free") : courierFee === null ? t("byPhone") : formatDA(courierFee)
   const total = subtotal + deliveryFee
   const ready = Boolean(chosen && chosen.available && (type === "home" || chosenDesk || chosen.desks.length === 0))
 

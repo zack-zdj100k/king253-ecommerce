@@ -86,12 +86,20 @@ export function Navbar() {
         // The header ignores clicks so content beneath it stays clickable.
         className="pointer-events-none fixed inset-x-0 top-0 z-50"
       >
+        {/* Once scrolled, a soft fade (not a bar) keeps the logo and icons readable over page text. */}
+        <div
+          aria-hidden
+          className={cn(
+            "absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-king-black via-king-black/80 to-transparent transition-[opacity,translate] duration-500 ease-king lg:h-28",
+            collapsed && !headerHidden ? "opacity-100" : "-translate-y-full opacity-0"
+          )}
+        />
         <nav
           aria-label={t("main")}
           // Keyboard users tabbing into a hidden header bring it back.
           onFocusCapture={() => setHidden(false)}
           className={cn(
-            "mx-auto grid h-16 max-w-[1600px] grid-cols-[1fr_auto] items-center px-4 drop-shadow-[0_1px_10px_rgba(0,0,0,0.65)] transition-[translate,opacity] duration-500 ease-king sm:px-6 lg:h-[72px] lg:grid-cols-[1fr_auto_1fr] lg:px-12",
+            "relative mx-auto grid h-16 max-w-[1600px] grid-cols-[1fr_auto] items-center px-4 drop-shadow-[0_1px_10px_rgba(0,0,0,0.65)] transition-[translate,opacity] duration-500 ease-king sm:px-6 lg:h-[72px] lg:grid-cols-[1fr_auto_1fr] lg:px-12",
             headerHidden && "-translate-y-full opacity-0"
           )}
         >
