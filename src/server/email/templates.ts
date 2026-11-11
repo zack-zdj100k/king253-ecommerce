@@ -37,7 +37,7 @@ const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&
 
 function layout(brand: string, title: string, body: string, opts: { dir?: "rtl" | "ltr"; footer: string }) {
   const dir = opts.dir ?? "ltr"
-  return `<!doctype html><html dir="${dir}"><body style="margin:0;background:#050505;font-family:Inter,Arial,Tahoma,sans-serif;color:#f5f5f5">
+  return `<!doctype html><html dir="${dir}"><body style="margin:0;background:#050505;font-family:Helvetica,Arial,Tahoma,sans-serif;color:#f5f5f5">
 <table width="100%" cellpadding="0" cellspacing="0" style="background:#050505;padding:32px 12px"><tr><td align="center">
 <table width="600" cellpadding="0" cellspacing="0" dir="${dir}" style="max-width:600px;background:#0b0b0b;border:1px solid #222">
 <tr><td style="padding:28px 32px;border-bottom:2px solid #a30d0d;text-align:${dir === "rtl" ? "right" : "left"}">
@@ -124,7 +124,7 @@ export function shopNewOrderEmail(brand: string, o: EmailOrder, adminUrl: string
     `<tr><td style="padding:5px 0;font-size:${strong ? 16 : 14}px;color:${strong ? C.text : C.mute};font-weight:${strong ? 800 : 400}">${esc(k)}</td><td align="right" style="padding:5px 0;font-size:${strong ? 20 : 14}px;color:${strong ? C.text : C.soft};font-weight:${strong ? 800 : 400};white-space:nowrap">${v}</td></tr>`
 
   const html = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="dark light"><title>${esc(subject)}</title></head>
-<body style="margin:0;padding:0;background:${C.bg};font-family:Inter,Helvetica,Arial,Tahoma,sans-serif;color:${C.text}">
+<body style="margin:0;padding:0;background:${C.bg};font-family:Helvetica,Arial,Tahoma,sans-serif;color:${C.text}">
 <div style="display:none;max-height:0;overflow:hidden;color:${C.bg}">${esc(`${o.customerName} · ${phone} · ${o.wilayaName} · ${formatDA(o.total)} à encaisser`)}</div>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${C.bg};padding:24px 10px"><tr><td align="center">
 <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="width:100%;max-width:600px;background:${C.card};border:1px solid ${C.line}">
