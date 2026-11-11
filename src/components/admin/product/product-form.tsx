@@ -34,6 +34,51 @@ type Initial = {
   ogImageUrl: string | null
 }
 
+function VideoField({ url, onChange }: { url: string; onChange: (url: string) => void }) {
+  const [busy, setBusy] = React.useState(false)
+  const [error, setError] = React.useState("")
+  const ref = React.useRef<HTMLInputElement>(null)
+  async function upload(file: File) {
+    setError("")
+    if (file.size > 25 * 1024 * 1024) return setError(`This video is ${(file.size / 1048576).toFixed(1)} MB — the limit is 25 MB.`)
+    setBusy(true)
+    try {
+      const form = new FormData()
+      form.append("video", file)
+      const res = await fetch("/api/admin/product-video", { method: "POST", body: form })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) setError(data.error ?? "Upload failed.")
+      else onChange(data.url)
+    } catch {
+      setError("Upload failed. Check your connection and try again.")
+    } finally {
+      setBusy(false)
+      if (ref.current) ref.current.value = ""
+    }
+  }
+  return (
+    <div>
+      <p className="text-xs text-king-gray">
+        One video per product, shown to customers under the photos. <strong>MP4 (H.264) or WebM, maximum 25 MB</strong>. Best: 10–20 seconds, vertical or square, 720p, under 10 MB.
+        iPhone .mov / HEVC videos must be exported as MP4 (H.264) first. Save the product after uploading.
+      </p>
+      {url ? <video src={url} controls playsInline preload="metadata" className="mt-3 max-h-72 bg-black" /> : null}
+      <div className="mt-3 flex flex-wrap gap-2">
+        <button type="button" className={btnRed} disabled={busy} onClick={() => ref.current?.click()}>
+          {busy ? <Loader2 className="size-3.5 animate-spin" aria-hidden /> : null} {url ? "Replace video" : "Upload video"}
+        </button>
+        {url ? (
+          <button type="button" className={btnRed} disabled={busy} onClick={() => onChange("")}>
+            Remove video
+          </button>
+        ) : null}
+      </div>
+      <input ref={ref} type="file" accept="video/mp4,video/webm" hidden onChange={(e) => e.target.files?.[0] && upload(e.target.files[0])} />
+      {error ? <p role="alert" className="mt-2 text-sm text-red-400">{error}</p> : null}
+    </div>
+  )
+}
+
 const blank = (v: string | number | null | undefined) => (v === null || v === undefined ? "" : String(v))
 
 export function ProductForm({ productId, categories, initial }: { productId: string | null; categories: { id: number; name: string; parentId: number | null }[]; initial: Initial | null }) {
@@ -175,8 +220,11 @@ export function ProductForm({ productId, categories, initial }: { productId: str
           {field("collection", "Collection")}
           {field("care", "Care instructions", { area: true, rows: 2 })}
           {field("tags", "Tags (comma separated)", { hint: "Used by search and related products." })}
-          {field("videoUrl", "Video URL (optional)")}
         </div>
+      </Panel>
+
+      <Panel title="Product video (optional)">
+        <VideoField url={v.videoUrl} onChange={(videoUrl) => set({ videoUrl })} />
       </Panel>
 
       <Panel title="Story">

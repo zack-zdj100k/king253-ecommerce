@@ -156,7 +156,7 @@ export default async function ProductPage({ params, searchParams }: PageProps<"/
 
           <ProductSelectionProvider variants={variants} initialColour={initialColour}>
             <div className="grid gap-10 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] lg:gap-16">
-              <ProductGallery images={crops} name={product.name} />
+              <ProductGallery images={crops} name={product.name} videoUrl={product.videoUrl} />
 
               <div>
                 {category && <p className="king-label text-[0.7rem] text-king-bright-red">{category.name}</p>}

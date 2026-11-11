@@ -4,6 +4,7 @@ import { z } from "zod"
 import type { Db } from "./db/client"
 import { categories, orderItems, productImages, productStores, productVariants, products, stockReservations, stores } from "./db/schema"
 import { audit, type Actor } from "./audit"
+import { removeVideoFile, videoUrlOk } from "./uploads"
 import { AppError, NotFoundError } from "./errors"
 import { addVariantToProductShops, adjustPhysicalStock, setProductStores } from "./inventory"
 
@@ -57,7 +58,7 @@ export const productInput = z
       .string()
       .optional()
       .transform((v) => [...new Set((v ?? "").split(",").map((t) => t.trim().toLowerCase()).filter(Boolean))].slice(0, 20)),
-    videoUrl: z.union([z.literal(""), z.url("Enter a full video URL (https://…).")]).optional().transform((v) => v || null),
+    videoUrl: z.string().trim().optional().refine((v) => !v || videoUrlOk(v), "Upload an MP4 or WebM video.").transform((v) => v || null),
     featured: z.coerce.boolean(),
     seoTitle: text(70),
     seoDescription: text(170),
@@ -111,6 +112,7 @@ export async function saveProduct(db: Db, id: string | null, raw: ProductInput, 
       .set({ ...values, publishedAt: input.status === "published" && !current.publishedAt ? new Date() : current.publishedAt })
       .where(eq(products.id, id))
       .returning()
+    if (current.videoUrl && current.videoUrl !== updated.videoUrl) await removeVideoFile(current.videoUrl)
     await audit(db, actor, "product.update", "product", id, {
       before: { status: current.status, price: current.price, salePrice: current.salePrice, name: current.name },
       after: { status: updated.status, price: updated.price, salePrice: updated.salePrice, name: updated.name },
@@ -283,6 +285,7 @@ export async function deleteProduct(db: Db, productId: string, actor: Actor) {
   }
   const images = await db.select({ url: productImages.url }).from(productImages).where(eq(productImages.productId, productId))
   await db.delete(products).where(eq(products.id, productId))
+  await removeVideoFile(product.videoUrl)
   await audit(db, actor, "product.delete", "product", productId, { name: product.name, slug: product.slug })
   return { product, imageUrls: images.map((i) => i.url) }
 }
