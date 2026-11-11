@@ -176,7 +176,7 @@ export function CheckoutForm({
   }
 
   return (
-    <form onSubmit={submit} noValidate className="grid gap-10 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] lg:gap-16">
+    <form onSubmit={submit} noValidate className="grid grid-cols-[minmax(0,1fr)] gap-10 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] lg:gap-16">
       <div className="space-y-10">
         {/* Contact + delivery */}
         <section aria-labelledby="details-title">
@@ -204,7 +204,7 @@ export function CheckoutForm({
               <p className="king-label mt-3 text-[0.625rem] text-king-gray">{t("savedNote")}</p>
             </div>
           ) : (
-            <div className="mt-5 grid gap-5 sm:grid-cols-2">
+            <div className="mt-5 grid grid-cols-[minmax(0,1fr)] gap-5 sm:grid-cols-2">
               <Field label={t("fullName")} error={errors.fullName} className="sm:col-span-2">
                 {(id) => <Input id={id} value={values.fullName} onChange={(e) => set({ fullName: e.target.value })} autoComplete="name" required className={fieldClass} />}
               </Field>
@@ -332,7 +332,7 @@ export function CheckoutForm({
           <h2 id="delivery-title" className="king-label text-king-white">
             {t("delivery")}
           </h2>
-          <div role="radiogroup" aria-label={t("deliveryType")} className="mt-5 grid grid-cols-2 gap-3">
+          <div role="radiogroup" aria-label={t("deliveryType")} className="mt-5 grid grid-cols-[repeat(2,minmax(0,1fr))] gap-3">
             {(
               [
                 ["home", t("home"), t("homeSub"), Home],
