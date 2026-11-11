@@ -122,7 +122,7 @@ export function CheckoutForm({
   const deliveryFee = free ? 0 : (courierFee ?? 0)
   const deliveryLabel = !chosen ? "—" : free ? t("free") : courierFee === null ? t("byPhone") : formatDA(courierFee)
   const total = subtotal + deliveryFee
-  const ready = Boolean(chosen && chosen.available && (type === "home" || chosenDesk))
+  const ready = Boolean(chosen && chosen.available && (type === "home" || chosenDesk || chosen.desks.length === 0))
 
   const set = (patch: Partial<CheckoutPrefill>) => {
     const next = { ...values, ...patch }
@@ -412,7 +412,10 @@ export function CheckoutForm({
             )}
           </div>
 
-          {type === "desk" && chosen && chosen.available && (
+          {type === "desk" && chosen && chosen.available && chosen.desks.length === 0 && (
+            <p className="mt-5 text-sm text-king-muted">{t("deskByPhone")}</p>
+          )}
+          {type === "desk" && chosen && chosen.available && chosen.desks.length > 0 && (
             <div className="mt-5">
               <Field label={t("desk")} error={errors["delivery.deskId"]} hint={chosenDesk?.address ? `${chosenDesk.address} · ${chosenDesk.commune}` : t("deskSuggested")}>
                 {(id) => (

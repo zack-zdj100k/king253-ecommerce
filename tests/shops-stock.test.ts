@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm"
 import { beforeEach, describe, expect, it } from "vitest"
 
-import { orders, productStores, stockMovements, storeStock, users } from "@/server/db/schema"
+import { deliveryRates, orders, productStores, stockMovements, storeStock, users } from "@/server/db/schema"
 import { adjustPhysicalStock, setProductStores, shopsThatCanFulfil } from "@/server/inventory"
 import { createOrder } from "@/server/orders/create"
 import { createVariant, saveProduct } from "@/server/products-admin"
@@ -119,6 +119,19 @@ describe("Checkout delivery choice", () => {
         idempotencyKey: key(),
       })
     ).rejects.toThrow(/check the highlighted/i)
+  })
+
+  it("stop desk with no listed desk: uses the wilaya's desk price, address confirmed by phone", async () => {
+    const { wilaya } = await seedDelivery(600)
+    const tee = await seedProduct({ slug: "tee", price: 2000, variants: [{ size: "M", color: "Black", physical: 3 }] })
+    // Wilaya without a desk price → Stop desk not offered.
+    await expect(
+      createOrder(testDb, { customer: customer({ wilaya }), lines: [{ variantId: tee.variants[0].id, quantity: 1 }], delivery: { type: "desk" }, idempotencyKey: key() })
+    ).rejects.toThrow(/no longer has everything|no stop desk/i)
+    await testDb.update(deliveryRates).set({ deskPrice: 480 }).where(eq(deliveryRates.storeId, tee.shop.id))
+    const order = await createOrder(testDb, { customer: customer({ wilaya }), lines: [{ variantId: tee.variants[0].id, quantity: 1 }], delivery: { type: "desk" }, idempotencyKey: key() })
+    expect(order).toMatchObject({ deliveryType: "desk", deliveryDeskId: null, deskName: "ZR Express", deliveryFee: 480, total: 2480 })
+    expect(order.deskAddress).toMatch(/téléphone/)
   })
 
   it("an order ships with an open one only from the same shop and the same delivery", async () => {

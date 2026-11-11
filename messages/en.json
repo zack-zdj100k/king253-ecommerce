@@ -237,7 +237,8 @@
     "updateBag": "Update your bag",
     "updatingPrices": "Updating prices",
     "wilaya": "Wilaya",
-    "yourBag": "Your bag ({count})"
+    "yourBag": "Your bag ({count})",
+    "deskByPhone": "Pick-up at the ZR Express office in your wilaya: our team confirms the address by phone."
   },
   "finder": {
     "closest": "Closest",

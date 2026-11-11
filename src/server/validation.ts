@@ -73,8 +73,7 @@ export const createOrderSchema = z.object({
       type: z.enum(["home", "desk"]).default("home"),
       deskId: z.coerce.number().int().positive().optional().nullable(),
     })
-    .default({ type: "home" })
-    .refine((d) => d.type === "home" || Boolean(d.deskId), { message: "Choose a stop desk.", path: ["deskId"] }),
+    .default({ type: "home" }),
   referralSource: z.string().max(20).optional().nullable(),
   locale: z.enum(["ar", "fr", "en"]).optional().nullable(),
   idempotencyKey: z.string().min(16).max(100),

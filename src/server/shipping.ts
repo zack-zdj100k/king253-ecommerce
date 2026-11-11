@@ -201,6 +201,18 @@ export async function homePrices(db: DbOrTx, wilayaCode: number, storeIds: numbe
   return out
 }
 
+/** Wilaya-level Stop desk price per shop (null = none). Used when a shop has no listed desk there. */
+export async function deskPrices(db: DbOrTx, wilayaCode: number, storeIds: number[]) {
+  const out = new Map<number, number | null>(storeIds.map((id) => [id, null]))
+  if (!storeIds.length) return out
+  const rows = await db
+    .select({ storeId: deliveryRates.storeId, deskPrice: deliveryRates.deskPrice })
+    .from(deliveryRates)
+    .where(and(eq(deliveryRates.wilayaCode, wilayaCode), inArray(deliveryRates.storeId, storeIds)))
+  for (const r of rows) out.set(r.storeId, r.deskPrice)
+  return out
+}
+
 /**
  * Closest desk without a map: same commune first, then the desk in the wilaya's
  * main town (commune named like the wilaya), then the first one.
@@ -241,10 +253,14 @@ export async function quoteShops(
       ? await homePrices(db, input.wilayaCode, ids).then((prices) =>
           input.shops.map((s) => ({ storeId: s.id, storeName: s.name, price: prices.get(s.id) ?? null, desks: [], suggestedDeskId: null, available: true }))
         )
-      : await desksFor(db, input.wilayaCode, ids).then((desks) =>
+      : await Promise.all([desksFor(db, input.wilayaCode, ids), deskPrices(db, input.wilayaCode, ids)]).then(([desks, rates]) =>
           input.shops.map((s) => {
             const own = desks.filter((d) => d.storeId === s.id)
             const suggested = suggestDesk(own, input.commune, input.wilayaName)
+            // No listed desk but the courier's wilaya Stop desk price is known: the customer collects at the courier's
+            // agency and our team confirms its address by phone (no desk to choose).
+            const wilayaPrice = rates.get(s.id) ?? null
+            if (!own.length && wilayaPrice !== null) return { storeId: s.id, storeName: s.name, price: wilayaPrice, desks: [], suggestedDeskId: null, available: true }
             return { storeId: s.id, storeName: s.name, price: suggested?.price ?? null, desks: own, suggestedDeskId: suggested?.id ?? null, available: own.length > 0 }
           })
         )

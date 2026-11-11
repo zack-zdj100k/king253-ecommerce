@@ -123,7 +123,9 @@ export async function createOrder(db: Db, input: CreateOrderInput, ctx: CreateOr
   if (!quote.available) throw new AppError("NO_DESK", `${quote.storeName} has no stop desk in ${wilaya.fr}. Choose home delivery or another shop.`)
   const shop = eligible.find((s) => s.id === quote.storeId)!
   const desk = delivery.type === "desk" ? quote.desks.find((d) => d.id === delivery.deskId) : null
-  if (delivery.type === "desk" && !desk) throw new ValidationError({ "delivery.deskId": "Choose one of the stop desks in the list." })
+  // A wilaya with no listed desk: Stop desk at the courier's agency, address confirmed by phone.
+  const phoneDesk = delivery.type === "desk" && quote.desks.length === 0
+  if (delivery.type === "desk" && !desk && !phoneDesk) throw new ValidationError({ "delivery.deskId": "Choose one of the stop desks in the list." })
   const courierFee = (desk ? desk.price : quote.price) ?? 0
 
   // One delivery fee for all of Algeria (admin can still adjust per order).
@@ -170,8 +172,8 @@ export async function createOrder(db: Db, input: CreateOrderInput, ctx: CreateOr
           address: customer.address,
           deliveryType: delivery.type,
           deliveryDeskId: desk?.id ?? null,
-          deskName: desk?.name ?? null,
-          deskAddress: desk ? [desk.address, desk.commune].filter(Boolean).join(", ") : null,
+          deskName: desk?.name ?? (phoneDesk ? "ZR Express" : null),
+          deskAddress: desk ? [desk.address, desk.commune].filter(Boolean).join(", ") : phoneDesk ? "Agence de la wilaya — adresse confirmée par téléphone" : null,
           referralSource: isReferralSource(parsed.data.referralSource) ? parsed.data.referralSource : null,
           locale: parsed.data.locale ?? null,
           estimatedDays: deliveryEstimate || null,

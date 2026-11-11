@@ -237,7 +237,8 @@
     "updateBag": "Mets à jour ton panier",
     "updatingPrices": "Mise à jour des prix",
     "wilaya": "Wilaya",
-    "yourBag": "Ton panier ({count})"
+    "yourBag": "Ton panier ({count})",
+    "deskByPhone": "Retrait au bureau ZR Express de votre wilaya : notre équipe vous confirme l'adresse par téléphone."
   },
   "finder": {
     "closest": "La plus proche",
