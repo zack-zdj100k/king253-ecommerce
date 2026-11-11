@@ -260,7 +260,7 @@ export function CheckoutForm({
               {account.needsReferral && (
                 <Field label={tr("question")} error={errors.referralSource} className="sm:col-span-2">
                   {(id) => (
-                    <SelectBox id={id} value={referral} onChange={(v) => setReferral(v)} required={!account.signedIn}>
+                    <SelectBox id={id} value={referral} onChange={(v) => setReferral(v)}>
                       <option value="">{tr("choose")}</option>
                       {REFERRAL_SOURCES.map((r) => (
                         <option key={r.key} value={r.key}>

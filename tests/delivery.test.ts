@@ -107,6 +107,28 @@ describe("One delivery per customer until it is delivered", () => {
   })
 })
 
+describe("Return fee", () => {
+  it("a return records the courier's return fee for the order's shop and wilaya (null when not set)", async () => {
+    const { recordReturn } = await import("@/server/returns")
+    const { orderItems, deliveryRates } = await import("@/server/db/schema")
+    await seedDelivery(800)
+    const tee = await seedProduct({ slug: "tee", price: 4000, variants: [{ size: "M", color: "Black", physical: 5 }] })
+    const buy = async () => {
+      const o = await createOrder(testDb, { customer: customer({ wilaya: "Alger", phone: `055${Math.floor(1e6 + Math.random() * 8e6)}` }), lines: [{ variantId: tee.variants[0].id, quantity: 1 }], idempotencyKey: key() })
+      await deliver(o.id, admin)
+      const [item] = await testDb.select().from(orderItems).where(eq(orderItems.orderId, o.id))
+      return { o, item }
+    }
+    const a = await buy()
+    const none = await recordReturn(testDb, { orderId: a.o.id, returned: [{ orderItemId: a.item.id, quantity: 1 }] }, admin)
+    expect(none.returnCost).toBeNull()
+    await testDb.update(deliveryRates).set({ returnPrice: 200 }).where(eq(deliveryRates.storeId, tee.shop.id))
+    const b = await buy()
+    const fee = await recordReturn(testDb, { orderId: b.o.id, returned: [{ orderItemId: b.item.id, quantity: 1 }] }, admin)
+    expect(fee).toMatchObject({ amount: -4000, returnCost: 200 })
+  })
+})
+
 describe("Returns and exchanges change revenue", () => {
   it("a return refunds what the customer paid (after discount); the order leaves revenue when all is back", async () => {
     const { applyOrderDiscount } = await import("@/server/orders/manage")

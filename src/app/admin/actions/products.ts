@@ -5,7 +5,9 @@ import { redirect } from "next/navigation"
 import { z } from "zod"
 
 import { db } from "@/server/db"
-import { productVariants } from "@/server/db/schema"
+import { products, productVariants } from "@/server/db/schema"
+import { AppError } from "@/server/errors"
+import { translateProduct, translationReady } from "@/server/translate"
 import { adjustPhysicalStock, receiveStock } from "@/server/inventory"
 import {
   addImages,
@@ -37,6 +39,8 @@ export async function saveProductAction(productId: string | null, input: Product
   const result = await adminAction(
     async ({ actor }) => {
       const product = await saveProduct(db, productId ? id.parse(productId) : null, input, actor)
+      // Arabic / French / English versions of the texts, automatically (never blocks the save).
+      await translateProduct(db, product.id).catch((e) => console.error("[king253] translation failed", e))
       return { id: product.id, slug: product.slug, status: product.status }
     },
     {
@@ -207,5 +211,19 @@ export async function receiveStockAction(variantId: string, storeId: number, qua
       )
     },
     { revalidate: ["/admin/inventory", "/admin/products", "/clothes", "/"], message: "Stock added." }
+  )
+}
+
+/** Settings → "Translate every product now" (e.g. right after the translation key is added). */
+export async function translateAllProductsAction() {
+  return adminAction(
+    async () => {
+      if (!translationReady()) throw new AppError("NO_TRANSLATION_KEY", "Translation is not set up yet (DEEPL_API_KEY in the server .env).")
+      const all = await db.select({ id: products.id }).from(products)
+      let done = 0
+      for (const p of all) if ((await translateProduct(db, p.id, { force: true })) === "translated") done++
+      return `${done} product(s) translated into Arabic, French and English.`
+    },
+    { revalidate: ["/clothes", "/"] }
   )
 }

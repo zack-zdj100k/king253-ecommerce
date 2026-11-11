@@ -4,6 +4,7 @@ import { and, eq, inArray } from "drizzle-orm"
 import { after } from "next/server"
 import { z } from "zod"
 
+import { currentLocale } from "@/i18n/request"
 import { db } from "@/server/db"
 import { wishlistItems, products } from "@/server/db/schema"
 import { getCurrentUser } from "@/server/auth/session"
@@ -102,7 +103,7 @@ export type QuickViewData = {
 }
 
 export async function getQuickViewAction(slug: string): Promise<QuickViewData | null> {
-  const page = await getProductPage(db, String(slug).slice(0, 200))
+  const page = await getProductPage(db, String(slug).slice(0, 200), { locale: await currentLocale() })
   if (!page) return null
   const { product, images, variants, category } = page
   const { brandName } = await getSettings(db)

@@ -5,7 +5,7 @@ import Link from "next/link"
 import { formatDA } from "@/lib/money"
 import { formatPhone } from "@/lib/phone"
 import { db } from "@/server/db"
-import { listJournal } from "@/server/returns"
+import { listJournal, returnFeeSummary } from "@/server/returns"
 import { lineInfo } from "@/server/admin/line-info"
 import { ProductLine } from "@/components/admin/order/product-line"
 import { listStores } from "@/server/stores"
@@ -58,6 +58,7 @@ export default async function ReturnsJournalPage({ searchParams }: PageProps<"/a
     type,
     page,
   })
+  const fee = await returnFeeSummary(db, shop.id)
   const info = await lineInfo(db, rows.flatMap((r) => r.items.map((i) => ({ variantId: i.variantId }))))
 
   return (
@@ -99,10 +100,30 @@ export default async function ReturnsJournalPage({ searchParams }: PageProps<"/a
         </form>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      {/* Courier return fee for this shop (from Delivery prices). */}
+      <div className="flex flex-wrap items-center gap-2 text-xs">
+        <span className="text-king-gray">Return fee (courier) · {shop.name}:</span>
+        {fee ? (
+          <>
+            <span className="rounded-full bg-king-red/15 px-3 py-1 font-semibold text-king-white ring-1 ring-king-red/40">{fee.usual} DA</span>
+            {fee.others.map((o) => (
+              <span key={o.price} className="rounded-full bg-white/[0.06] px-3 py-1 text-king-muted">
+                {o.price} DA in {o.wilayas} wilaya{o.wilayas > 1 ? "s" : ""}
+              </span>
+            ))}
+          </>
+        ) : (
+          <span className="rounded-full bg-white/[0.06] px-3 py-1 text-king-muted">
+            Not set yet — add it in <Link href="/admin/delivery" className="underline underline-offset-2">Delivery</Link> (Return column)
+          </span>
+        )}
+      </div>
+
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
         <Stat label="Returns" value={totals.returns} />
         <Stat label="Exchanges" value={totals.exchanges} />
         <Stat label="Refunded" value={formatDA(totals.refunded)} tone={totals.refunded ? "red" : undefined} />
+        <Stat label="Return fees paid" value={formatDA(totals.returnFees)} tone={totals.returnFees ? "red" : undefined} />
         <Stat label="Collected (exchanges)" value={formatDA(totals.collected)} />
       </div>
       <p className="text-xs text-king-gray">
@@ -129,9 +150,16 @@ export default async function ReturnsJournalPage({ searchParams }: PageProps<"/a
                     {r.entry.note ? ` — ${r.entry.note}` : ""}
                   </p>
                 </div>
-                <p className={`text-base font-semibold tabular-nums ${r.entry.amount < 0 ? "text-king-bright-red" : r.entry.amount > 0 ? "text-emerald-300" : "text-king-gray"}`}>
-                  {r.entry.amount < 0 ? `Refunded ${formatDA(-r.entry.amount)}` : r.entry.amount > 0 ? `Collected ${formatDA(r.entry.amount)}` : "No difference"}
-                </p>
+                <div className="text-right">
+                  <p className={`text-base font-semibold tabular-nums ${r.entry.amount < 0 ? "text-king-bright-red" : r.entry.amount > 0 ? "text-emerald-300" : "text-king-gray"}`}>
+                    {r.entry.amount < 0 ? `Refunded ${formatDA(-r.entry.amount)}` : r.entry.amount > 0 ? `Collected ${formatDA(r.entry.amount)}` : "No difference"}
+                  </p>
+                  {r.entry.type === "return" && (
+                    <p className="mt-1 text-xs text-king-gray">
+                      Return fee: <span className="font-semibold text-king-white">{r.entry.returnCost !== null ? formatDA(r.entry.returnCost) : "not set"}</span>
+                    </p>
+                  )}
+                </div>
               </div>
               <ul className="mt-3 space-y-3">
                 {r.items.map((i) => (

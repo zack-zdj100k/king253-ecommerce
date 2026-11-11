@@ -2,7 +2,6 @@ import Link from "next/link"
 import { unstable_cache } from "next/cache"
 import { Geist, Geist_Mono } from "next/font/google"
 
-import { formatDA } from "@/lib/money"
 import { db } from "@/server/db"
 import { getOverview, type Overview } from "@/server/overview"
 import { getSettings } from "@/server/settings"
@@ -35,7 +34,8 @@ const TILE = [
 ] as const
 const PERIOD_LABELS = ["Weekly", "Monthly", "Yearly"]
 const PERIOD_COMPARE = ["last week", "last month", "last year"]
-const n = (v: number) => v.toLocaleString("fr-DZ")
+// Overview amounts: plain digits, no separators (owner: "25000 DA").
+const n = (v: number) => String(Math.round(v))
 
 function bentoProps(o: Overview): Omit<AnalyticsBentoProps, "currency"> {
   return {
@@ -45,7 +45,7 @@ function bentoProps(o: Overview): Omit<AnalyticsBentoProps, "currency"> {
       delta: o.revenue.delta,
       note: (
         <>
-          Avg. order <span className="text-foreground/80">{formatDA(o.revenue.average)}</span> · vs previous 30 days
+          Avg. order <span className="text-foreground/80">{n(o.revenue.average)} DA</span> · vs previous 30 days
         </>
       ),
       caption: "Last 30 days",
@@ -73,6 +73,14 @@ function bentoProps(o: Overview): Omit<AnalyticsBentoProps, "currency"> {
         compare: `vs ${n(p.before)} DA ${PERIOD_COMPARE[i]}`,
       })),
       items: o.categories.items.map((c) => ({ name: c.name, group: c.group, values: c.values })),
+      series: o.categories.series.map((p, i) => ({
+        labels: p.keys.map((k) =>
+          i === 2
+            ? new Date(`${k}-01T12:00:00Z`).toLocaleDateString("en-GB", { month: "short" })
+            : new Date(`${k}T12:00:00Z`).toLocaleDateString("en-GB", { day: "numeric", month: "short" })
+        ),
+        lines: p.lines,
+      })),
       table: {
         columns: ["Shop", "Weekly", "Monthly", "Yearly"],
         rows: o.categories.shops.map((s) => ({ label: s.name, values: s.values.map((v) => `${n(v)} DA`) })),
@@ -98,7 +106,7 @@ export default async function AdminOverview({ searchParams }: PageProps<"/admin"
     {
       label: "Returns & exchanges",
       value: k.journal.count,
-      hint: k.journal.count ? `− ${formatDA(k.journal.refunded)}${k.journal.collected ? ` · + ${formatDA(k.journal.collected)}` : ""} · 30 days` : "None in 30 days",
+      hint: k.journal.count ? `− ${n(k.journal.refunded)} DA${k.journal.collected ? ` · + ${n(k.journal.collected)} DA` : ""} · 30 days` : "None in 30 days",
       href: `/admin/returns${shop ? `?shop=${shop.id}` : ""}`,
       tone: "",
     },

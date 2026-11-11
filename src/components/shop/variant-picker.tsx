@@ -5,7 +5,7 @@ import * as React from "react"
 
 import { cn } from "@/lib/utils"
 import { sortSizes } from "@/lib/sizes"
-import { ProductImage, type Crop } from "@/components/shop/product-image"
+import type { Crop } from "@/components/shop/product-image"
 
 export type PickerVariant = { id: string; size: string; color: string; colorHex: string | null; price?: number | null; compareAt?: number | null; available: number }
 
@@ -80,12 +80,11 @@ export function VariantPicker<V extends PickerVariant>({
   variants,
   selection,
   compact = false,
-  colourImages,
 }: {
   variants: V[]
   selection: VariantSelection<V>
   compact?: boolean
-  /** First photo of each colour — shown inside the colour chips. */
+  /** No longer shown (chips show the colour itself); kept so callers need no change. */
   colourImages?: Record<string, Crop | null>
 }) {
   const t = useTranslations("stock")
@@ -101,7 +100,6 @@ export function VariantPicker<V extends PickerVariant>({
           <div className="flex flex-wrap gap-2">
             {colours.map((c) => {
               const active = c.name === colour
-              const photo = colourImages?.[c.name] ?? null
               return (
                 <button
                   key={c.name}
@@ -110,15 +108,13 @@ export function VariantPicker<V extends PickerVariant>({
                   aria-pressed={active}
                   aria-label={c.available ? c.name : t("colourOut", { name: c.name })}
                   className={cn(
-                    "group flex h-12 items-center gap-2.5 rounded-full border py-1 pr-4 pl-1 text-left transition-colors",
+                    "group flex h-11 items-center gap-2.5 rounded-full border py-1 pr-4 pl-2.5 text-left transition-colors",
                     active ? "border-king-bright-red bg-king-red/15" : "border-white/15 hover:border-white/40",
                     !c.available && "opacity-50"
                   )}
                 >
-                  <span className="relative size-10 shrink-0 overflow-hidden rounded-full ring-1 ring-white/20" style={{ backgroundColor: c.hex ?? "#555" }} aria-hidden>
-                    {photo && <ProductImage image={photo} alt="" sizes="48px" />}
-                    {photo && <span className="absolute right-0 bottom-0 size-3.5 rounded-full ring-2 ring-king-near-black" style={{ backgroundColor: c.hex ?? "#555" }} />}
-                  </span>
+                  {/* The colour itself (not a product photo): a small dot of the real shade. */}
+                  <span className="size-6 shrink-0 rounded-full ring-1 ring-white/30 ring-offset-2 ring-offset-king-near-black" style={{ backgroundColor: c.hex ?? "#555" }} aria-hidden />
                   <span className="flex flex-col leading-tight">
                     <span className={cn("text-sm font-semibold tracking-wide uppercase", active ? "text-king-white" : "text-king-muted group-hover:text-king-white")}>{c.name}</span>
                     {!c.available && <span className="text-[0.75rem] text-king-gray">{t("soldOut")}</span>}

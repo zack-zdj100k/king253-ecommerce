@@ -3,7 +3,7 @@
 import * as React from "react"
 import { usePathname } from "next/navigation"
 
-import { gsap, ScrollTrigger, MOTION_OK } from "@/lib/gsap"
+import { gsap, lightMode, ScrollTrigger, MOTION_OK } from "@/lib/gsap"
 
 /**
  * Page-wide scroll choreography, declared with data attributes so server
@@ -17,6 +17,8 @@ export function ScrollAnimations() {
   const pathname = usePathname()
 
   React.useEffect(() => {
+    // Poor connection: everything is already visible; skip the scroll choreography.
+    if (lightMode()) return
     const mm = gsap.matchMedia()
 
     mm.add(MOTION_OK, () => {

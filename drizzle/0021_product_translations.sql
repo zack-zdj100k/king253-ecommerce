@@ -1,0 +1,3 @@
+ALTER TABLE "delivery_rates" DROP CONSTRAINT "delivery_rates_prices_non_negative";--> statement-breakpoint
+ALTER TABLE "products" ADD COLUMN "translations" jsonb DEFAULT '{}'::jsonb NOT NULL;--> statement-breakpoint
+ALTER TABLE "delivery_rates" ADD CONSTRAINT "delivery_rates_prices_non_negative" CHECK (coalesce("delivery_rates"."home_price", 0) >= 0 and coalesce("delivery_rates"."desk_price", 0) >= 0 and coalesce("delivery_rates"."return_price", 0) >= 0);

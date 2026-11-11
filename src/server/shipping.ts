@@ -36,6 +36,7 @@ export async function listRates(db: DbOrTx, storeId: number) {
       nameAr: wilayas.nameAr,
       homePrice: deliveryRates.homePrice,
       deskPrice: deliveryRates.deskPrice,
+      returnPrice: deliveryRates.returnPrice,
       desks: sql<number>`(select count(*) from ${deliveryDesks} d where d.store_id = ${storeId} and d.wilaya_code = ${wilayas.code} and d.active)::int`,
     })
     .from(wilayas)
@@ -43,7 +44,7 @@ export async function listRates(db: DbOrTx, storeId: number) {
     .orderBy(asc(wilayas.code))
 }
 
-const rateRow = z.object({ wilayaCode: z.number().int().min(1).max(99), homePrice: price, deskPrice: price })
+const rateRow = z.object({ wilayaCode: z.number().int().min(1).max(99), homePrice: price, deskPrice: price, returnPrice: price.optional() })
 export type RateInput = z.input<typeof rateRow>
 
 export async function saveRates(db: Db, storeId: number, raw: RateInput[], actor: Actor) {
@@ -56,13 +57,15 @@ export async function saveRates(db: Db, storeId: number, raw: RateInput[], actor
   })
 }
 
-async function upsertRate(tx: DbOrTx, storeId: number, r: { wilayaCode: number; homePrice: number | null; deskPrice: number | null }) {
+async function upsertRate(tx: DbOrTx, storeId: number, r: { wilayaCode: number; homePrice: number | null; deskPrice: number | null; returnPrice?: number | null }) {
+  // returnPrice undefined = leave it as it is (e.g. a CSV without that column).
+  const ret = r.returnPrice === undefined ? {} : { returnPrice: r.returnPrice }
   await tx
     .insert(deliveryRates)
-    .values({ storeId, wilayaCode: r.wilayaCode, homePrice: r.homePrice, deskPrice: r.deskPrice })
+    .values({ storeId, wilayaCode: r.wilayaCode, homePrice: r.homePrice, deskPrice: r.deskPrice, ...ret })
     .onConflictDoUpdate({
       target: [deliveryRates.storeId, deliveryRates.wilayaCode],
-      set: { homePrice: r.homePrice, deskPrice: r.deskPrice, updatedAt: new Date() },
+      set: { homePrice: r.homePrice, deskPrice: r.deskPrice, ...ret, updatedAt: new Date() },
     })
 }
 
@@ -145,7 +148,7 @@ export async function importDeliveryCsv(db: Db, kind: "rates" | "desks", text: s
   if (!rows.length) throw new RuleError("The file has a header but no rows.")
   await db.transaction(async (tx) => {
     if (kind === "rates") {
-      for (const r of rows as { storeId: number; wilayaCode: number; homePrice: number | null; deskPrice: number | null }[]) {
+      for (const r of rows as { storeId: number; wilayaCode: number; homePrice: number | null; deskPrice: number | null; returnPrice?: number | null }[]) {
         await upsertRate(tx, r.storeId, r)
       }
     } else {
@@ -265,4 +268,14 @@ export async function quoteShops(
           })
         )
   return quotes.sort((a, b) => Number(!a.available) - Number(!b.available) || (a.price ?? Infinity) - (b.price ?? Infinity))
+}
+
+/** The courier's return fee for an order's shop and wilaya (null = not set for that shop yet). */
+export async function returnPriceFor(db: DbOrTx, storeId: number | null, wilayaCode: number | null) {
+  if (!storeId || !wilayaCode) return null
+  const [r] = await db
+    .select({ v: deliveryRates.returnPrice })
+    .from(deliveryRates)
+    .where(and(eq(deliveryRates.storeId, storeId), eq(deliveryRates.wilayaCode, wilayaCode)))
+  return r?.v ?? null
 }

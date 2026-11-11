@@ -65,7 +65,14 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
     <html lang={locale} dir={dirOf(locale)} className={`${inter.variable} ${instrumentSerif.variable} ${kufi.variable}`} suppressHydrationWarning>
       <head>
         {/* Lets CSS hide animated elements before GSAP runs — only when JS is available. */}
-        <script dangerouslySetInnerHTML={{ __html: "document.documentElement.classList.add('js')" }} />
+        <script
+          // Animated content starts hidden only on a good connection, and is shown anyway if the
+          // animation code has not started within 3 s (poor connection): nothing waits on GSAP.
+          dangerouslySetInnerHTML={{
+            __html:
+              "(function(){var d=document.documentElement,c=navigator.connection||{};if(c.saveData||/(^|-)2g$|^3g$/.test(c.effectiveType||''))return;d.classList.add('js');setTimeout(function(){if(!window.__kingMotion)d.classList.remove('js')},3000)})()",
+          }}
+        />
       </head>
       <body className="min-h-svh antialiased">
         <NextIntlClientProvider>

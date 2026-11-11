@@ -5,6 +5,8 @@ import { db } from "@/server/db"
 import { getSettings } from "@/server/settings"
 import { SettingsForm } from "@/components/admin/site-editors"
 import { ShopStatus } from "@/components/admin/shop-status"
+import { TranslationPanel } from "@/components/admin/translation-panel"
+import { translationReady } from "@/server/translate"
 import { LinkButton, PageHeader } from "@/components/admin/ui"
 
 export const metadata: Metadata = { title: "Settings" }
@@ -26,6 +28,7 @@ export default async function SettingsPage() {
         values={{ shopClosed: settings.shopClosed, closedFrom: settings.closedFrom, closedUntil: settings.closedUntil, closedMessage: settings.closedMessage }}
         status={status}
       />
+      <TranslationPanel ready={translationReady()} />
       <SettingsForm values={settings} smtpConfigured={Boolean(process.env.SMTP_HOST)} />
     </div>
   )

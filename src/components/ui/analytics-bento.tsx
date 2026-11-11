@@ -39,6 +39,8 @@ export type AnalyticsBentoProps = React.JSX.IntrinsicElements["div"] & {
     /** one value per period, in the same order as `periods` */
     items: { name: string; group: string; values: number[] }[];
     table?: { columns: string[]; rows: { label: string; values: string[] }[] };
+    /** KING 253: line chart per category, one entry per period (same order as `periods`). */
+    series?: { labels: string[]; lines: { name: string; values: number[] }[] }[];
   };
   seasonality: {
     title: string;
@@ -60,7 +62,10 @@ export type AnalyticsBentoProps = React.JSX.IntrinsicElements["div"] & {
 
 /* ---------------- helpers ---------------- */
 
-const fmt = (n: number) => Math.round(n).toLocaleString("en-US");
+// Plain digits, no thousands separator (owner: "25000 DA", not "25,000").
+const fmt = (n: number) => String(Math.round(n));
+/** Amount with the currency after it: 29700 DA. */
+const money = (unit: string, n: number) => (unit.trim() ? `${fmt(n)} ${unit.trim()}` : fmt(n));
 const ease = (t: number) => 1 - Math.pow(1 - t, 3);
 
 function useReducedMotion() {
@@ -111,18 +116,18 @@ function CountUp({ value, prefix = "", duration = 1100 }: { value: number; prefi
   React.useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    if (reduce) { el.textContent = prefix + fmt(value); from.current = value; return; }
+    if (reduce) { el.textContent = money(prefix, value); from.current = value; return; }
     const a = from.current, t0 = performance.now();
     let raf = 0;
     const f = (now: number) => {
       const t = Math.min(1, (now - t0) / duration), v = a + (value - a) * ease(t);
-      el.textContent = prefix + fmt(v); from.current = v;
+      el.textContent = money(prefix, v); from.current = v;
       if (t < 1) raf = requestAnimationFrame(f);
     };
     raf = requestAnimationFrame(f);
     return () => cancelAnimationFrame(raf);
   }, [value, prefix, duration, reduce]);
-  return <span ref={ref}>{prefix}0</span>;
+  return <span ref={ref}>{money(prefix, 0)}</span>;
 }
 
 /* ---------------- tooltip ---------------- */
@@ -247,14 +252,14 @@ function RevenueChart({ series, caption, prefix, colors, mono, tip }: { series: 
     const r = (e.currentTarget as SVGRectElement).ownerSVGElement!.getBoundingClientRect();
     const i = Math.max(0, Math.min(vals.length - 1, Math.round(((e.clientX - r.left - 14) / (W - 66)) * (vals.length - 1))));
     setHover(i);
-    tip.current?.show(r.left + P[i][0], r.top + P[i][1], { title: series[i].label, rows: [{ label: "Revenue", value: prefix + fmt(vals[i]), color: colors[1] }] });
+    tip.current?.show(r.left + P[i][0], r.top + P[i][1], { title: series[i].label, rows: [{ label: "Revenue", value: money(prefix, vals[i]), color: colors[1] }] });
   };
 
   return (
     <div ref={ref} className="relative min-h-[130px] flex-1 overflow-hidden rounded-[18px] border border-border bg-muted/40 dark:bg-muted/30">
       {caption && <div className="pointer-events-none absolute left-3 top-2.5 text-[11px] tracking-[-0.01em] text-muted-foreground">{caption}</div>}
       {W > 0 && (
-        <svg width={W} height={H} className="block" role="img" aria-label={`${caption ?? "Revenue"}: from ${prefix}${fmt(vals[0])} to ${prefix}${fmt(vals[vals.length - 1])}`}>
+        <svg width={W} height={H} className="block" role="img" aria-label={`${caption ?? "Revenue"}: from ${money(prefix, vals[0])} to ${money(prefix, vals[vals.length - 1])}`}>
           <defs>
             <linearGradient id={`${id}l`} x1="0" x2="1" y1="0" y2="0">
               <stop offset="0" style={{ stopColor: colors[0] }} />
@@ -472,6 +477,81 @@ function Treemap({ data, period, mono, tip }: { data: AnalyticsBentoProps["categ
   );
 }
 
+
+/* ---------------- C2: KING 253 — sales per category as lines ---------------- */
+
+const LINE_COLORS = ["#ff3b3b", "#f5f5f5", "#d48a8a", "#8a8a8a", "#a30d0d", "#c9c9c9"];
+
+function CategoryLines({ data, period, unit, mono, tip }: { data: NonNullable<AnalyticsBentoProps["categories"]["series"]>[number] | undefined; period: number; unit: string; mono: string; tip: TipRef }) {
+  const [ref, { w: W }] = useSize();
+  const H = 260, padL = 8, padR = 8, padT = 16, padB = 26;
+  const labels = data?.labels ?? [];
+  const lines = data?.lines ?? [];
+  const max = Math.max(1, ...lines.flatMap((l) => l.values));
+  const n = labels.length;
+  const x = (i: number) => padL + (n <= 1 ? 0 : (i / (n - 1)) * (Math.max(W, 1) - padL - padR));
+  const y = (v: number) => padT + (1 - v / max) * (H - padT - padB);
+  const every = n > 12 ? Math.ceil(n / 6) : 1;
+  if (!lines.length) {
+    return <div ref={ref} className="mt-1.5 grid h-[260px] place-items-center rounded-[14px] border border-dashed border-border text-sm text-muted-foreground">No sales in this period yet</div>;
+  }
+  return (
+    <div ref={ref} className="relative mt-1.5">
+      <div className="mb-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
+        {lines.map((l, i) => (
+          <span key={l.name} className="inline-flex items-center gap-1.5"><i className="h-0.5 w-4 rounded" style={{ background: LINE_COLORS[i % LINE_COLORS.length] }} />{l.name}</span>
+        ))}
+      </div>
+      {W > 0 && (
+        <svg width={W} height={H} className="block" role="img" aria-label={`Sales per category, ${period === 2 ? "last 12 months" : `last ${n} days`}`}>
+          {[0.25, 0.5, 0.75, 1].map((f) => (
+            <line key={f} x1={padL} x2={W - padR} y1={y(max * f)} y2={y(max * f)} stroke="currentColor" className="text-border" strokeDasharray="3 4" />
+          ))}
+          <line x1={padL} x2={W - padR} y1={y(0)} y2={y(0)} stroke="currentColor" className="text-border" />
+          {lines.map((l, li) => {
+            const c = LINE_COLORS[li % LINE_COLORS.length];
+            const pts = l.values.map((v, i) => [x(i), y(v)] as [number, number]);
+            return (
+              <g key={l.name}>
+                <path d={smooth(pts)} fill="none" stroke={c} strokeWidth={2.25} strokeLinejoin="round" strokeLinecap="round" />
+                {pts.map(([px, py], i) => (
+                  <circle
+                    key={i}
+                    cx={px}
+                    cy={py}
+                    r={l.values[i] > 0 ? 3.5 : 0}
+                    fill={c}
+                    onPointerMove={(e) => tip.current?.show(e.clientX, e.clientY, { title: labels[i], rows: lines.map((o, oi) => ({ label: o.name, value: money(unit, o.values[i]), color: LINE_COLORS[oi % LINE_COLORS.length] })) })}
+                    onPointerLeave={() => tip.current?.hide()}
+                  />
+                ))}
+              </g>
+            );
+          })}
+          {/* invisible hover columns so the tooltip works between points too */}
+          {labels.map((lab, i) => (
+            <rect
+              key={lab + i}
+              x={x(i) - (W - padL - padR) / Math.max(n - 1, 1) / 2}
+              y={padT}
+              width={(W - padL - padR) / Math.max(n - 1, 1)}
+              height={H - padT - padB}
+              fill="transparent"
+              onPointerMove={(e) => tip.current?.show(e.clientX, e.clientY, { title: lab, rows: lines.map((o, oi) => ({ label: o.name, value: money(unit, o.values[i]), color: LINE_COLORS[oi % LINE_COLORS.length] })) })}
+              onPointerLeave={() => tip.current?.hide()}
+            />
+          ))}
+          {labels.map((lab, i) =>
+            i % every === 0 || i === n - 1 ? (
+              <text key={"t" + i} x={x(i)} y={H - 6} textAnchor={i === 0 ? "start" : i === n - 1 ? "end" : "middle"} className="fill-muted-foreground" style={{ fontFamily: mono, fontSize: 10.5 }}>{lab}</text>
+            ) : null
+          )}
+        </svg>
+      )}
+    </div>
+  );
+}
+
 /* ---------------- D: seasonality radar ---------------- */
 
 function Radar({ values, axis, year, color, prefix, mono, tip }: { values: number[]; axis: string[]; year: string; color: string; prefix: string; mono: string; tip: TipRef }) {
@@ -522,7 +602,7 @@ function Radar({ values, axis, year, color, prefix, mono, tip }: { values: numbe
     let a = Math.atan2(y, x) + Math.PI / 2; if (a < 0) a += Math.PI * 2;
     const i = Math.round((a / (Math.PI * 2)) * N) % N, p = point(values, i);
     setHover(i);
-    tip.current?.show(r.left + p[0], r.top + p[1], { title: `${axis[i]} ${year}`, rows: [{ label: "Sales", value: prefix + fmt(values[i]), color }] });
+    tip.current?.show(r.left + p[0], r.top + p[1], { title: `${axis[i]} ${year}`, rows: [{ label: "Sales", value: money(prefix, values[i]), color }] });
   };
   const hp = hover !== null ? point(values, hover) : null;
 
@@ -699,7 +779,11 @@ export function AnalyticsBento({
               </button>
             ))}
           </div>
-          <Treemap data={categories} period={period} mono={monoFamily} tip={tip} />
+          {categories.series ? (
+            <CategoryLines data={categories.series[period]} period={period} unit={currency} mono={monoFamily} tip={tip} />
+          ) : (
+            <Treemap data={categories} period={period} mono={monoFamily} tip={tip} />
+          )}
           {categories.table && (
             <table className="mt-[18px] w-full border-collapse text-sm">
               <thead>

@@ -34,26 +34,8 @@ type Variant = {
 }
 
 type Shop = { id: number; name: string }
-/** Shops that sell this product (opening stock goes to the one picked). */
+/** Shops that sell this product. */
 const ShopsContext = React.createContext<Shop[]>([])
-
-/** "Opening stock in" picker — only shown when the product is sold in several shops. */
-function ShopSelect({ value, onChange }: { value: number | null; onChange: (id: number) => void }) {
-  const shops = React.useContext(ShopsContext)
-  if (shops.length < 2) return null
-  return (
-    <label className="block w-44">
-      <span className={labelClass}>Stock goes to</span>
-      <select value={value ?? shops[0].id} onChange={(e) => onChange(Number(e.target.value))} className={inputClass}>
-        {shops.map((s) => (
-          <option key={s.id} value={s.id}>
-            {s.name}
-          </option>
-        ))}
-      </select>
-    </label>
-  )
-}
 
 type Colour = { name: string; hex: string | null; price: number | null; promo: number | null; mixedPrice: boolean; variants: Variant[] }
 type ProductPricing = { price: number | null; salePrice: number | null }
@@ -389,9 +371,6 @@ function StockBadges({ physical, reserved, low }: { physical: number; reserved: 
 function AddSizes({ productId, colour, base, next, existing }: { productId: string; colour: Colour; base: string; next: number; existing: string[] }) {
   const { run, pending, feedback, setFeedback } = useAdminAction()
   const [sizes, setSizes] = React.useState("")
-  const [stock, setStock] = React.useState("0")
-  const [storeId, setStoreId] = React.useState<number | null>(null)
-  const shops = React.useContext(ShopsContext)
   const list = sizes
     .split(",")
     .map((s) => s.trim())
@@ -414,9 +393,9 @@ function AddSizes({ productId, colour, base, next, existing }: { productId: stri
               salePriceOverride: colour.promo,
               sortOrder: 0,
               active: true,
-              initialStock: Number(stock) || 0,
-              // What the picker shows is what is sent: its first shop when untouched.
-              initialStoreId: storeId ?? shops[0]?.id ?? null,
+              // No opening stock here: each colour's stock is entered per size and shop in its stock rows.
+              initialStock: 0,
+              initialStoreId: null,
             })
             if (!r.ok) return r
           }
@@ -428,11 +407,6 @@ function AddSizes({ productId, colour, base, next, existing }: { productId: stri
         <span className={labelClass}>Add sizes to {colour.name}</span>
         <input value={sizes} onChange={(e) => setSizes(e.target.value)} placeholder="e.g. XL, XXL" className={inputClass} />
       </label>
-      <label className="block w-32">
-        <span className={labelClass}>Stock each</span>
-        <input value={stock} onChange={(e) => setStock(digits(e.target.value))} inputMode="numeric" className={inputClass} />
-      </label>
-      <ShopSelect value={storeId} onChange={setStoreId} />
       <button type="submit" disabled={pending} className={btnOutline}>
         <Plus className="size-3.5" aria-hidden /> Add
       </button>
@@ -443,7 +417,7 @@ function AddSizes({ productId, colour, base, next, existing }: { productId: stri
   )
 }
 
-/** Add one colour in several sizes at once — with its price and opening stock. */
+/** Add one colour in several sizes at once — with its price. Stock is then set per size and shop in the colour's stock rows. */
 function AddColour({ productId, base, next, offset, pricing }: { productId: string; base: string; next: number; offset: number; pricing: ProductPricing }) {
   const { run, pending, feedback, setFeedback } = useAdminAction()
   const [color, setColor] = React.useState("")
@@ -451,9 +425,6 @@ function AddColour({ productId, base, next, offset, pricing }: { productId: stri
   const [price, setPrice] = React.useState("")
   const [promo, setPromo] = React.useState("")
   const [sizes, setSizes] = React.useState("S, M, L, XL")
-  const [stock, setStock] = React.useState("0")
-  const [storeId, setStoreId] = React.useState<number | null>(null)
-  const shops = React.useContext(ShopsContext)
   const list = sizes.split(",").map((s) => s.trim()).filter(Boolean)
 
   return (
@@ -473,13 +444,13 @@ function AddColour({ productId, base, next, offset, pricing }: { productId: stri
               salePriceOverride: promo,
               sortOrder: offset + i,
               active: true,
-              initialStock: Number(stock) || 0,
-              // What the picker shows is what is sent: its first shop when untouched.
-              initialStoreId: storeId ?? shops[0]?.id ?? null,
+              // No opening stock: stock is entered per size and shop in the colour's stock rows.
+              initialStock: 0,
+              initialStoreId: null,
             })
             if (!r.ok) return r
           }
-          return { ok: true as const, message: `${color.trim()} added in ${list.length} size(s). Now add its photos.` }
+          return { ok: true as const, message: `${color.trim()} added in ${list.length} size(s). Now enter its stock per size and add its photos.` }
         }, () => {
           setColor("")
           setPrice("")
@@ -528,11 +499,6 @@ function AddColour({ productId, base, next, offset, pricing }: { productId: stri
           <span className={labelClass}>Sizes (comma separated)</span>
           <input value={sizes} onChange={(e) => setSizes(e.target.value)} className={inputClass} />
         </label>
-        <label className="block w-36">
-          <span className={labelClass}>Opening stock each</span>
-          <input value={stock} onChange={(e) => setStock(digits(e.target.value))} inputMode="numeric" className={inputClass} />
-        </label>
-        <ShopSelect value={storeId} onChange={setStoreId} />
         <button type="submit" disabled={pending} className={btnRed}>
           Add colour{list.length ? ` · ${list.length} size${list.length > 1 ? "s" : ""}` : ""}
         </button>

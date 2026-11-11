@@ -113,6 +113,36 @@ export async function getOverview(db: DbOrTx, opts: { storeId: number | null; lo
   const totals = PERIODS.map((_, i) => catRows.reduce((s, c) => s + c.values[i], 0))
   const totalsBefore = PERIODS.map((_, i) => catRows.reduce((s, c) => s + c.before[i], 0))
 
+  /* Line chart per category: last 7 days (daily), last 30 days (daily), last 12 months (monthly). */
+  const dayKey = (d: Date) => new Intl.DateTimeFormat("en-CA", { timeZone: TZ, year: "numeric", month: "2-digit", day: "2-digit" }).format(d)
+  const monthKey = (d: Date) => dayKey(d).slice(0, 7)
+  const catDaily = await run(sql`select pr.category_id as id, to_char(o.delivered_at at time zone ${TZ}, 'YYYY-MM-DD') as k, coalesce(sum(${line}), 0)::int as v
+    from order_items oi join orders o on o.id = oi.order_id join products pr on pr.id = oi.product_id
+    where ${live} and oi.removed_at is null and o.delivered_at >= ${ago(31)} group by 1, 2`)
+  const catMonthly = await run(sql`select pr.category_id as id, to_char(o.delivered_at at time zone ${TZ}, 'YYYY-MM') as k, coalesce(sum(${line}), 0)::int as v
+    from order_items oi join orders o on o.id = oi.order_id join products pr on pr.id = oi.product_id
+    where ${live} and oi.removed_at is null and o.delivered_at >= ${ago(370)} group by 1, 2`)
+  const dayKeys = (n: number) => Array.from({ length: n }, (_, i) => dayKey(new Date(now.getTime() - (n - 1 - i) * DAY)))
+  const monthKeys = (() => {
+    const [y, m] = monthKey(now).split("-").map(Number)
+    return Array.from({ length: 12 }, (_, i) => {
+      const d = new Date(Date.UTC(y, m - 1 - (11 - i), 1))
+      return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`
+    })
+  })()
+  const seriesOf = (rows: Row[], keys: string[]) =>
+    cats
+      .map((c) => ({
+        name: String(c.name),
+        values: keys.map((k) => num(rows.find((r) => num(r.id) === num(c.id) && String(r.k) === k)?.v)),
+      }))
+      .filter((l) => l.values.some((v) => v > 0))
+  const lineSeries = [
+    { keys: dayKeys(7), lines: seriesOf(catDaily, dayKeys(7)) },
+    { keys: dayKeys(30), lines: seriesOf(catDaily, dayKeys(30)) },
+    { keys: monthKeys, lines: seriesOf(catMonthly, monthKeys) },
+  ]
+
   /* ---------------- Seasonality: months of this year and last year ---------------- */
   const year = Number(new Intl.DateTimeFormat("en", { timeZone: TZ, year: "numeric" }).format(now))
   const monthly = await run(sql`select extract(year from o.delivered_at at time zone ${TZ})::int as y, extract(month from o.delivered_at at time zone ${TZ})::int as m,
@@ -135,9 +165,9 @@ export async function getOverview(db: DbOrTx, opts: { storeId: number | null; lo
       values: cur.values,
       stats: [
         { label: "Monthly avg", value: Math.round(cur.total / months), delta: pct(cur.total / months, prev.total / 12), note: `${cur.orders} orders` },
-        { label: "Year total", value: cur.total, delta: pct(cur.total, prev.total), note: `vs ${prev.total.toLocaleString("fr-DZ")} DA` },
+        { label: "Year total", value: cur.total, delta: pct(cur.total, prev.total), note: `vs ${prev.total} DA` },
       ],
-      rows: yearShops.filter((r) => num(r.y) === y).map((r) => ({ label: String(r.name), value: `${num(r.v).toLocaleString("fr-DZ")} DA` })),
+      rows: yearShops.filter((r) => num(r.y) === y).map((r) => ({ label: String(r.name), value: `${num(r.v)} DA` })),
     }
   })
 
@@ -164,6 +194,7 @@ export async function getOverview(db: DbOrTx, opts: { storeId: number | null; lo
       items,
       periods: PERIODS.map((d, i) => ({ days: d, total: totals[i], before: totalsBefore[i], delta: pct(totals[i], totalsBefore[i]) })),
       shops: shopSales.map((r) => ({ name: String(r.name), values: PERIODS.map((d) => num(r[`p${d}`])) })),
+      series: lineSeries,
     },
     seasonality: years,
   }

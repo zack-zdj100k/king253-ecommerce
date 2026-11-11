@@ -7,7 +7,7 @@ import Image from "next/image"
 
 import MotionButton from "@/components/ui/motion-button"
 import { heroSlideCount, HeroSlideshow } from "@/components/home/hero-slideshow"
-import { gsap, MOTION_OK, type ScrollTrigger } from "@/lib/gsap"
+import { gsap, lightMode, MOTION_OK, type ScrollTrigger } from "@/lib/gsap"
 
 export type HeroContent = {
   eyebrow: string
@@ -36,8 +36,9 @@ export function Hero({ content }: { content: HeroContent }) {
   React.useEffect(() => {
     const mm = gsap.matchMedia(ref.current ?? undefined)
     mm.add(MOTION_OK, () => {
-      const tl = gsap.timeline({ defaults: { ease: "power3.out" }, delay: 0.15 })
-      tl.fromTo(
+      // Slow connection: keep the hero text exactly as it arrived (no hide-and-fade intro).
+      const tl = gsap.timeline({ defaults: { ease: "power3.out" }, delay: 0.15, paused: lightMode() })
+      if (!tl.paused()) tl.fromTo(
         "[data-hero-media]",
         { scale: 1.05 },
         { scale: 1, duration: 2.8, ease: "power2.out", clearProps: "transform,scale" },

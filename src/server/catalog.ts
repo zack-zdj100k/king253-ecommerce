@@ -1,6 +1,7 @@
 import { and, asc, desc, eq, sql, type SQL } from "drizzle-orm"
 
 import type { DbOrTx } from "./db/client"
+import { localizeProduct } from "./translate"
 import { categories, productImages, productVariants, products, reviews } from "./db/schema"
 import { availableOf, SELLABLE_V, storefrontStock } from "./inventory"
 import { effectivePriceSql, offerOf } from "./pricing"
@@ -232,12 +233,14 @@ export async function getRelatedProducts(
 /* Product page                                                       */
 /* ------------------------------------------------------------------ */
 
-export async function getProductPage(db: DbOrTx, slug: string, opts: { includeDrafts?: boolean } = {}) {
-  const [product] = await db
+export async function getProductPage(db: DbOrTx, slug: string, opts: { includeDrafts?: boolean; locale?: string } = {}) {
+  const [found] = await db
     .select()
     .from(products)
     .where(opts.includeDrafts ? eq(products.slug, slug) : and(eq(products.slug, slug), eq(products.status, "published")))
-  if (!product) return null
+  if (!found) return null
+  // Texts in the visitor's language (automatic translations; original text as fallback).
+  const product = opts.locale ? localizeProduct(found, opts.locale) : found
 
   const [category, images, variants, ratingRows] = await Promise.all([
     product.categoryId

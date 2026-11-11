@@ -7,6 +7,7 @@ import { audit, type Actor } from "./audit"
 import { NotFoundError, RuleError } from "./errors"
 import { handOverUnits, restockReturnedUnits, SELLS_SS } from "./inventory"
 import { refundFor, unitPriceOf } from "./pricing"
+import { returnPriceFor } from "./shipping"
 
 /*
  * Returns & exchanges (admin only, on delivered orders), recorded in one
@@ -119,10 +120,12 @@ export async function recordReturn(db: Db, raw: ReturnInput, actor: Actor) {
       .returning()
     const ref = { refId: entry.id, actorUserId: actor.userId, reason: `Return on ${order.number}` }
     const refund = await takeBack(tx, order, input.returned, shop.id, entry.id, ref)
-    const [saved] = await tx.update(returnJournal).set({ amount: -refund }).where(eq(returnJournal.id, entry.id)).returning()
+    // The courier charges the shipping shop to bring the parcel back (per wilaya; null = not set for that shop yet).
+    const returnCost = await returnPriceFor(tx, order.storeId, order.wilayaCode)
+    const [saved] = await tx.update(returnJournal).set({ amount: -refund, returnCost }).where(eq(returnJournal.id, entry.id)).returning()
     const full = await everythingBack(tx, order.id)
     if (full) await tx.update(orders).set({ paymentStatus: "refused" }).where(eq(orders.id, order.id))
-    await history(tx, order, actor, `Return recorded — refund ${refund} DA${full ? " · every item is back: payment refused" : ""}`)
+    await history(tx, order, actor, `Return recorded — refund ${refund} DA${returnCost !== null ? ` · return fee ${returnCost} DA` : ""}${full ? " · every item is back: payment refused" : ""}`)
     await audit(tx, actor, "order.return", "order", order.id, { journal: entry.id, refund, full, shop: shop.name })
     return { ...saved, full }
   })
@@ -249,6 +252,7 @@ export async function listJournal(db: DbOrTx, f: JournalFilter = {}) {
       exchanges: sql<number>`count(*) filter (where ${returnJournal.type} = 'exchange')::int`,
       refunded: sql<number>`coalesce(-sum(${returnJournal.amount}) filter (where ${returnJournal.amount} < 0), 0)::int`,
       collected: sql<number>`coalesce(sum(${returnJournal.amount}) filter (where ${returnJournal.amount} > 0), 0)::int`,
+      returnFees: sql<number>`coalesce(sum(${returnJournal.returnCost}), 0)::int`,
     })
     .from(returnJournal)
     .where(scope.length ? and(...scope) : undefined)
@@ -310,4 +314,12 @@ export async function exchangeCatalog(db: DbOrTx) {
   return rows
     .map((r) => ({ variantId: r.variantId, label: `${r.productName} — ${r.color} / ${r.size}`, price: unitPriceOf(r, r), stock: r.stock }))
     .filter((r): r is typeof r & { price: number } => r.price !== null)
+}
+
+/** A shop's courier return fee across wilayas, for the Returns page note (null = not set at all). */
+export async function returnFeeSummary(db: DbOrTx, storeId: number) {
+  const rows = (await db.execute(sql`select return_price as v, count(*)::int as n from delivery_rates
+    where store_id = ${storeId} and return_price is not null group by 1 order by 2 desc`)) as unknown as { v: number; n: number }[]
+  if (!rows.length) return null
+  return { usual: Number(rows[0].v), others: rows.slice(1).map((r) => ({ price: Number(r.v), wilayas: Number(r.n) })) }
 }

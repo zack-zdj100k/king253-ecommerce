@@ -211,11 +211,13 @@ export const deliveryRates = pgTable(
       .references(() => wilayas.code),
     homePrice: integer("home_price"),
     deskPrice: integer("desk_price"),
+    /** What the courier charges the shop to bring a returned parcel back (null = not known yet). */
+    returnPrice: integer("return_price"),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [
     primaryKey({ columns: [t.storeId, t.wilayaCode] }),
-    check("delivery_rates_prices_non_negative", sql`coalesce(${t.homePrice}, 0) >= 0 and coalesce(${t.deskPrice}, 0) >= 0`),
+    check("delivery_rates_prices_non_negative", sql`coalesce(${t.homePrice}, 0) >= 0 and coalesce(${t.deskPrice}, 0) >= 0 and coalesce(${t.returnPrice}, 0) >= 0`),
   ]
 )
 
@@ -293,6 +295,8 @@ export const products = pgTable(
     seoTitle: text("seo_title"),
     seoDescription: text("seo_description"),
     ogImageUrl: text("og_image_url"),
+    /** Automatic translations of the product texts: { ar: {...}, fr: {...}, en: {...}, _source: hash }. */
+    translations: jsonb("translations").$type<Record<string, Record<string, string> | string>>().notNull().default({}),
     publishedAt: timestamp("published_at", { withTimezone: true }),
     ...timestamps,
   },
@@ -708,6 +712,8 @@ export const returnJournal = pgTable(
     storeId: integer("store_id").references(() => stores.id),
     type: returnType("type").notNull(),
     amount: integer("amount").notNull(),
+    /** Courier's return fee paid by the shop (from delivery_rates.return_price); null = not known for that shop/wilaya. */
+    returnCost: integer("return_cost"),
     reason: text("reason"),
     note: text("note"),
     actorUserId: uuid("actor_user_id").references(() => users.id, { onDelete: "set null" }),

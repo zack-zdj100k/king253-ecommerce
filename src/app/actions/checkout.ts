@@ -160,7 +160,6 @@ export async function placeOrderAction(raw: unknown): Promise<PlaceOrderResult> 
         const fields: Record<string, string> = {}
         const problem = passwordProblem(password)
         if (problem) fields.password = problem
-        if (!referral) fields.referralSource = "Tell us where you heard about us."
         if (Object.keys(fields).length) return { ok: false, error: "Please check the highlighted fields.", fields }
         if (!rateLimit(`signup:${await clientIp()}`, 5, 60 * 60_000).ok) return { ok: false, error: "Too many new accounts from here. Try again later." }
         try {

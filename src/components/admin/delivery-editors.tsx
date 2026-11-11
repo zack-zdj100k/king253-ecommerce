@@ -15,17 +15,17 @@ const str = (n: number | null) => (n === null ? "" : String(n))
 /* Prices per wilaya                                                  */
 /* ------------------------------------------------------------------ */
 
-type RateRow = { code: number; nameFr: string; nameAr: string; homePrice: number | null; deskPrice: number | null; desks: number }
+type RateRow = { code: number; nameFr: string; nameAr: string; homePrice: number | null; deskPrice: number | null; returnPrice: number | null; desks: number }
 
 export function RatesEditor({ storeId, rows }: { storeId: number; rows: RateRow[] }) {
   const { run, pending, feedback } = useAdminAction()
-  const initial = React.useMemo(() => Object.fromEntries(rows.map((r) => [r.code, { home: str(r.homePrice), desk: str(r.deskPrice) }])), [rows])
+  const initial = React.useMemo(() => Object.fromEntries(rows.map((r) => [r.code, { home: str(r.homePrice), desk: str(r.deskPrice), ret: str(r.returnPrice) }])), [rows])
   const [v, setV] = React.useState(initial)
   const [q, setQ] = React.useState("")
-  const [all, setAll] = React.useState({ home: "", desk: "" })
-  const changed = rows.filter((r) => v[r.code].home !== initial[r.code].home || v[r.code].desk !== initial[r.code].desk)
+  const [all, setAll] = React.useState({ home: "", desk: "", ret: "" })
+  const changed = rows.filter((r) => v[r.code].home !== initial[r.code].home || v[r.code].desk !== initial[r.code].desk || v[r.code].ret !== initial[r.code].ret)
   const shown = rows.filter((r) => !q || `${r.code} ${r.nameFr} ${r.nameAr}`.toLowerCase().includes(q.toLowerCase()))
-  const set = (code: number, key: "home" | "desk", value: string) => setV((prev) => ({ ...prev, [code]: { ...prev[code], [key]: digits(value) } }))
+  const set = (code: number, key: "home" | "desk" | "ret", value: string) => setV((prev) => ({ ...prev, [code]: { ...prev[code], [key]: digits(value) } }))
 
   return (
     <form
@@ -35,7 +35,7 @@ export function RatesEditor({ storeId, rows }: { storeId: number; rows: RateRow[
         run(() =>
           saveRatesAction(
             storeId,
-            changed.map((r) => ({ wilayaCode: r.code, homePrice: v[r.code].home, deskPrice: v[r.code].desk }))
+            changed.map((r) => ({ wilayaCode: r.code, homePrice: v[r.code].home, deskPrice: v[r.code].desk, returnPrice: v[r.code].ret }))
           )
         )
       }}
@@ -53,14 +53,18 @@ export function RatesEditor({ storeId, rows }: { storeId: number; rows: RateRow[
           <span className={labelClass}>Desk · empty rows</span>
           <input value={all.desk} onChange={(e) => setAll({ ...all, desk: digits(e.target.value) })} inputMode="numeric" placeholder="DA" className={inputClass} />
         </label>
+        <label className="block w-32">
+          <span className={labelClass}>Return · empty rows</span>
+          <input value={all.ret} onChange={(e) => setAll({ ...all, ret: digits(e.target.value) })} inputMode="numeric" placeholder="DA" className={inputClass} />
+        </label>
         <button
           type="button"
           className={btnOutline}
-          disabled={!all.home && !all.desk}
+          disabled={!all.home && !all.desk && !all.ret}
           onClick={() =>
             setV((prev) =>
               Object.fromEntries(
-                Object.entries(prev).map(([code, p]) => [code, { home: p.home || all.home, desk: p.desk || all.desk }])
+                Object.entries(prev).map(([code, p]) => [code, { home: p.home || all.home, desk: p.desk || all.desk, ret: p.ret || all.ret }])
               )
             )
           }
@@ -75,6 +79,7 @@ export function RatesEditor({ storeId, rows }: { storeId: number; rows: RateRow[
             <th className={th}>Wilaya</th>
             <th className={`${th} w-36`}>Home (DA)</th>
             <th className={`${th} w-36`}>Stop desk (DA)</th>
+            <th className={`${th} w-32`}>Return (DA)</th>
             <th className={`${th} text-right`}>Desks</th>
           </tr>
         </thead>
@@ -107,6 +112,16 @@ export function RatesEditor({ storeId, rows }: { storeId: number; rows: RateRow[
                   className={`${inputClass} h-9`}
                 />
               </td>
+              <td className={td}>
+                <input
+                  value={v[r.code].ret}
+                  onChange={(e) => set(r.code, "ret", e.target.value)}
+                  inputMode="numeric"
+                  placeholder="Not set"
+                  aria-label={`Return fee from ${r.nameFr}`}
+                  className={`${inputClass} h-9`}
+                />
+              </td>
               <td className={`${td} text-right tabular-nums`}>{r.desks || "—"}</td>
             </tr>
           ))}
@@ -117,7 +132,7 @@ export function RatesEditor({ storeId, rows }: { storeId: number; rows: RateRow[
         <button type="submit" disabled={pending || changed.length === 0} className={btnRed}>
           Save {changed.length ? `${changed.length} change${changed.length > 1 ? "s" : ""}` : "prices"}
         </button>
-        <span className="text-xs text-king-gray">Empty home price = price confirmed by phone. Stop desk needs at least one desk below.</span>
+        <span className="text-xs text-king-gray">Empty home price = price confirmed by phone. Return = what the courier charges the shop to bring a refused or returned parcel back.</span>
         <Feedback feedback={feedback} />
       </div>
     </form>

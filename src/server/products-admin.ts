@@ -472,18 +472,40 @@ export async function saveCategory(db: Db, id: number | null, raw: CategoryInput
     }
   }
   try {
-    if (id) {
-      const [row] = await db.update(categories).set({ ...data, slug }).where(eq(categories.id, id)).returning()
-      if (!row) throw new NotFoundError("This category")
+    return await db.transaction(async (tx) => {
+      // Display order is unique among siblings: taking a position that is used swaps the two
+      // (editing), or moves the others down one place (new category).
+      const siblings = and(data.parentId === null ? sql`${categories.parentId} is null` : eq(categories.parentId, data.parentId), id ? ne(categories.id, id) : undefined)
+      const [taken] = await tx.select({ id: categories.id }).from(categories).where(and(siblings, eq(categories.sortOrder, data.sortOrder))).limit(1)
+      if (id) {
+        const [before] = await tx.select({ sortOrder: categories.sortOrder, parentId: categories.parentId }).from(categories).where(eq(categories.id, id))
+        if (!before) throw new NotFoundError("This category")
+        if (taken) {
+          const sameParent = before.parentId === data.parentId
+          const free = sameParent ? before.sortOrder : await nextCategoryOrder(tx, data.parentId, id)
+          await tx.update(categories).set({ sortOrder: free }).where(eq(categories.id, taken.id))
+        }
+        const [row] = await tx.update(categories).set({ ...data, slug }).where(eq(categories.id, id)).returning()
+        return row
+      }
+      if (taken) await tx.update(categories).set({ sortOrder: sql`${categories.sortOrder} + 1` }).where(and(siblings, sql`${categories.sortOrder} >= ${data.sortOrder}`))
+      const [row] = await tx.insert(categories).values({ ...data, slug }).returning()
       return row
-    }
-    const [row] = await db.insert(categories).values({ ...data, slug }).returning()
-    return row
+    })
   } catch (error) {
     const e = error as { code?: string; cause?: { code?: string } }
     if ((e.cause?.code ?? e.code) === "23505") throw new AppError("SLUG_TAKEN", "A category with this slug already exists.")
     throw error
   }
+}
+
+/** First free display position among a category's siblings (max + 1). */
+async function nextCategoryOrder(tx: Parameters<Parameters<Db["transaction"]>[0]>[0], parentId: number | null, except: number) {
+  const [r] = await tx
+    .select({ max: sql<number>`coalesce(max(${categories.sortOrder}), -1)` })
+    .from(categories)
+    .where(and(parentId === null ? sql`${categories.parentId} is null` : eq(categories.parentId, parentId), ne(categories.id, except)))
+  return Number(r?.max ?? -1) + 1
 }
 
 /**

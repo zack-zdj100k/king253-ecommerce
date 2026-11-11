@@ -24,6 +24,19 @@ async function setup() {
   return { pants, baggy, classic, a, b }
 }
 
+describe("Category display order", () => {
+  it("taking a used position swaps the two; a new category pushes the others down", async () => {
+    const a = await saveCategory(testDb, null, { name: "Jackets", parentId: null, sortOrder: 0 })
+    const b = await saveCategory(testDb, null, { name: "Hoodies", parentId: null, sortOrder: 1 })
+    await saveCategory(testDb, b.id, { name: "Hoodies", slug: b.slug, parentId: null, sortOrder: 0 })
+    const order = async () => Object.fromEntries((await testDb.select().from(categories)).map((c) => [c.name, c.sortOrder]))
+    expect(await order()).toMatchObject({ Hoodies: 0, Jackets: 1 })
+    await saveCategory(testDb, null, { name: "Pants", parentId: null, sortOrder: 0 })
+    expect(await order()).toMatchObject({ Pants: 0, Hoodies: 1, Jackets: 2 })
+    void a
+  })
+})
+
 describe("Categories and subcategories", () => {
   it("a main category shows the products of its subcategories; a subcategory only its own", async () => {
     await setup()

@@ -108,8 +108,11 @@ export function readDeliveryCsv(kind, text, ref) {
     if (kind === "rates") {
       const homePrice = parsePrice(get("home_price"))
       const deskPrice = parsePrice(get("desk_price"))
-      if (Number.isNaN(homePrice) || Number.isNaN(deskPrice)) return errors.push(`Line ${line}: prices must be whole DA amounts.`)
-      out.push({ storeId: shop.id, wilayaCode: wilaya.code, homePrice, deskPrice })
+      // Optional column: the courier's return fee.
+      const hasReturn = header.indexOf("return_price") >= 0
+      const returnPrice = hasReturn ? parsePrice((cells[header.indexOf("return_price")] ?? "").trim()) : undefined
+      if (Number.isNaN(homePrice) || Number.isNaN(deskPrice) || Number.isNaN(returnPrice)) return errors.push(`Line ${line}: prices must be whole DA amounts.`)
+      out.push({ storeId: shop.id, wilayaCode: wilaya.code, homePrice, deskPrice, ...(hasReturn ? { returnPrice } : {}) })
     } else {
       const name = get("name")
       const commune = get("commune")

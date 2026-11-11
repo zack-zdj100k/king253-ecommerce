@@ -31,7 +31,7 @@ function Gallery({ images, name }: { images: Crop[]; name: string }) {
     return <div className="king-chamfer aspect-[4/5] bg-king-surface-light [--cut:22px]" aria-hidden />
   }
   // Never index past the end (the list can shrink when the colour changes or a hot reload keeps old state).
-  const safeActive = Math.min(active, images.length - 1)
+  const safeActive = Math.max(0, Math.min(active, images.length - 1))
   const go = (i: number) => {
     const next = (i + images.length) % images.length
     setActive(next)
@@ -49,7 +49,8 @@ function Gallery({ images, name }: { images: Crop[]; name: string }) {
           const slide = el.firstElementChild as HTMLElement | null
           if (!slide) return
           // Slides are narrower than the screen (the next photo peeks in), so step = slide + gap.
-          const i = Math.min(images.length - 1, Math.round(el.scrollLeft / (slide.offsetWidth + 12)))
+          // In Arabic (RTL) scrollLeft is negative, so use its size; never below 0.
+          const i = Math.max(0, Math.min(images.length - 1, Math.round(Math.abs(el.scrollLeft) / (slide.offsetWidth + 12))))
           if (i !== active) setActive(i)
         }}
         aria-label={t("photos", { name })}

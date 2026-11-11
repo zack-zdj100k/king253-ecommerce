@@ -21,7 +21,7 @@ import { ProductSelectionProvider } from "@/components/shop/variant-picker"
 
 export const dynamic = "force-dynamic"
 
-const load = cache((slug: string) => getProductPage(db, slug))
+const load = cache(async (slug: string) => getProductPage(db, slug, { locale: await currentLocale() }))
 const siteUrl = () => (process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000").replace(/\/$/, "")
 
 export async function generateMetadata({ params }: PageProps<"/product/[slug]">): Promise<Metadata> {

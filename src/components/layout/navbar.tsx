@@ -7,7 +7,7 @@ import { Crown, House, MapPin, Search, Shirt, ShoppingBag, User, type LucideIcon
 import { useTranslations } from "next-intl"
 
 import { cn } from "@/lib/utils"
-import { gsap, MOTION_OK } from "@/lib/gsap"
+import { gsap, lightMode, MOTION_OK } from "@/lib/gsap"
 import { NAV_LINKS, isActivePath } from "@/lib/site"
 import { useShop } from "@/components/providers/shop-provider"
 import { Logo } from "@/components/layout/logo"
@@ -72,6 +72,7 @@ export function Navbar() {
   React.useEffect(() => {
     const mm = gsap.matchMedia()
     mm.add(MOTION_OK, () => {
+      if (lightMode()) return
       gsap.fromTo(ref.current, { autoAlpha: 0, y: -24 }, { autoAlpha: 1, y: 0, duration: 1.2, ease: "power3.out", delay: 0.1 })
     })
     return () => mm.revert()
