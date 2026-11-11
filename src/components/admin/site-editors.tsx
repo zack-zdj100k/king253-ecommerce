@@ -2,7 +2,7 @@
 
 import * as React from "react"
 
-import { deleteStoreAction, saveSettingsAction, saveStoreAction } from "@/app/admin/actions/site"
+import { deleteStoreAction, saveSettingsAction, saveStoreAction, sendTestEmailAction } from "@/app/admin/actions/site"
 import { DeleteButton } from "@/components/admin/delete-button"
 import { Feedback, useAdminAction } from "@/components/admin/use-admin-action"
 import { btnGhost, btnOutline, btnRed, inputClass, labelClass, textareaClass } from "@/components/admin/ui"
@@ -194,6 +194,35 @@ const GROUPS: { title: string; fields: { key: string; label: string; type?: "num
   },
 ]
 
+/** Sends one test email to each shop's own address (Admin → Shops) and shows the result per shop. */
+function EmailTest() {
+  const [pending, start] = React.useTransition()
+  const [result, setResult] = React.useState<{ ok: boolean; text: string } | null>(null)
+  return (
+    <div className="mt-3">
+      <button
+        type="button"
+        className={btnOutline}
+        disabled={pending}
+        onClick={() =>
+          start(async () => {
+            setResult(null)
+            const r = await sendTestEmailAction()
+            setResult(r.ok ? { ok: true, text: String((r as { data?: unknown }).data ?? r.message ?? "Sent.") } : { ok: false, text: r.error })
+          })
+        }
+      >
+        {pending ? "Sending…" : "Send a test email to each shop"}
+      </button>
+      {result && (
+        <p role={result.ok ? "status" : "alert"} className={`mt-2 text-xs ${result.ok ? "text-emerald-400" : "text-king-bright-red"}`}>
+          {result.text}
+        </p>
+      )}
+    </div>
+  )
+}
+
 export function SettingsForm({ values, smtpConfigured }: { values: SettingsValues; smtpConfigured: boolean }) {
   const { run, pending, feedback } = useAdminAction()
   const [v, setV] = React.useState(values)
@@ -236,9 +265,12 @@ export function SettingsForm({ values, smtpConfigured }: { values: SettingsValue
             ))}
           </div>
           {g.title === "Email" && (
-            <p className="mt-4 text-xs text-king-gray">
-              Email service: {smtpConfigured ? "active — emails are sent." : "not set up yet — no emails are sent for now. Ask your developer to activate it."}
-            </p>
+            <>
+              <p className="mt-4 text-xs text-king-gray">
+                Email service: {smtpConfigured ? "active — emails are sent." : "not set up yet — no emails are sent for now. Ask your developer to activate it."}
+              </p>
+              <EmailTest />
+            </>
           )}
         </fieldset>
       ))}

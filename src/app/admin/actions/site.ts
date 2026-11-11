@@ -12,6 +12,7 @@ import { saveSettings, settingsSchema } from "@/server/settings"
 import { deleteStore, saveStore, storeInput, type StoreInput } from "@/server/stores"
 import { deleteMedia, listMedia } from "@/server/media"
 import { requireAdmin } from "@/server/auth/session"
+import { sendTestEmails } from "@/server/email/send"
 import { adminAction } from "./_shared"
 
 /* Shops (Location page) ------------------------------------------ */
@@ -104,4 +105,16 @@ export async function deleteMediaAction(url: string) {
     },
     { message: "Image deleted." }
   )
+}
+
+/* Email test ------------------------------------------------------ */
+
+export async function sendTestEmailAction() {
+  return adminAction(async () => {
+    const results = await sendTestEmails(db)
+    if (!results.length) throw new AppError("NO_SHOPS", "No active shop.")
+    const line = results.map((r) => `${r.shop}: ${r.ok ? `sent to ${r.to}` : `NOT sent${r.to ? ` to ${r.to}` : ""} — ${r.error}`}`).join(" · ")
+    if (results.some((r) => !r.ok)) throw new AppError("EMAIL_TEST", line)
+    return line
+  }, {})
 }

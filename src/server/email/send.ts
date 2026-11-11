@@ -101,3 +101,37 @@ export async function sendStatusEmail(db: DbOrTx, orderId: string, status: strin
   const mail = customerDeliveredEmail(settings.brandName, loaded.email, url, loaded.locale)
   await deliver(db, { ...mail, to: loaded.customerEmail, template: "customer_delivered", orderId, brand: settings.brandName })
 }
+
+/**
+ * Admin → Settings → "Send a test email": one short email to every active shop's own address
+ * (so each shop can check it receives only its own mail). Returns what happened per shop.
+ */
+export async function sendTestEmails(db: DbOrTx) {
+  const settings = await getSettings(db)
+  const transport = getTransport()
+  const shops = await db.select({ name: stores.name, email: stores.notificationEmail }).from(stores).where(eq(stores.active, true))
+  const results: { shop: string; to: string | null; ok: boolean; error?: string }[] = []
+  for (const shop of shops) {
+    if (!shop.email) {
+      results.push({ shop: shop.name, to: null, ok: false, error: "no email for this shop (Admin → Shops)" })
+      continue
+    }
+    if (!transport) {
+      results.push({ shop: shop.name, to: shop.email, ok: false, error: "email service is not set up (SMTP_HOST)" })
+      continue
+    }
+    const subject = `${settings.brandName} — test email for ${shop.name}`
+    const text = `This is a test from ${siteUrl()}/admin/settings.\n\nNew orders shipped from ${shop.name} are sent to this address only.`
+    try {
+      await transport.sendMail({ from: fromAddress(settings.brandName), to: shop.email, subject, text })
+      await db.insert(notifications).values({ recipient: shop.email, subject, template: "test", status: "sent" })
+      results.push({ shop: shop.name, to: shop.email, ok: true })
+    } catch (error) {
+      const message = error instanceof Error ? (error as Error & { code?: string }).code ?? error.message : "Unknown error"
+      console.error("[king253] test email failed", error)
+      await db.insert(notifications).values({ recipient: shop.email, subject, template: "test", status: "failed", error: String(message).slice(0, 500) })
+      results.push({ shop: shop.name, to: shop.email, ok: false, error: String(message).slice(0, 160) })
+    }
+  }
+  return results
+}

@@ -7,7 +7,7 @@ vi.mock("@/server/email/transport", () => ({
 }))
 
 import { notifications } from "@/server/db/schema"
-import { sendNewOrderEmails, sendStatusEmail } from "@/server/email/send"
+import { sendNewOrderEmails, sendStatusEmail, sendTestEmails } from "@/server/email/send"
 import { createOrder } from "@/server/orders/create"
 import { saveSettings } from "@/server/settings"
 import { customer, key, resetDb, seedDelivery, seedProduct, testDb, testShop } from "./support/db"
@@ -18,6 +18,16 @@ beforeEach(async () => {
 })
 
 describe("Emails", () => {
+  it("test email: each shop gets its own, a shop without an email is reported", async () => {
+    const a = await testShop()
+    await testShop("other-shop")
+    const results = await sendTestEmails(testDb)
+    const mine = results.find((r) => r.shop === a.name)
+    expect(mine).toMatchObject({ ok: true, to: a.notificationEmail })
+    expect(sent.filter((m) => m.to === a.notificationEmail)).toHaveLength(1)
+    expect(new Set(sent.map((m) => m.to)).size).toBe(sent.length)
+  })
+
   it("a new order is emailed only to its departure shop, with delivery and source", async () => {
     await saveSettings(testDb, { adminNotifyEmail: "admin@example.test" })
     const { wilaya } = await seedDelivery()
