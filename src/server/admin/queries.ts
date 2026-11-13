@@ -22,7 +22,7 @@ import {
 } from "../db/schema"
 import type { Range } from "../analytics"
 import { netRevenueSql } from "../pricing"
-import { SELLS_SS } from "../inventory"
+import { SELLS_SS, ALERT_SS } from "../inventory"
 
 const escapeLike = (s: string) => s.replace(/[\\%_]/g, (c) => `\\${c}`)
 export const PAGE = 25
@@ -320,8 +320,8 @@ export async function listInventory(db: DbOrTx, f: { storeId: number; q?: string
   // A search looks through every stock level; the filter applies when browsing.
   const filter = f.q ? "" : f.filter
   if (filter === "instock") where.push(sql`${available} > 0`)
-  if (filter === "low") where.push(sql`${available} <= ${threshold} and ${available} > 0`)
-  if (filter === "out") where.push(sql`${available} <= 0`)
+  if (filter === "low") where.push(sql`${available} <= ${threshold} and ${available} > 0`, sql.raw(ALERT_SS.replaceAll("ss.", "store_stock.")))
+  if (filter === "out") where.push(sql`${available} <= 0`, sql.raw(ALERT_SS.replaceAll("ss.", "store_stock.")))
   if (filter === "reserved") where.push(sql`${storeStock.reserved} > 0`)
   const page = Math.max(1, f.page ?? 1)
   const rows = await db
@@ -365,7 +365,7 @@ export async function lowStockByShop(db: DbOrTx, threshold: number) {
     .innerJoin(stores, eq(stores.id, storeStock.storeId))
     .innerJoin(productVariants, eq(productVariants.id, storeStock.variantId))
     .innerJoin(products, eq(products.id, productVariants.productId))
-    .where(and(eq(stores.active, true), eq(productVariants.active, true), eq(products.status, "published")))
+    .where(and(eq(stores.active, true), eq(productVariants.active, true), eq(products.status, "published"), sql.raw(ALERT_SS.replaceAll("ss.", "store_stock."))))
     .groupBy(stores.id, stores.name, stores.sortOrder)
     .orderBy(asc(stores.sortOrder), asc(stores.name))
 }
@@ -394,7 +394,8 @@ export async function lowStockVariants(db: DbOrTx, threshold: number, limit = 8)
         eq(stores.active, true),
         eq(productVariants.active, true),
         eq(products.status, "published"),
-        sql`${available} <= coalesce(${productVariants.lowStockThreshold}, ${threshold})`
+        sql`${available} <= coalesce(${productVariants.lowStockThreshold}, ${threshold})`,
+        sql.raw(ALERT_SS.replaceAll("ss.", "store_stock."))
       )
     )
     .orderBy(sql`${available} asc`)

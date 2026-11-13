@@ -1,6 +1,7 @@
 import { sql } from "drizzle-orm"
 
 import type { DbOrTx } from "../db/client"
+import { ALERT_SS } from "../inventory"
 
 /** Sidebar counters + demo-data warning, in one round trip. */
 export async function adminBadges(db: DbOrTx, lowStockThreshold: number) {
@@ -14,7 +15,8 @@ export async function adminBadges(db: DbOrTx, lowStockThreshold: number) {
         join product_variants v on v.id = ss.variant_id
         join products p on p.id = v.product_id
         where v.active and p.status = 'published'
-          and ss.physical - ss.reserved <= coalesce(v.low_stock_threshold, ${lowStockThreshold})) as low_stock,
+          and ss.physical - ss.reserved <= coalesce(v.low_stock_threshold, ${lowStockThreshold})
+          and ${sql.raw(ALERT_SS)}) as low_stock,
       (select exists(select 1 from product_variants where sku like 'DEMO-%')) as has_demo
   `)) as unknown as { new_orders: number; pending_reviews: number; open_returns: number; low_stock: number; has_demo: boolean }[]
   return row

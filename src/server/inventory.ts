@@ -10,6 +10,13 @@ import { AppError, NotFoundError, OutOfStockError } from "./errors"
  * `ss` is the store_stock alias of the surrounding query.
  */
 export const SELLS_SS = "exists (select 1 from product_stores ps join product_variants pv on pv.product_id = ps.product_id where pv.id = ss.variant_id and ps.store_id = ss.store_id and ps.active)"
+/**
+ * Stock alerts (low / out) only for real problems: the shop sells the product AND this size has had
+ * units in this shop at least once. A size never stocked in a shop (e.g. a new shop) is not a shortage.
+ * `ss` = the store_stock alias.
+ */
+export const ALERT_SS = `${SELLS_SS} and exists (select 1 from stock_movements sm where sm.variant_id = ss.variant_id and sm.store_id = ss.store_id and sm.physical_after > 0)`
+
 /** Same check for drizzle queries on the store_stock table. */
 const sellsHere = () =>
   sql`exists (select 1 from product_stores ps join product_variants pv on pv.product_id = ps.product_id where pv.id = ${storeStock.variantId} and ps.store_id = ${storeStock.storeId} and ps.active)`
