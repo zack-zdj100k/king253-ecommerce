@@ -55,7 +55,7 @@ export const TestimonialsColumn = (props: { className?: string; testimonials: Te
   )
 }
 
-/** Three staggered columns (one on mobile, two on tablet) fading at top and bottom. */
+/** Three staggered columns (two on tablet; on phones one column with all of them) fading at top and bottom. */
 export function TestimonialsColumns({ testimonials, className }: { testimonials: Testimonial[]; className?: string }) {
   const third = Math.ceil(testimonials.length / 3)
   const first = testimonials.slice(0, third)
@@ -68,7 +68,9 @@ export function TestimonialsColumns({ testimonials, className }: { testimonials:
         className
       )}
     >
-      <TestimonialsColumn testimonials={first.length ? first : testimonials} duration={15} />
+      {/* Phone: one column with EVERY testimonial (the split columns below are tablet/desktop only). */}
+      <TestimonialsColumn testimonials={testimonials} className="md:hidden" duration={Math.max(12, testimonials.length * 7)} />
+      <TestimonialsColumn testimonials={first.length ? first : testimonials} className="hidden md:block" duration={15} />
       {second.length > 0 && <TestimonialsColumn testimonials={second} className="hidden md:block" duration={19} />}
       {thirdCol.length > 0 && <TestimonialsColumn testimonials={thirdCol} className="hidden lg:block" duration={17} />}
     </div>
