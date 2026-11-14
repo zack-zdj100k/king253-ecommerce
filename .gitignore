@@ -50,3 +50,6 @@ next-env.d.ts
 # DZSecurity bundle
 /dist
 /docs/card-preview
+
+# video production (large media, local demo login state)
+/KING253_VIDEO_PRODUCTION/

@@ -12,6 +12,18 @@
       "autoPort": true
     },
     {
+      "name": "king253-video",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "dev"
+      ],
+      "port": 3000,
+      "env": {
+        "DATABASE_URL": "postgres://snow@localhost:5432/king253_video"
+      }
+    },
+    {
       "name": "king253-prod",
       "runtimeExecutable": "npx",
       "runtimeArgs": [

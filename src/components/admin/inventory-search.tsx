@@ -15,7 +15,7 @@ export function InventorySearch({ initial }: { initial: string }) {
   const pathname = usePathname()
   const params = useSearchParams()
   const [q, setQ] = React.useState(initial)
-  const first = React.useRef(true)
+  const current = params.get("q") ?? ""
 
   const go = React.useCallback(
     (value: string) => {
@@ -28,14 +28,13 @@ export function InventorySearch({ initial }: { initial: string }) {
     [params, pathname, router]
   )
 
+  // Navigate only when the typed text differs from the URL. `go` changes after every
+  // navigation, so without this check each replace scheduled another one (endless reloads).
   React.useEffect(() => {
-    if (first.current) {
-      first.current = false
-      return
-    }
+    if (q.trim() === current) return
     const t = window.setTimeout(() => go(q), 350)
     return () => window.clearTimeout(t)
-  }, [q, go])
+  }, [q, current, go])
 
   return (
     <form
