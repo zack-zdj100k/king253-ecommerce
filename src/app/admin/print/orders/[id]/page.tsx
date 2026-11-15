@@ -5,7 +5,7 @@ import { notFound } from "next/navigation"
 import { formatPhone } from "@/lib/phone"
 import { db } from "@/server/db"
 import { requireAdminPage } from "@/server/auth/session"
-import { orderItems, orders, products, stores } from "@/server/db/schema"
+import { orderItems, orders, stores } from "@/server/db/schema"
 import { getSettings } from "@/server/settings"
 import { PrintButton } from "./print-button"
 
@@ -46,9 +46,8 @@ export default async function PrintOrder({ params }: { params: Promise<{ id: str
   const [shop] = order.storeId ? await db.select().from(stores).where(eq(stores.id, order.storeId)) : []
   const settings = await getSettings(db)
   const items = await db
-    .select({ item: orderItems, material: products.material })
+    .select({ item: orderItems })
     .from(orderItems)
-    .leftJoin(products, eq(products.id, orderItems.productId))
     .where(and(eq(orderItems.orderId, order.id), isNull(orderItems.removedAt)))
     .orderBy(asc(orderItems.createdAt))
 
@@ -153,12 +152,11 @@ export default async function PrintOrder({ params }: { params: Promise<{ id: str
 
         {/* Items */}
         <p className="lbl">Articles ({units}) · <bdi dir="rtl">المنتجات</bdi></p>
-        {items.map(({ item, material }) => (
+        {items.map(({ item }) => (
           <div key={item.id} className="item">
             <p className="name">{item.productName}</p>
             <p className="meta">
-              {item.color} · Taille <b>{item.size}</b>
-              {material ? ` · ${material}` : ""}
+              Taille <b>{item.size}</b>
             </p>
             <div className="row meta">
               <span>
