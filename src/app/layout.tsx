@@ -43,6 +43,8 @@ export async function generateMetadata(): Promise<Metadata> {
     metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
     title: { default: t.title, template: "%s — KING 253" },
     description: t.description,
+    // Browser tab and Google results: the KING 253 logo (Google reads /favicon.ico and the 48px+ square icon).
+    icons: { icon: [{ url: "/favicon.ico", sizes: "48x48" }, { url: "/icon.png", sizes: "512x512", type: "image/png" }], apple: "/apple-icon.png" },
     // Link previews (WhatsApp, Instagram, Facebook, Google): site name + a campaign photo.
     openGraph: {
       type: "website",
