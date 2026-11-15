@@ -172,7 +172,7 @@ export async function createOrder(db: Db, input: CreateOrderInput, ctx: CreateOr
           address: customer.address,
           deliveryType: delivery.type,
           deliveryDeskId: desk?.id ?? null,
-          deskName: desk?.name ?? (phoneDesk ? "ZR Express" : null),
+          deskName: desk?.name ?? (phoneDesk ? shop.courierName || "Transporteur" : null),
           deskAddress: desk ? [desk.address, desk.commune].filter(Boolean).join(", ") : phoneDesk ? "Agence de la wilaya — adresse confirmée par téléphone" : null,
           referralSource: isReferralSource(parsed.data.referralSource) ? parsed.data.referralSource : null,
           locale: parsed.data.locale ?? null,

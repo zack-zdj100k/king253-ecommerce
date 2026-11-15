@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm"
 import { beforeEach, describe, expect, it } from "vitest"
 
-import { deliveryRates, orders, productStores, stockMovements, storeStock, users } from "@/server/db/schema"
+import { deliveryRates, stores, orders, productStores, stockMovements, storeStock, users } from "@/server/db/schema"
 import { adjustPhysicalStock, setProductStores, shopsThatCanFulfil } from "@/server/inventory"
 import { createOrder } from "@/server/orders/create"
 import { createVariant, saveProduct } from "@/server/products-admin"
@@ -130,8 +130,12 @@ describe("Checkout delivery choice", () => {
     ).rejects.toThrow(/no longer has everything|no stop desk/i)
     await testDb.update(deliveryRates).set({ deskPrice: 480 }).where(eq(deliveryRates.storeId, tee.shop.id))
     const order = await createOrder(testDb, { customer: customer({ wilaya }), lines: [{ variantId: tee.variants[0].id, quantity: 1 }], delivery: { type: "desk" }, idempotencyKey: key() })
-    expect(order).toMatchObject({ deliveryType: "desk", deliveryDeskId: null, deskName: "ZR Express", deliveryFee: 480, total: 2480 })
+    expect(order).toMatchObject({ deliveryType: "desk", deliveryDeskId: null, deskName: "Transporteur", deliveryFee: 480, total: 2480 })
     expect(order.deskAddress).toMatch(/téléphone/)
+    // The order carries the shop's own delivery company, not a fixed one.
+    await testDb.update(stores).set({ courierName: "On Time Express" }).where(eq(stores.id, tee.shop.id))
+    const second = await createOrder(testDb, { customer: customer({ wilaya }), lines: [{ variantId: tee.variants[0].id, quantity: 1 }], delivery: { type: "desk" }, idempotencyKey: key() })
+    expect(second.deskName).toBe("On Time Express")
   })
 
   it("an order ships with an open one only from the same shop and the same delivery", async () => {

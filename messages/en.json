@@ -238,7 +238,8 @@
     "updatingPrices": "Updating prices",
     "wilaya": "Wilaya",
     "yourBag": "Your bag ({count})",
-    "deskByPhone": "Pick-up at the ZR Express office in your wilaya: our team confirms the address by phone."
+    "deskByPhone": "Pick-up at the {courier} office in your wilaya: our team confirms the address by phone.",
+    "courierFallback": "delivery company"
   },
   "finder": {
     "closest": "Closest",

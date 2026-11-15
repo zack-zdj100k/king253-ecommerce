@@ -240,6 +240,8 @@ export type ShopQuote = {
   desks: Desk[]
   suggestedDeskId: number | null
   available: boolean
+  /** The shop's delivery company (for the Stop desk text). */
+  courierName: string | null
 }
 
 /**
@@ -248,13 +250,13 @@ export type ShopQuote = {
  */
 export async function quoteShops(
   db: DbOrTx,
-  input: { shops: { id: number; name: string }[]; wilayaCode: number; wilayaName: string; commune?: string | null; type: DeliveryType }
+  input: { shops: { id: number; name: string; courierName?: string | null }[]; wilayaCode: number; wilayaName: string; commune?: string | null; type: DeliveryType }
 ): Promise<ShopQuote[]> {
   const ids = input.shops.map((s) => s.id)
   const quotes: ShopQuote[] =
     input.type === "home"
       ? await homePrices(db, input.wilayaCode, ids).then((prices) =>
-          input.shops.map((s) => ({ storeId: s.id, storeName: s.name, price: prices.get(s.id) ?? null, desks: [], suggestedDeskId: null, available: true }))
+          input.shops.map((s) => ({ storeId: s.id, storeName: s.name, price: prices.get(s.id) ?? null, desks: [], suggestedDeskId: null, available: true, courierName: s.courierName ?? null }))
         )
       : await Promise.all([desksFor(db, input.wilayaCode, ids), deskPrices(db, input.wilayaCode, ids)]).then(([desks, rates]) =>
           input.shops.map((s) => {
@@ -263,8 +265,8 @@ export async function quoteShops(
             // No listed desk but the courier's wilaya Stop desk price is known: the customer collects at the courier's
             // agency and our team confirms its address by phone (no desk to choose).
             const wilayaPrice = rates.get(s.id) ?? null
-            if (!own.length && wilayaPrice !== null) return { storeId: s.id, storeName: s.name, price: wilayaPrice, desks: [], suggestedDeskId: null, available: true }
-            return { storeId: s.id, storeName: s.name, price: suggested?.price ?? null, desks: own, suggestedDeskId: suggested?.id ?? null, available: own.length > 0 }
+            if (!own.length && wilayaPrice !== null) return { storeId: s.id, storeName: s.name, price: wilayaPrice, desks: [], suggestedDeskId: null, available: true, courierName: s.courierName ?? null }
+            return { storeId: s.id, storeName: s.name, price: suggested?.price ?? null, desks: own, suggestedDeskId: suggested?.id ?? null, available: own.length > 0, courierName: s.courierName ?? null }
           })
         )
   return quotes.sort((a, b) => Number(!a.available) - Number(!b.available) || (a.price ?? Infinity) - (b.price ?? Infinity))

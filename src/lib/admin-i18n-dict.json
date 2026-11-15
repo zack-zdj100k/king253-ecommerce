@@ -3986,5 +3986,13 @@
 "Print order": [
 "طباعة الطلب",
 "Imprimer la commande"
+],
+"Delivery company": [
+"شركة التوصيل",
+"Transporteur"
+],
+"Shown to customers who choose Stop desk and printed on the order.": [
+"تظهر للزبائن الذين يختارون Stop desk وتُطبع على الطلب.",
+"Affiché aux clients qui choisissent Stop desk et imprimé sur la commande."
 ]
 }

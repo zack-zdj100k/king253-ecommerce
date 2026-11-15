@@ -153,6 +153,8 @@ export const stores = pgTable("stores", {
   city: text("city").notNull(),
   address: text("address").notNull(),
   phone: text("phone"),
+  /** Delivery company this shop ships with (shown to customers choosing Stop desk), e.g. "ZR Express". */
+  courierName: text("courier_name"),
   /** One line per row: "Days | Hours". */
   hours: text("hours"),
   /** Google Maps link for directions (optional). */

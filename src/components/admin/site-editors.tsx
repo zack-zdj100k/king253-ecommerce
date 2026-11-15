@@ -21,6 +21,7 @@ type StoreRow = {
   city: string
   address: string
   phone: string | null
+  courierName: string | null
   hours: string | null
   mapUrl: string | null
   latitude: number | null
@@ -38,6 +39,7 @@ const toForm = (s: StoreRow | null) => ({
   city: s?.city ?? "",
   address: s?.address ?? "",
   phone: s?.phone ?? "",
+  courierName: s?.courierName ?? "",
   hours: s?.hours ?? "",
   mapUrl: s?.mapUrl ?? "",
   latitude: s?.latitude === null || s?.latitude === undefined ? "" : String(s.latitude),
@@ -57,7 +59,7 @@ export function StoreEditor({ store }: { store: StoreRow | null }) {
   const [v, setV] = React.useState(() => toForm(store))
   const set = (patch: Partial<typeof v>) => setV((prev) => ({ ...prev, ...patch }))
   const text = (
-    key: "name" | "slug" | "notificationEmail" | "wilaya" | "city" | "address" | "phone" | "mapUrl",
+    key: "name" | "slug" | "notificationEmail" | "wilaya" | "city" | "address" | "phone" | "courierName" | "mapUrl",
     label: string,
     extra?: { placeholder?: string; wide?: boolean; help?: string; type?: string }
   ) => (
@@ -86,6 +88,7 @@ export function StoreEditor({ store }: { store: StoreRow | null }) {
     >
       {text("name", "Shop name", { placeholder: "e.g. KING 253 Annaba" })}
       {text("phone", "Shop phone (optional)")}
+      {text("courierName", "Delivery company", { placeholder: "e.g. ZR Express", help: "Shown to customers who choose Stop desk and printed on the order." })}
       {text("notificationEmail", "New-order email", {
         type: "email",
         placeholder: "annaba@king253.com",

@@ -238,7 +238,8 @@
     "updatingPrices": "Mise à jour des prix",
     "wilaya": "Wilaya",
     "yourBag": "Ton panier ({count})",
-    "deskByPhone": "Retrait au bureau ZR Express de votre wilaya : notre équipe vous confirme l'adresse par téléphone."
+    "deskByPhone": "Retrait au bureau {courier} de votre wilaya : notre équipe vous confirme l'adresse par téléphone.",
+    "courierFallback": "du transporteur"
   },
   "finder": {
     "closest": "La plus proche",

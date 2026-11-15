@@ -238,7 +238,8 @@
     "updatingPrices": "تحديث الأسعار",
     "wilaya": "الولاية",
     "yourBag": "سلتك ({count})",
-    "deskByPhone": "الاستلام من مكتب ZR Express في ولايتك، والعنوان يؤكده فريقنا بالهاتف."
+    "deskByPhone": "الاستلام من مكتب {courier} في ولايتك، والعنوان يؤكده فريقنا بالهاتف.",
+    "courierFallback": "شركة التوصيل"
   },
   "finder": {
     "closest": "الأقرب",

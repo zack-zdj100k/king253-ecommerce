@@ -43,6 +43,7 @@ export const storeInput = z
     city: z.string().trim().min(2, "Enter the city.").max(80),
     address: z.string().trim().min(4, "Enter the street address.").max(300),
     phone: optional(40),
+    courierName: optional(60),
     hours: optional(500),
     mapUrl: z
       .union([z.literal(""), z.url("Paste a full link starting with https://").startsWith("https://", "Paste a full link starting with https://")])

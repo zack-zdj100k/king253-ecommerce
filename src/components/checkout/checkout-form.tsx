@@ -414,7 +414,7 @@ export function CheckoutForm({
           </div>
 
           {type === "desk" && chosen && chosen.available && chosen.desks.length === 0 && (
-            <p className="mt-5 text-sm text-king-muted">{t("deskByPhone")}</p>
+            <p className="mt-5 text-sm text-king-muted">{t("deskByPhone", { courier: chosen.courierName || t("courierFallback") })}</p>
           )}
           {type === "desk" && chosen && chosen.available && chosen.desks.length > 0 && (
             <div className="mt-5">

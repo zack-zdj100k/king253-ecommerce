@@ -162,6 +162,13 @@
       "when": 1794764602805,
       "tag": "0022_on_time_express_constantine_rates",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1794768304498,
+      "tag": "0023_courier_name",
+      "breakpoints": true
     }
   ]
 }
