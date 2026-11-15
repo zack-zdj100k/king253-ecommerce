@@ -34,6 +34,8 @@ const TITLES = {
   ar: { title: "KING 253 — ستريت وير رجالي", description: "ستريت وير عصري بروح أمريكية لمن يتحرك بطريقته الخاصة. صُنع للمدينة." },
 } as const
 
+const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000").replace(/\/$/, "")
+
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await currentLocale()
   const t = TITLES[locale]
@@ -64,6 +66,23 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang={locale} dir={dirOf(locale)} className={`${inter.variable} ${instrumentSerif.variable} ${kufi.variable}`} suppressHydrationWarning>
       <head>
+        {/* Search engines: the brand's name and logo (Google shows it next to the site in results). */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify([
+              {
+                "@context": "https://schema.org",
+                "@type": "Organization",
+                name: "KING 253",
+                url: SITE_URL,
+                logo: `${SITE_URL}/icon.png`,
+                image: `${SITE_URL}/brand/king253-logo.png`,
+              },
+              { "@context": "https://schema.org", "@type": "WebSite", name: "KING 253", alternateName: ["King253", "KING253"], url: SITE_URL },
+            ]).replace(/</g, "\\u003c"),
+          }}
+        />
         {/* Lets CSS hide animated elements before GSAP runs — only when JS is available. */}
         <script
           // Animated content starts hidden only on a good connection, and is shown anyway if the

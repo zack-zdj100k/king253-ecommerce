@@ -6,6 +6,22 @@ import { resetDb, testDb, testShop } from "./support/db"
 
 const actor = { userId: null, label: "Test" }
 
+describe("Courier price files in data/delivery", () => {
+  it("the On Time Express (Constantine) and ZR Express (Annaba) lists are valid: 55 and 54 wilayas, no stop desk when 0", async () => {
+    const { readFileSync } = await import("node:fs")
+    const wilayas = Array.from({ length: 69 }, (_, i) => ({ code: i + 1, fr: `W${i + 1}`, ar: `و${i + 1}` }))
+    const ref = { shops: [{ id: 2, slug: "constantine" }, { id: 3, slug: "annaba" }], wilayas }
+    const c = readDeliveryCsv("rates", readFileSync("data/delivery/on-time-express-constantine-rates.csv", "utf8"), ref)
+    expect(c.errors).toEqual([])
+    expect(c.rows).toHaveLength(55)
+    expect(c.rows.find((r: { wilayaCode: number }) => r.wilayaCode === 25)).toMatchObject({ homePrice: 600, deskPrice: 400 })
+    expect(c.rows.find((r: { wilayaCode: number }) => r.wilayaCode === 52)).toMatchObject({ homePrice: 1200, deskPrice: null })
+    const a = readDeliveryCsv("rates", readFileSync("data/delivery/zr-express-annaba-rates.csv", "utf8"), ref)
+    expect(a.errors).toEqual([])
+    expect(a.rows).toHaveLength(54)
+  })
+})
+
 describe("Delivery CSV", () => {
   it("reads commas, semicolons, quotes and DA amounts", () => {
     expect(parseCsv('a;b\n"x;y";2\r\n')).toEqual([["a", "b"], ["x;y", "2"]])

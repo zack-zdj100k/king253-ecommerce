@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { ArrowRight, Crown } from "lucide-react"
+import { ArrowRight } from "lucide-react"
 import { getTranslations } from "next-intl/server"
 
 import { NAV_LINKS } from "@/lib/site"
@@ -9,7 +9,7 @@ import { getSettings } from "@/server/settings"
 import { listStores } from "@/server/stores"
 import { formatPhone, normalizePhone, whatsappLink } from "@/lib/phone"
 import { Button } from "@/components/ui/button"
-import { GraffitiWordmark } from "@/components/ui/graffiti-wordmark"
+import { BrandMark } from "@/components/layout/brand-mark"
 import { LanguageSwitcher } from "@/components/layout/language-switcher"
 
 const linkClass = "inline-block py-1.5 text-sm text-king-gray transition-colors duration-300 hover:text-king-white"
@@ -33,11 +33,8 @@ async function Footer() {
         <div className="flex flex-col justify-between gap-12 md:flex-row">
           {/* Brand block */}
           <div className="max-w-sm">
-            <Link href="/" className="group inline-flex items-center gap-2.5" aria-label={t("home")}>
-              <Crown className="size-6 -rotate-6 text-king-bright-red transition-transform duration-500 group-hover:rotate-0" aria-hidden />
-              <span className="text-lg font-black tracking-[-0.04em] text-king-white uppercase">
-                King <span className="text-king-bright-red">253</span>
-              </span>
+            <Link href="/" className="group inline-block" aria-label={t("home")}>
+              <BrandMark className="w-32 sm:w-36" />
             </Link>
 
             <p className="mt-4 text-sm leading-relaxed text-king-muted">
@@ -165,7 +162,10 @@ async function Footer() {
 
         {/* The large name — 3D graffiti */}
         <div className="mt-14 md:mt-20">
-          <GraffitiWordmark />
+          {/* The real KING 253 artwork, large, closing the page. */}
+          <Link href="/" aria-label={t("home")} className="mx-auto block w-[min(86vw,34rem)]">
+            <BrandMark className="w-full [--float:14px]" hover={false} />
+          </Link>
         </div>
 
         <DeveloperCredit settings={settings} labels={{ by: t("developedBy"), fallback: t("theDeveloper") }} />

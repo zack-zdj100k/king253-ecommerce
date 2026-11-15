@@ -9,27 +9,31 @@ import { orderItems, orders, products, stores } from "@/server/db/schema"
 import { getSettings } from "@/server/settings"
 import { PrintButton } from "./print-button"
 
-export const metadata: Metadata = { title: "Bon de commande", robots: { index: false, follow: false } }
+export const metadata: Metadata = { title: "Ticket", robots: { index: false, follow: false } }
 export const dynamic = "force-dynamic"
 
-/* Printed slip for a confirmed order: what goes in the parcel, where it goes, what to collect.
-   Bilingual French / Arabic (the courier and the shop both read it). Plain black on white. */
+/*
+ * Order ticket for the shop's thermal receipt printer (Xprinter XP-D200N, 80 mm paper, ESC/POS).
+ * Printable width is 72 mm; everything is black on white (thermal paper has no grey), big enough to
+ * read at a glance, one column, no tables wider than the paper. Bilingual French / Arabic.
+ */
 
 const da = (n: number) => `${String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, " ")} DA`
 const plain = (s: string) => s.replace(/[⁦-⁩]/g, "")
 const date = (d: Date) =>
   d.toLocaleString("fr-FR", { timeZone: "Africa/Algiers", day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })
 
-/** "French · عربي : value" — each part isolated so French, Arabic and numbers never swap places. */
-function Line({ fr, ar, children, strong = true }: { fr: string; ar: string; children: React.ReactNode; strong?: boolean }) {
+/** Label / value on one block: small label (FR · AR), the value below it, bold. */
+function Field({ fr, ar, children }: { fr: string; ar: string; children: React.ReactNode }) {
   return (
-    <p className="flex flex-wrap items-baseline gap-x-1.5">
-      <span>{fr}</span>
-      <span>·</span>
-      <bdi dir="rtl">{ar}</bdi>
-      <span>:</span>
-      <bdi className={strong ? "font-bold" : ""}>{children}</bdi>
-    </p>
+    <div className="field">
+      <p className="lbl">
+        {fr} · <bdi dir="rtl">{ar}</bdi>
+      </p>
+      <p className="val">
+        <bdi>{children}</bdi>
+      </p>
+    </div>
   )
 }
 
@@ -52,116 +56,147 @@ export default async function PrintOrder({ params }: { params: Promise<{ id: str
   const shopPhone = shop?.phone || settings.contactPhone || ""
   const units = items.reduce((n, r) => n + r.item.quantity, 0)
   const customerPays = order.freeDelivery || order.shipsWithOrderId ? 0 : order.deliveryFee
-  const deliveryLabel = order.deliveryType === "desk" ? "Stop desk (bureau)" : "À domicile"
+  const deliveryWord = order.deliveryType === "desk" ? "Stop desk" : "Domicile"
+  const feeLabel = order.shipsWithOrderId ? "Groupée" : order.freeDelivery ? "Offerte" : order.deliveryFee > 0 ? da(order.deliveryFee) : "Par téléphone"
+  const toCollect = order.subtotal - order.discountAmount + customerPays
 
   return (
-    <div data-no-translate className="print-slip min-h-svh bg-neutral-200 py-6 text-black print:bg-white print:py-0">
+    <div data-no-translate className="ticket-page min-h-svh bg-neutral-300 py-4 text-black print:bg-white print:py-0">
       <style>{`
-        @page { size: A4; margin: 12mm; }
-        @media print { .no-print { display: none !important; } .print-slip { min-height: 0 !important; } }
-        .print-slip table { border-collapse: collapse; width: 100%; }
-        .print-slip th, .print-slip td { border: 1px solid #000; padding: 6px 8px; vertical-align: top; }
+        /* 80 mm roll: the page is as long as the ticket. The printer's printable width is 72 mm. */
+        @page { size: 80mm auto; margin: 0; }
+        @media print {
+          .no-print { display: none !important; }
+          .ticket-page { min-height: 0 !important; padding: 0 !important; background: #fff !important; }
+          .ticket { box-shadow: none !important; margin: 0 !important; }
+        }
+        .ticket { width: 72mm; margin: 0 auto; padding: 3mm 1.5mm 6mm; background: #fff; box-sizing: border-box; color: #000; font-family: Arial, Helvetica, Tahoma, sans-serif; font-size: 11.5px; line-height: 1.35; box-shadow: 0 2px 10px rgba(0,0,0,.25); }
+        .ticket * { color: #000 !important; }
+        .ticket p { margin: 0; }
+        .sep { border: 0; border-top: 1.5px dashed #000; margin: 7px 0; }
+        .sep-solid { border-top-style: solid; }
+        .center { text-align: center; }
+        .h1 { font-size: 15px; font-weight: 900; letter-spacing: .02em; }
+        .field { margin: 5px 0; }
+        .lbl { font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .03em; }
+        .val { font-size: 12.5px; font-weight: 800; word-break: break-word; }
+        .big { font-size: 16px; font-weight: 900; }
+        .row { display: flex; justify-content: space-between; align-items: baseline; gap: 6px; }
+        .item { margin: 6px 0; padding-bottom: 6px; border-bottom: 1px dotted #000; }
+        .item:last-child { border-bottom: 0; }
+        .name { font-size: 12.5px; font-weight: 800; }
+        .meta { font-size: 11px; }
+        .total { font-size: 17px; font-weight: 900; }
       `}</style>
-      <div className="no-print mx-auto mb-4 flex max-w-[210mm] items-center justify-between gap-3 px-2">
-        <a href={`/admin/orders/${order.id}`} className="text-sm underline">← Retour à la commande</a>
+
+      <div className="no-print mx-auto mb-3 flex max-w-[72mm] items-center justify-between gap-2 px-1">
+        <a href={`/admin/orders/${order.id}`} className="text-xs underline">← Retour</a>
         <PrintButton />
       </div>
 
-      <article dir="ltr" className="mx-auto max-w-[210mm] bg-white p-[12mm] font-sans text-[12.5px] leading-snug shadow print:max-w-none print:p-0 print:shadow-none">
-        {/* Shop */}
-        <header className="flex items-start justify-between gap-6 border-b-2 border-black pb-3">
-          <div>
-            <p className="text-[26px] font-black tracking-tight">KING 253</p>
-            <p className="text-[14px] font-bold">{shopName}</p>
-            {shop && <p>{[shop.address, shop.city, shop.wilaya].filter(Boolean).join(", ")}</p>}
-            {shopPhone && <Line fr="Tél." ar="الهاتف">{plain(formatPhone(shopPhone))}</Line>}
-          </div>
-          <div className="text-right">
-            <p className="text-[11px] uppercase">Bon de commande · <bdi dir="rtl">وصل الطلب</bdi></p>
-            <p className="text-[18px] font-black">{order.number}</p>
-            <div className="flex flex-col items-end">
-              <Line fr="Date" ar="التاريخ">{date(order.createdAt)}</Line>
-              <Line fr="Imprimé le" ar="طُبع في" strong={false}>{date(new Date())}</Line>
-            </div>
-          </div>
+      <article dir="ltr" className="ticket">
+        {/* Brand + shop */}
+        <header className="center">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/brand/king253-logo-receipt.png" alt="KING 253" style={{ width: "46mm", height: "auto", margin: "0 auto", display: "block" }} />
+          <p className="h1" style={{ marginTop: 4 }}>{shopName}</p>
+          {shop && <p className="meta">{[shop.address, shop.city].filter(Boolean).join(", ")}</p>}
+          {shopPhone && (
+            <p className="val">
+              ☎ <bdi>{plain(formatPhone(shopPhone))}</bdi>
+            </p>
+          )}
         </header>
 
-        {/* Customer + destination */}
-        <section className="mt-4 grid grid-cols-2 gap-4">
-          <div className="border border-black p-3">
-            <p className="mb-1 text-[11px] font-bold uppercase">Client · <bdi dir="rtl">الزبون</bdi></p>
-            <p className="text-[16px] font-bold">{order.customerName}</p>
-            <p className="text-[18px] font-black tracking-wide">{plain(formatPhone(order.customerPhone))}</p>
-          </div>
-          <div className="border border-black p-3">
-            <p className="mb-1 text-[11px] font-bold uppercase">Destination · <bdi dir="rtl">الوجهة</bdi></p>
-            <Line fr="Wilaya" ar="الولاية">{order.wilayaCode ? `${String(order.wilayaCode).padStart(2, "0")} — ` : ""}{order.wilayaName}</Line>
-            <Line fr="Commune" ar="البلدية">{order.city}</Line>
-            <Line fr="Adresse" ar="العنوان">{order.address}</Line>
-            <Line fr="Livraison" ar="التوصيل">{deliveryLabel}</Line>
-            {order.deliveryType === "desk" && (order.deskName || order.deskAddress) && (
-              <Line fr="Bureau" ar="المكتب">{[order.deskName, order.deskAddress].filter(Boolean).join(" — ")}</Line>
-            )}
-          </div>
-        </section>
+        <hr className="sep" />
 
+        <div className="center">
+          <p className="lbl">Commande · <bdi dir="rtl">الطلب</bdi></p>
+          <p className="big" style={{ letterSpacing: ".01em" }}>{order.number}</p>
+          <p className="meta">{date(order.createdAt)}</p>
+        </div>
+
+        <hr className="sep" />
+
+        {/* Client */}
+        <Field fr="Client" ar="الزبون">{order.customerName}</Field>
+        <Field fr="Téléphone" ar="الهاتف">
+          <span className="big">{plain(formatPhone(order.customerPhone))}</span>
+        </Field>
+        {order.customerEmail && <Field fr="Email" ar="البريد">{order.customerEmail}</Field>}
+
+        <hr className="sep" />
+
+        {/* Destination (the delivery's final point) */}
+        <Field fr="Livraison" ar="التوصيل">
+          {deliveryWord}
+        </Field>
+        <Field fr="Destination" ar="الوجهة">
+          {order.wilayaCode ? `${String(order.wilayaCode).padStart(2, "0")} — ` : ""}
+          {order.wilayaName}, {order.city}
+        </Field>
+        <Field fr="Adresse" ar="العنوان">
+          {order.address}
+        </Field>
+        {order.deliveryType === "desk" && (order.deskName || order.deskAddress) && (
+          <Field fr="Bureau" ar="المكتب">
+            {[order.deskName, order.deskAddress].filter(Boolean).join(" — ")}
+          </Field>
+        )}
         {order.customerNotes && (
-          <div className="mt-3 border border-black p-2"><Line fr="Note du client" ar="ملاحظة الزبون" strong={false}>{order.customerNotes}</Line></div>
+          <Field fr="Note" ar="ملاحظة">
+            {order.customerNotes}
+          </Field>
         )}
 
+        <hr className="sep sep-solid" />
+
         {/* Items */}
-        <table className="mt-4">
-          <thead>
-            <tr className="bg-neutral-100 text-left text-[11px] uppercase">
-              <th>Produit · <bdi dir="rtl">المنتج</bdi></th>
-              <th>Couleur · <bdi dir="rtl">اللون</bdi></th>
-              <th>Taille · <bdi dir="rtl">المقاس</bdi></th>
-              <th>Matière · <bdi dir="rtl">الخامة</bdi></th>
-              <th className="text-right">Qté</th>
-              <th className="text-right">Prix unit.</th>
-              <th className="text-right">Total</th>
-            </tr>
-          </thead>
-          <tbody>
-            {items.map(({ item, material }) => (
-              <tr key={item.id}>
-                <td className="font-bold">{item.productName}<br /><span className="text-[10.5px] font-normal">{item.sku}</span></td>
-                <td>{item.color}</td>
-                <td className="font-bold">{item.size}</td>
-                <td>{material || "—"}</td>
-                <td className="text-right">{item.quantity}</td>
-                <td className="text-right whitespace-nowrap">{da(item.unitPrice)}</td>
-                <td className="text-right whitespace-nowrap">{da(item.lineTotal)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <p className="lbl">Articles ({units}) · <bdi dir="rtl">المنتجات</bdi></p>
+        {items.map(({ item, material }) => (
+          <div key={item.id} className="item">
+            <p className="name">{item.productName}</p>
+            <p className="meta">
+              {item.color} · Taille <b>{item.size}</b>
+              {material ? ` · ${material}` : ""}
+            </p>
+            <div className="row meta">
+              <span>
+                {item.quantity} × {da(item.unitPrice)}
+              </span>
+              <b>{da(item.lineTotal)}</b>
+            </div>
+          </div>
+        ))}
 
-        {/* Money */}
-        <section className="mt-4 ml-auto w-[80mm]">
-          <table>
-            <tbody>
-              <tr><td>Articles ({units})</td><td className="text-right whitespace-nowrap">{da(order.subtotal)}</td></tr>
-              {order.discountAmount > 0 && <tr><td>Remise · <bdi dir="rtl">تخفيض</bdi></td><td className="text-right whitespace-nowrap">− {da(order.discountAmount)}</td></tr>}
-              <tr>
-                <td>Livraison {order.deliveryType === "desk" ? "stop desk" : "à domicile"} · <bdi dir="rtl">التوصيل</bdi></td>
-                <td className="text-right whitespace-nowrap">
-                  {order.shipsWithOrderId ? "Groupée" : order.freeDelivery ? "Offerte" : order.deliveryFee > 0 ? da(order.deliveryFee) : "Par téléphone"}
-                </td>
-              </tr>
-              <tr className="text-[15px] font-black">
-                <td>À ENCAISSER · <bdi dir="rtl">المبلغ</bdi></td>
-                <td className="text-right whitespace-nowrap">{da(order.subtotal - order.discountAmount + customerPays)}</td>
-              </tr>
-            </tbody>
-          </table>
-          <p className="mt-1 text-[11px]">Paiement à la livraison (cash) · <bdi dir="rtl">الدفع عند الاستلام</bdi></p>
-        </section>
+        <hr className="sep sep-solid" />
 
-        <footer className="mt-8 grid grid-cols-2 gap-6 text-[11px]">
-          <div className="border-t border-black pt-1">Signature boutique · <bdi dir="rtl">ختم المتجر</bdi></div>
-          <div className="border-t border-black pt-1">Signature client · <bdi dir="rtl">توقيع الزبون</bdi></div>
-        </footer>
+        {/* Cost */}
+        <div className="row">
+          <span>Articles</span>
+          <b>{da(order.subtotal)}</b>
+        </div>
+        {order.discountAmount > 0 && (
+          <div className="row">
+            <span>Remise</span>
+            <b>− {da(order.discountAmount)}</b>
+          </div>
+        )}
+        <div className="row">
+          <span>Livraison {order.deliveryType === "desk" ? "stop desk" : "domicile"}</span>
+          <b>{feeLabel}</b>
+        </div>
+        <hr className="sep" />
+        <div className="row total">
+          <span>À ENCAISSER</span>
+          <span>{da(toCollect)}</span>
+        </div>
+        <p className="meta center" style={{ marginTop: 3 }}>
+          Paiement à la livraison · <bdi dir="rtl">الدفع عند الاستلام</bdi>
+        </p>
+
+        <hr className="sep" />
+        <p className="center meta">KING 253 vous remercie · <bdi dir="rtl">شكراً لكم</bdi></p>
       </article>
     </div>
   )

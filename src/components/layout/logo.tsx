@@ -1,20 +1,13 @@
 import Link from "next/link"
 
 import { cn } from "@/lib/utils"
+import { BrandMark } from "@/components/layout/brand-mark"
 
+/** Header / menu logo: the real KING 253 artwork with a red glow and a moving red light. */
 export function Logo({ className, onClick }: { className?: string; onClick?: () => void }) {
   return (
-    <Link
-      href="/"
-      onClick={onClick}
-      aria-label="KING 253 — home"
-      dir="ltr"
-      className={cn("group inline-flex items-baseline gap-1.5 text-king-white", className)}
-    >
-      <span className="text-[1.05rem] font-black tracking-[-0.04em] uppercase">King</span>
-      <span className="text-[1.05rem] font-black tracking-[-0.04em] text-king-bright-red transition-[text-shadow] duration-500 group-hover:[text-shadow:0_0_18px_rgba(255,26,26,0.8)]">
-        253
-      </span>
+    <Link href="/" onClick={onClick} aria-label="KING 253 — home" dir="ltr" className={cn("group inline-flex items-center", className)}>
+      <BrandMark className="w-[5.4rem] sm:w-[6rem] lg:w-[7rem]" />
     </Link>
   )
 }

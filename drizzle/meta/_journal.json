@@ -155,6 +155,13 @@
       "when": 1794434543076,
       "tag": "0021_product_translations",
       "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1794764602805,
+      "tag": "0022_on_time_express_constantine_rates",
+      "breakpoints": true
     }
   ]
 }
