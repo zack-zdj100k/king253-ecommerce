@@ -122,6 +122,10 @@ export async function placeOrderAction(raw: unknown): Promise<PlaceOrderResult> 
     if (!rateLimit(`order-phone:${String(input.customer?.phone ?? "").replace(/\D/g, "").slice(-9)}`, 5, 10 * 60_000).ok) {
       return { ok: false, error: "Too many attempts. Please wait a few minutes and try again." }
     }
+    // Whole-shop ceiling: a flood of fake orders from many addresses and phones stops here.
+    if (!rateLimit("order:all", 60, 10 * 60_000).ok) {
+      return { ok: false, error: "Too many orders right now. Please wait a few minutes and try again." }
+    }
     const resolved = await resolveLines(input)
     if (!resolved.ok) return resolved
     const { lines, cartId } = resolved

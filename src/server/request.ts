@@ -4,6 +4,8 @@ import { randomBytes, randomUUID } from "node:crypto"
 
 import { cookies, headers } from "next/headers"
 
+import { pickClientIp } from "@/lib/request-safety"
+
 import { hashToken } from "./auth/users"
 
 const CART_COOKIE = "k253_cart"
@@ -69,7 +71,7 @@ export async function ensureSessionId() {
  */
 export async function clientIp() {
   const h = await headers()
-  const ip = h.get("x-forwarded-for")?.split(",")[0]?.trim() || h.get("x-real-ip") || h.get("cf-connecting-ip") || h.get("true-client-ip")
+  const ip = pickClientIp((name) => h.get(name))
   if (ip) return ip
   return "anon:" + hashToken(`${h.get("user-agent") ?? ""}|${h.get("accept-language") ?? ""}`).slice(0, 16)
 }

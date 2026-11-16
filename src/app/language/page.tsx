@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import Image from "next/image"
 
+import { safeLocalPath } from "@/lib/request-safety"
 import { LOCALES, LOCALE_NAMES, localePath, type Locale } from "@/i18n/config"
 
 export const metadata: Metadata = { title: { absolute: "KING 253 — Language · Langue · اللغة" }, robots: { index: false, follow: true } }
@@ -13,8 +14,8 @@ const LINES: Record<Locale, { pick: string; sub: string }> = {
 
 /** Same-site path only (no //evil.com, no scheme). */
 function safeNext(v: unknown) {
-  const s = typeof v === "string" ? v : "/"
-  return s.startsWith("/") && !s.startsWith("//") && !s.startsWith("/language") ? s : "/"
+  const s = safeLocalPath(v)
+  return s && !s.startsWith("/language") ? s : "/"
 }
 
 /**

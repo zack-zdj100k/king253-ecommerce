@@ -13,6 +13,33 @@ const securityHeaders = [
   { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(self), payment=()" },
 ]
 
+/*
+ * Content-Security-Policy (production only: the dev server needs eval and a websocket).
+ * Everything the site loads is its own, except the Google Maps frame on the Location page and
+ * images whose URL an admin pasted (https). Scripts: own files + inline ('unsafe-inline' because
+ * Next's inline bootstrap and the JSON-LD blocks have no nonce yet). Even so the policy blocks
+ * plugins, <base> hijacking, framing of the site, forms posting elsewhere and scripts or data
+ * calls to other sites.
+ */
+const csp = [
+  "default-src 'self'",
+  "script-src 'self' 'unsafe-inline'",
+  "style-src 'self' 'unsafe-inline'",
+  "img-src 'self' data: blob: https:",
+  "font-src 'self' data:",
+  "media-src 'self' blob:",
+  "connect-src 'self'",
+  "frame-src https://www.google.com https://maps.google.com",
+  "worker-src 'self' blob:",
+  "manifest-src 'self'",
+  "object-src 'none'",
+  "base-uri 'self'",
+  "form-action 'self'",
+  "frame-ancestors 'none'",
+  "upgrade-insecure-requests",
+].join("; ")
+if (process.env.NODE_ENV === "production") securityHeaders.push({ key: "Content-Security-Policy", value: csp })
+
 const nextConfig: NextConfig = {
   // Production runs on DZSecurity (cPanel + Passenger): `next build` emits a
   // self-contained server in .next/standalone that `app.js` starts.

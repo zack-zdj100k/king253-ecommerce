@@ -3,6 +3,7 @@ import type { Metadata } from "next"
 import { redirect } from "next/navigation"
 
 import { getCurrentUser } from "@/server/auth/session"
+import { safeLocalPath } from "@/lib/request-safety"
 import { AuthShell } from "@/components/auth/auth-shell"
 import { AuthForm } from "@/components/auth/auth-form"
 
@@ -12,7 +13,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function SignUpPage({ searchParams }: PageProps<"/sign-up">) {
   const { next } = await searchParams
-  const target = typeof next === "string" && next.startsWith("/") && !next.startsWith("//") ? next : undefined
+  const target = safeLocalPath(next) ?? undefined
   if (await getCurrentUser()) redirect(target ?? "/account")
   return (
     <AuthShell>

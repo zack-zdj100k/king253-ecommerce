@@ -7,23 +7,33 @@ import { db } from "@/server/db"
 import { endSession, startSession } from "@/server/auth/session"
 import { authenticate, createUser } from "@/server/auth/users"
 import { toUserMessage } from "@/server/errors"
-import { rateLimit } from "@/server/rate-limit"
+import { isRateLimited, rateLimit } from "@/server/rate-limit"
 import { clientIp } from "@/server/request"
+import { safeLocalPath } from "@/lib/request-safety"
 import { isReferralSource } from "@/lib/referral"
 
 export type AuthResult = { ok: false; error: string } | undefined
 
 /** Only same-site relative paths are allowed as a post-login destination. */
 function safeNext(value: unknown, fallback: string) {
-  return typeof value === "string" && value.startsWith("/") && !value.startsWith("//") ? value : fallback
+  return safeLocalPath(value) ?? fallback
 }
+
+const LOGIN_WINDOW = 15 * 60_000
+/** Failed passwords per account, from any address: stops guessing even when the address changes. */
+const ACCOUNT_FAILURES = 10
 
 export async function signInAction(raw: { email: string; password: string; next?: string }): Promise<AuthResult> {
   const ip = await clientIp()
-  if (!rateLimit(`login:${ip}`, 10, 15 * 60_000).ok) return { ok: false, error: "Too many attempts. Wait 15 minutes and try again." }
+  if (!rateLimit(`login:${ip}`, 10, LOGIN_WINDOW).ok) return { ok: false, error: "Too many attempts. Wait 15 minutes and try again." }
   const email = String(raw.email ?? "").slice(0, 200)
+  const accountKey = `login-fail:${email.trim().toLowerCase()}`
+  if (isRateLimited(accountKey, ACCOUNT_FAILURES, LOGIN_WINDOW)) return { ok: false, error: "Too many attempts. Wait 15 minutes and try again." }
   const user = await authenticate(db, email, String(raw.password ?? "").slice(0, 200))
-  if (!user) return { ok: false, error: "Email/phone or password is incorrect." }
+  if (!user) {
+    rateLimit(accountKey, ACCOUNT_FAILURES, LOGIN_WINDOW)
+    return { ok: false, error: "Email/phone or password is incorrect." }
+  }
   await startSession(user.id)
   // replace: the sign-in page is a detour, so it leaves no history entry.
   redirect(safeNext(raw.next, user.role === "admin" ? "/admin" : "/account"), RedirectType.replace)

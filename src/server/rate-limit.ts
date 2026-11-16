@@ -21,3 +21,10 @@ export function rateLimit(key: string, limit: number, windowMs: number): { ok: b
   }
   return { ok: true, retryAfterMs: 0 }
 }
+
+/** True when the key is already at its limit — checks without counting a new hit. */
+export function isRateLimited(key: string, limit: number, windowMs: number): boolean {
+  const now = Date.now()
+  const bucket = store.get(key)
+  return !!bucket && bucket.hits.filter((t) => now - t < windowMs).length >= limit
+}
