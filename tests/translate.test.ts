@@ -6,7 +6,7 @@ import { getProductPage } from "@/server/catalog"
 import { getContent, saveContent } from "@/server/content"
 import { translateContentChange } from "@/server/content-translate"
 import { AppError } from "@/server/errors"
-import { CATEGORY_FIELDS, deeplProblem, localizeFields, TESTIMONIAL_FIELDS, translateCategory, translateProduct, translateTestimonial } from "@/server/translate"
+import { CATEGORY_FIELDS, deeplProblem, setRetryBaseForTests, localizeFields, TESTIMONIAL_FIELDS, translateCategory, translateProduct, translateTestimonial } from "@/server/translate"
 
 import { resetDb, seedProduct, testDb } from "./support/db"
 
@@ -56,6 +56,32 @@ const fakeDeepl = (calls: string[] = []) =>
   })
 
 describe("DeepL problems are explained to the admin", () => {
+  it("too many requests (429): waits and retries instead of failing", async () => {
+    process.env.DEEPL_API_KEY = "test:fx"
+    setRetryBaseForTests(1)
+    let calls = 0
+    vi.stubGlobal("fetch", async (_u: string, init: { body: string }) => {
+      calls++
+      if (calls % 2 === 1) return new Response("", { status: 429 })
+      const body = JSON.parse(init.body) as { text: string[]; target_lang: string }
+      return new Response(JSON.stringify({ translations: body.text.map((t) => ({ text: `[${body.target_lang}] ${t}`, detected_source_language: "EN" })) }))
+    })
+    const tee = await seedProduct({ slug: "tee", price: 2000, variants: [{ size: "M", color: "Black", physical: 1 }] })
+    await testDb.update(products).set({ description: "Warm jacket" }).where(eq(products.id, tee.product.id))
+    expect(await translateProduct(testDb, tee.product.id)).toBe("translated")
+    expect(calls).toBe(6)
+  })
+
+  it("still 429 after retries: a clear 'busy' message", async () => {
+    process.env.DEEPL_API_KEY = "test:fx"
+    setRetryBaseForTests(1)
+    vi.stubGlobal("fetch", async () => new Response("", { status: 429 }))
+    const tee = await seedProduct({ slug: "tee", price: 2000, variants: [{ size: "M", color: "Black", physical: 1 }] })
+    await testDb.update(products).set({ description: "Warm jacket" }).where(eq(products.id, tee.product.id))
+    const err = await translateProduct(testDb, tee.product.id).catch((e) => e)
+    expect(err.userMessage).toMatch(/busy/)
+  })
+
   it("maps key, quota and busy errors to clear messages and stops on them", async () => {
     process.env.DEEPL_API_KEY = "test:fx"
     vi.stubGlobal("fetch", async () => new Response("Quota exceeded", { status: 456 }))

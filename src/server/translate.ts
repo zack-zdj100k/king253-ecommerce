@@ -61,19 +61,34 @@ export function deeplProblem(status: number): string {
   return `DeepL answered with an error (${status}).`
 }
 
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
+/** First wait after a "too many requests" answer (doubles each retry). Tests set it to 1 ms. */
+export let RETRY_BASE_MS = 1000
+export function setRetryBaseForTests(ms: number) {
+  RETRY_BASE_MS = ms
+}
+
 /** One DeepL call for several texts into one language. Returns translations + detected source language. */
 async function deepl(texts: string[], target: string, key: string, source?: string) {
-  let res: Response
-  try {
-    res = await fetch(endpoint(key), {
-      method: "POST",
-      headers: { Authorization: `DeepL-Auth-Key ${key}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ text: texts, target_lang: target, ...(source ? { source_lang: source } : {}), preserve_formatting: true }),
-      signal: AbortSignal.timeout(20_000),
-    })
-  } catch (cause) {
-    throw new AppError("TRANSLATION_FATAL", "Could not reach DeepL (network problem or timeout). Try again in a minute.", { cause })
+  let res: Response | undefined
+  // DeepL answers 429/529 when requests come too fast (the free plan is strict): wait and retry,
+  // as DeepL asks (Retry-After when given, otherwise 1 s, 2 s, 4 s, 8 s).
+  for (let attempt = 0; attempt < 5; attempt++) {
+    try {
+      res = await fetch(endpoint(key), {
+        method: "POST",
+        headers: { Authorization: `DeepL-Auth-Key ${key}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ text: texts, target_lang: target, ...(source ? { source_lang: source } : {}), preserve_formatting: true }),
+        signal: AbortSignal.timeout(20_000),
+      })
+    } catch (cause) {
+      throw new AppError("TRANSLATION_FATAL", "Could not reach DeepL (network problem or timeout). Try again in a minute.", { cause })
+    }
+    if ((res.status !== 429 && res.status !== 529) || attempt === 4) break
+    const after = Number(res.headers.get("retry-after"))
+    await sleep(Number.isFinite(after) && after > 0 ? Math.min(after, 10) * 1000 : RETRY_BASE_MS * 2 ** attempt)
   }
+  res = res!
   if (!res.ok) {
     const body = (await res.text().catch(() => "")).slice(0, 200)
     // Key, limit and network problems repeat for every item: callers stop at the first one.
