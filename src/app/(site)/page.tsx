@@ -1,5 +1,5 @@
 import { db } from "@/server/db"
-import { getFeaturedProducts } from "@/server/catalog"
+import { getCatalogFacets, getFeaturedProducts } from "@/server/catalog"
 import { categoryCrop, getContent } from "@/server/content"
 import { DEFAULT_CATEGORIES } from "@/lib/products"
 import { publishedTestimonials } from "@/server/testimonials"
@@ -16,7 +16,7 @@ import { FinalCTA } from "@/components/home/final-cta"
 export const dynamic = "force-dynamic"
 
 export default async function HomePage() {
-  const [hero, mindset, latestDrop, attitude, categories, story, shops, testimonialsHeader, finalCta, featured, testimonials] = await Promise.all([
+  const [hero, mindset, latestDrop, attitude, categories, story, shops, testimonialsHeader, finalCta, featured, testimonials, facets] = await Promise.all([
     getContent(db, "home.hero"),
     getContent(db, "home.mindset"),
     getContent(db, "home.latestDrop"),
@@ -28,6 +28,7 @@ export default async function HomePage() {
     getContent(db, "home.finalCta"),
     getFeaturedProducts(db, 9),
     publishedTestimonials(db),
+    getCatalogFacets(db).catch(() => null),
   ])
 
   return (
@@ -41,6 +42,7 @@ export default async function HomePage() {
           eyebrow: categories.eyebrow,
           title: categories.title,
           crops: Object.fromEntries(DEFAULT_CATEGORIES.map((c) => [c.slug, categoryCrop(categories, c.slug)])),
+          names: Object.fromEntries((facets?.categories ?? []).map((c) => [c.slug, c.name])),
         }}
       />
       <TestimonialsSection testimonials={testimonials} content={testimonialsHeader} />

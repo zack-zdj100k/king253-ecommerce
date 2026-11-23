@@ -264,6 +264,8 @@ export const categories = pgTable(
     parentId: integer("parent_id").references((): AnyPgColumn => categories.id, { onDelete: "set null" }),
     sortOrder: integer("sort_order").notNull().default(0),
     active: boolean("active").notNull().default(true),
+    /** Automatic translations of name + tagline: { ar: {...}, fr: {...}, en: {...}, _source: hash }. */
+    translations: jsonb("translations").$type<Record<string, Record<string, string> | string>>().notNull().default({}),
   },
   (t) => [uniqueIndex("categories_slug_unique").on(t.slug), index("categories_parent_idx").on(t.parentId)]
 )
@@ -791,6 +793,8 @@ export const testimonials = pgTable("testimonials", {
   imageUrl: text("image_url"),
   published: boolean("published").notNull().default(false),
   sortOrder: integer("sort_order").notNull().default(0),
+  /** Automatic translations of quote + role: { ar: {...}, fr: {...}, en: {...}, _source: hash }. */
+  translations: jsonb("translations").$type<Record<string, Record<string, string> | string>>().notNull().default({}),
   ...timestamps,
 })
 

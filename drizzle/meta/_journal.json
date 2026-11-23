@@ -169,6 +169,13 @@
       "when": 1794768304498,
       "tag": "0023_courier_name",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1795395527311,
+      "tag": "0024_category_testimonial_translations",
+      "breakpoints": true
     }
   ]
 }

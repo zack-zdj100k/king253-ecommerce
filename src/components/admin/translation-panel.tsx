@@ -11,10 +11,10 @@ export function TranslationPanel({ ready }: { ready: boolean }) {
   const [pending, start] = React.useTransition()
   const [result, setResult] = React.useState<{ ok: boolean; text: string } | null>(null)
   return (
-    <Panel title="Product translation">
+    <Panel title="Automatic translation">
       <p className="text-sm text-king-muted">
-        Write each product’s description once, in Arabic, French or English. When you save, it is translated automatically into the two other languages, and
-        each visitor reads it in the language they chose.
+        Write each text once, in Arabic, French or English: product descriptions, category names, testimonials and the page texts in Content. When you
+        save, it is translated automatically into the two other languages, and each visitor reads it in the language they chose.
       </p>
       <p className="mt-3 flex items-center gap-2 text-xs text-king-gray">
         <Languages className="size-3.5" aria-hidden />
@@ -28,11 +28,13 @@ export function TranslationPanel({ ready }: { ready: boolean }) {
           start(async () => {
             setResult(null)
             const r = await translateAllProductsAction()
-            setResult(r.ok ? { ok: true, text: String((r as { data?: unknown }).data ?? "Done.") } : { ok: false, text: r.error })
+            const text = r.ok ? String((r as { data?: unknown }).data ?? "Done.") : r.error
+            // Partly done (some items failed or the time limit was reached) shows as a warning, not success.
+            setResult({ ok: r.ok && !/failed|click again/.test(text), text })
           })
         }
       >
-        {pending ? <Loader2 className="size-3.5 animate-spin" aria-hidden /> : null} Translate every product now
+        {pending ? <Loader2 className="size-3.5 animate-spin" aria-hidden /> : null} Translate everything now
       </button>
       {result && (
         <p role={result.ok ? "status" : "alert"} className={`mt-2 text-xs ${result.ok ? "text-emerald-400" : "text-king-bright-red"}`}>

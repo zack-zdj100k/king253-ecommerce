@@ -5,9 +5,10 @@ import { redirect } from "next/navigation"
 import { z } from "zod"
 
 import { db } from "@/server/db"
-import { products, productVariants } from "@/server/db/schema"
+import { categories, products, productVariants, testimonials } from "@/server/db/schema"
 import { AppError } from "@/server/errors"
-import { translateProduct, translationReady } from "@/server/translate"
+import { translateAllContent } from "@/server/content-translate"
+import { translateCategory, translateProduct, translateTestimonial, translationReady, translationReason } from "@/server/translate"
 import { adjustPhysicalStock, receiveStock } from "@/server/inventory"
 import {
   addImages,
@@ -37,10 +38,10 @@ const productPaths = (pid?: string) => ["/admin/products", ...(pid ? [`/admin/pr
 
 export async function saveProductAction(productId: string | null, input: ProductInput) {
   const result = await adminAction(
-    async ({ actor }) => {
+    async ({ actor, warn }) => {
       const product = await saveProduct(db, productId ? id.parse(productId) : null, input, actor)
       // Arabic / French / English versions of the texts, automatically (never blocks the save).
-      await translateProduct(db, product.id).catch((e) => console.error("[king253] translation failed", e))
+      await translateProduct(db, product.id).catch((e) => warn(`Saved, but the automatic translation failed: ${translationReason(e)}`))
       return { id: product.id, slug: product.slug, status: product.status }
     },
     {
@@ -167,8 +168,10 @@ const categoryPaths = ["/admin/products/categories", "/admin/products", "/clothe
 
 export async function saveCategoryAction(categoryId: number | null, input: CategoryInput) {
   return adminAction(
-    async () => {
-      await saveCategory(db, categoryId === null ? null : z.number().int().positive().parse(categoryId), input)
+    async ({ warn }) => {
+      const saved = await saveCategory(db, categoryId === null ? null : z.number().int().positive().parse(categoryId), input)
+      // Arabic / French / English name and tagline, automatically (never blocks the save).
+      if (saved) await translateCategory(db, saved.id).catch((e) => warn(`Saved, but the automatic translation failed: ${translationReason(e)}`))
     },
     { revalidate: categoryPaths, message: "Category saved." }
   )
@@ -214,16 +217,52 @@ export async function receiveStockAction(variantId: string, storeId: number, qua
   )
 }
 
-/** Settings → "Translate every product now" (e.g. right after the translation key is added). */
+/**
+ * Settings → "Translate everything now": products, categories, testimonials and the edited page texts.
+ * Works through them one by one, keeps going when one fails, tells the admin the real reason, and
+ * stops before the web server's time limit (click again to continue: finished items are skipped).
+ */
 export async function translateAllProductsAction() {
   return adminAction(
     async () => {
       if (!translationReady()) throw new AppError("NO_TRANSLATION_KEY", "Translation is not set up yet (DEEPL_API_KEY in the server .env).")
-      const all = await db.select({ id: products.id }).from(products)
+      const until = Date.now() + 45_000
+      const failures: string[] = []
       let done = 0
-      for (const p of all) if ((await translateProduct(db, p.id, { force: true })) === "translated") done++
-      return `${done} product(s) translated into Arabic, French and English.`
+      let skipped = 0
+      let stopped = false
+      const step = async (label: string, run: () => Promise<string>) => {
+        if (stopped || Date.now() > until) {
+          stopped = true
+          return
+        }
+        try {
+          const r = await run()
+          if (r === "translated") done++
+          else skipped++
+        } catch (e) {
+          failures.push(`${label}: ${translationReason(e)}`)
+          // The same key/limit problem would repeat for every item: stop at the first one.
+          if (e instanceof AppError && e.code === "TRANSLATION_FATAL") stopped = true
+        }
+      }
+      for (const p of await db.select({ id: products.id, name: products.name }).from(products)) await step(`Product “${p.name}”`, () => translateProduct(db, p.id))
+      for (const c of await db.select({ id: categories.id, name: categories.name }).from(categories)) await step(`Category “${c.name}”`, () => translateCategory(db, c.id))
+      for (const t of await db.select({ id: testimonials.id, name: testimonials.name }).from(testimonials)) await step(`Testimonial of ${t.name}`, () => translateTestimonial(db, t.id))
+      let pageTexts = 0
+      if (!stopped) {
+        const r = await translateAllContent(db, until)
+        pageTexts = r.done
+        failures.push(...r.failures)
+        stopped = r.stopped
+      }
+      if (done + pageTexts === 0 && failures.length) throw new AppError("TRANSLATION_FAILED", `Nothing was translated. ${failures[0]}${failures.length > 1 ? ` (+${failures.length - 1} more)` : ""}`)
+      const parts = [`${done} item(s) translated (products, categories, testimonials)`, `${pageTexts} page text(s) translated`]
+      if (skipped) parts.push(`${skipped} already up to date`)
+      if (failures.length) parts.push(`${failures.length} failed — ${failures.slice(0, 2).join("; ")}`)
+      if (stopped) parts.push("stopped to stay within the time limit: click again to continue")
+      return parts.join(". ") + "."
     },
-    { revalidate: ["/clothes", "/"] }
+    { revalidate: ["/clothes", "/", "/who-is-king", "/location"] }
   )
 }

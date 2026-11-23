@@ -6,6 +6,7 @@ import { z } from "zod"
 import { db } from "@/server/db"
 import { reviews, testimonials } from "@/server/db/schema"
 import { audit } from "@/server/audit"
+import { translateTestimonial, translationReason } from "@/server/translate"
 import { adminAction } from "./_shared"
 
 const id = z.uuid()
@@ -57,11 +58,19 @@ const testimonialInput = z.object({
 
 export async function saveTestimonialAction(testimonialId: string | null, input: z.input<typeof testimonialInput>) {
   return adminAction(
-    async ({ actor }) => {
+    async ({ actor, warn }) => {
       const data = testimonialInput.parse(input)
-      if (testimonialId) await db.update(testimonials).set(data).where(eq(testimonials.id, id.parse(testimonialId)))
-      else await db.insert(testimonials).values(data)
+      let savedId: string
+      if (testimonialId) {
+        savedId = id.parse(testimonialId)
+        await db.update(testimonials).set(data).where(eq(testimonials.id, savedId))
+      } else {
+        const [row] = await db.insert(testimonials).values(data).returning({ id: testimonials.id })
+        savedId = row.id
+      }
       await audit(db, actor, "testimonial.save", "testimonial", testimonialId ?? "new", { published: data.published })
+      // Arabic / French / English versions of the words, automatically (never blocks the save).
+      await translateTestimonial(db, savedId).catch((e) => warn(`Saved, but the automatic translation failed: ${translationReason(e)}`))
     },
     { revalidate: ["/admin/testimonials", "/", "/who-is-king"], message: "Testimonial saved." }
   )

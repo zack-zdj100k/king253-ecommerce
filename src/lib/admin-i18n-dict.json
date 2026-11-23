@@ -3994,5 +3994,17 @@
 "Shown to customers who choose Stop desk and printed on the order.": [
 "تظهر للزبائن الذين يختارون Stop desk وتُطبع على الطلب.",
 "Affiché aux clients qui choisissent Stop desk et imprimé sur la commande."
+],
+"Automatic translation": [
+"الترجمة التلقائية",
+"Traduction automatique"
+],
+"Write each text once, in Arabic, French or English: product descriptions, category names, testimonials and the page texts in Content. When you save, it is translated automatically into the two other languages, and each visitor reads it in the language they chose.": [
+"اكتب كل نص مرة واحدة، بالعربية أو الفرنسية أو الإنجليزية: أوصاف المنتجات، أسماء الفئات، آراء الزبائن ونصوص الصفحات في المحتوى. عند الحفظ يُترجم تلقائيًا إلى اللغتين الأخريين، ويقرأه كل زائر باللغة التي اختارها.",
+"Écris chaque texte une seule fois, en arabe, en français ou en anglais : descriptions des produits, noms des catégories, témoignages et textes des pages dans Contenu. À l’enregistrement, il est traduit automatiquement dans les deux autres langues, et chaque visiteur le lit dans la langue qu’il a choisie."
+],
+"Translate everything now": [
+"ترجم كل شيء الآن",
+"Tout traduire maintenant"
 ]
 }

@@ -7,14 +7,16 @@ import Link from "next/link"
 import { ArrowUpRight } from "lucide-react"
 
 import { cn } from "@/lib/utils"
-import { DEFAULT_CATEGORIES as CATEGORIES } from "@/lib/products"
+import { DEFAULT_CATEGORIES } from "@/lib/products"
 import type { Crop } from "@/components/shop/product-image"
 import { Eyebrow } from "@/components/layout/editorial"
 import { ProductImage, productSizes } from "@/components/shop/product-image"
 
 
-export function CategoryShowcase({ content }: { content: { eyebrow: string; title: string; crops: Record<string, Crop> } }) {
+export function CategoryShowcase({ content }: { content: { eyebrow: string; title: string; crops: Record<string, Crop>; names?: Record<string, string> } }) {
   const t = useTranslations("home")
+  // The shop's category names (admin, in the visitor's language) where they exist.
+  const CATEGORIES = React.useMemo(() => DEFAULT_CATEGORIES.map((c) => ({ ...c, name: content.names?.[c.slug] ?? c.name })), [content.names])
   const CATEGORY_CROPS = content.crops
   const mobileList = React.useRef<HTMLUListElement>(null)
   const [mobileActive, setMobileActive] = React.useState<string | null>(null)

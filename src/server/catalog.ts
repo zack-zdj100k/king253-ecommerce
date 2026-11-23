@@ -1,7 +1,8 @@
 import { and, asc, desc, eq, sql, type SQL } from "drizzle-orm"
 
 import type { DbOrTx } from "./db/client"
-import { localizeProduct } from "./translate"
+import { requestLocale } from "./locale"
+import { CATEGORY_FIELDS, localizeFields, localizeProduct } from "./translate"
 import { categories, productImages, productVariants, products, reviews } from "./db/schema"
 import { availableOf, SELLABLE_V, storefrontStock } from "./inventory"
 import { effectivePriceSql, offerOf } from "./pricing"
@@ -106,9 +107,11 @@ const CARD_PRICE = sql`(case when p.price is not null then
 
 /** Shared card query: one row per product with live availability, price, image, rating. */
 async function cardQuery(db: DbOrTx, where: SQL[], orderBy: SQL, limit: number, offset = 0) {
+  // Category name in the visitor's language (automatic translation; the name as written otherwise).
+  const locale = await requestLocale()
   const rows = (await db.execute(sql`
     select p.id, p.slug, p.name, p.price, p.sale_price, p.featured,
-      c.slug as category_slug, c.name as category_name,
+      c.slug as category_slug, coalesce(nullif(c.translations -> ${locale} ->> 'name', ''), c.name) as category_name,
       agg.available, agg.min_price, agg.colours, agg.sizes, agg.any_promo,
       ${CARD_PRICE} as card_price,
       img.image, r.avg as rating_avg, coalesce(r.cnt, 0) as rating_count, sh.shops,
@@ -268,14 +271,16 @@ export async function getProductPage(db: DbOrTx, slug: string, opts: { includeDr
       .groupBy(reviews.rating),
   ])
 
-  const [parentCategory] = category?.parentId ? await db.select().from(categories).where(eq(categories.id, category.parentId)) : []
+  const [parentFound] = category?.parentId ? await db.select().from(categories).where(eq(categories.id, category.parentId)) : []
+  const localCat = <C extends typeof categories.$inferSelect>(c: C) => (opts.locale ? localizeFields(c, c.translations, opts.locale, CATEGORY_FIELDS) : c)
+  const parentCategory = parentFound ? localCat(parentFound) : undefined
   const totalReviews = ratingRows.reduce((s, r) => s + r.count, 0)
   const distribution = [5, 4, 3, 2, 1].map((stars) => ({ stars, count: ratingRows.find((r) => r.rating === stars)?.count ?? 0 }))
   const average = totalReviews ? Math.round((ratingRows.reduce((s, r) => s + r.rating * r.count, 0) / totalReviews) * 10) / 10 : null
 
   return {
     product,
-    category,
+    category: category ? localCat(category) : null,
     /** Main category when the product sits in a subcategory (Pants › Baggy jeans). */
     parentCategory: parentCategory ?? null,
     images,
@@ -339,12 +344,13 @@ export type ProductPageData = NonNullable<Awaited<ReturnType<typeof getProductPa
 /* ------------------------------------------------------------------ */
 
 export async function getCatalogFacets(db: DbOrTx) {
-  const [cats, sizeRows, colourRows, [range]] = await Promise.all([
+  const [rawCats, sizeRows, colourRows, [range]] = await Promise.all([
     db
       .select({
         slug: categories.slug,
         name: categories.name,
         tagline: categories.tagline,
+        translations: categories.translations,
         parentSlug: sql<string | null>`(select pc.slug from categories pc where pc.id = "categories"."parent_id")`,
       })
       .from(categories)
@@ -355,6 +361,9 @@ export async function getCatalogFacets(db: DbOrTx) {
     db.execute(sql`select min(${EFFECTIVE})::int as min, max(${EFFECTIVE})::int as max
       from product_variants v join products p on p.id = v.product_id where p.status = 'published' and v.active`),
   ])
+  // Names and taglines in the visitor's language.
+  const locale = await requestLocale()
+  const cats = rawCats.map(({ translations, ...c }) => localizeFields(c, translations, locale, CATEGORY_FIELDS))
   return {
     /** Main categories (tabs, tiles, menus). */
     categories: cats.filter((c) => !c.parentSlug),

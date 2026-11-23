@@ -43,6 +43,16 @@ export function Catalog({
   const params = useSearchParams()
   const [pending, startTransition] = React.useTransition()
 
+  // Page buttons sit under the list: after the new page arrives, bring the visitor back to the top of
+  // the list (not the top of the whole page, and not left at the bottom where they clicked).
+  const scrollToListAfter = React.useRef(false)
+  React.useEffect(() => {
+    if (!scrollToListAfter.current) return
+    scrollToListAfter.current = false
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    document.getElementById("catalog")?.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" })
+  }, [page, products])
+
   /** Update the URL; the server re-queries the database. */
   const update = React.useCallback(
     (patch: Record<string, string | null>) => {
@@ -215,7 +225,11 @@ export function Catalog({
                 key={n}
                 type="button"
                 aria-current={n === page ? "page" : undefined}
-                onClick={() => update({ page: n === 1 ? null : String(n) })}
+                onClick={() => {
+                  if (n === page) return
+                  scrollToListAfter.current = true
+                  update({ page: n === 1 ? null : String(n) })
+                }}
                 className={cn(
                   "king-label grid size-10 place-items-center border text-[0.65rem] transition-colors",
                   n === page ? "border-king-bright-red text-king-white" : "border-white/15 text-king-gray hover:text-king-white"

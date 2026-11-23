@@ -7,7 +7,9 @@ import { audit } from "@/server/audit"
 import { deleteCart } from "@/server/cart"
 import { deleteCustomer } from "@/server/customers"
 import { CONTENT_SECTIONS, saveContent, type ContentKey } from "@/server/content"
+import { translateContentChange, shownContent } from "@/server/content-translate"
 import { AppError } from "@/server/errors"
+import { translationReady, translationReason } from "@/server/translate"
 import { saveSettings, settingsSchema } from "@/server/settings"
 import { deleteStore, saveStore, storeInput, type StoreInput } from "@/server/stores"
 import { deleteMedia, listMedia } from "@/server/media"
@@ -65,11 +67,17 @@ export async function deleteCartAction(cartId: string) {
 
 export async function saveContentAction(key: string, data: Record<string, string>, locale: "en" | "fr" | "ar" = "en") {
   return adminAction(
-    async ({ actor }) => {
+    async ({ actor, warn }) => {
       if (!(key in CONTENT_SECTIONS)) throw new AppError("UNKNOWN", "Unknown section.")
       const clean = z.record(z.string(), z.string().max(5000)).parse(data)
-      await saveContent(db, key as ContentKey, clean, z.enum(["en", "fr", "ar"]).parse(locale))
+      const lang = z.enum(["en", "fr", "ar"]).parse(locale)
+      // What the editor showed before this save, to translate only what the admin changed.
+      const before = translationReady() ? await shownContent(db, key as ContentKey, lang) : {}
+      await saveContent(db, key as ContentKey, clean, lang)
       await audit(db, actor, "content.save", "content", key, { locale })
+      if (translationReady()) {
+        await translateContentChange(db, key as ContentKey, lang, before, clean).catch((e) => warn(`Saved, but the automatic translation failed: ${translationReason(e)}`))
+      }
     },
     { revalidate: ["/", "/who-is-king", "/clothes", "/location", "/admin/content"], message: "Saved — live on the website now." }
   )

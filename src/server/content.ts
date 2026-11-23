@@ -370,7 +370,7 @@ async function requestLocale(): Promise<ContentLocale> {
   }
 }
 
-const rowKey = (key: string, locale: ContentLocale) => (locale === "en" ? key : `${key}@${locale}`)
+export const rowKey = (key: string, locale: ContentLocale) => (locale === "en" ? key : `${key}@${locale}`)
 
 /**
  * Text of a section in a language. For each text field:
