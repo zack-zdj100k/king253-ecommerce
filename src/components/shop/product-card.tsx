@@ -11,6 +11,7 @@ import { formatDA } from "@/lib/money"
 import type { CardImage, ProductCardData } from "@/server/catalog"
 import { useShop } from "@/components/providers/shop-provider"
 import { ProductImage, productSizes } from "@/components/shop/product-image"
+import { Sheet, SheetClose, SheetContent, SheetDescription, SheetTitle } from "@/components/ui/sheet"
 
 /*
  * Product card — "hang tag + shops" (owner's choice, 2026-11-10).
@@ -190,8 +191,9 @@ function ShopChips({ shops }: { shops: Shop[] }) {
 type Variant = QuickViewData["variants"][number]
 
 /**
- * Round + = add to bag. One option in stock → straight into the bag; several →
- * the sizes in stock appear on the card, one tap adds it (the bag then opens).
+ * Round + = add to bag. One option in stock → straight into the bag; several → a size sheet slides up
+ * from the bottom of the screen (not inside the small card, where many sizes did not fit and the
+ * close button was cut off). Tap a size to add it, tap outside or the X to close.
  */
 function AddToBag({ product, soldOut }: { product: ProductCardData; soldOut: boolean }) {
   const t = useTranslations("catalog")
@@ -199,7 +201,6 @@ function AddToBag({ product, soldOut }: { product: ProductCardData; soldOut: boo
   const [options, setOptions] = React.useState<Variant[] | null>(null)
   const [open, setOpen] = React.useState(false)
   const [busy, setBusy] = React.useState<string | null>(null)
-  const panelId = React.useId()
 
   async function add(id: string) {
     setBusy(id)
@@ -209,7 +210,6 @@ function AddToBag({ product, soldOut }: { product: ProductCardData; soldOut: boo
   }
 
   async function start() {
-    if (open) return setOpen(false)
     let list = options
     if (!list) {
       setBusy("load")
@@ -223,57 +223,71 @@ function AddToBag({ product, soldOut }: { product: ProductCardData; soldOut: boo
     setOpen(true)
   }
 
-  const oneColour = new Set(options?.map((v) => v.color)).size <= 1
+  // Sizes grouped by colour when the product has several colours.
+  const groups = React.useMemo(() => {
+    const byColour = new Map<string, Variant[]>()
+    for (const v of options ?? []) byColour.set(v.color, [...(byColour.get(v.color) ?? []), v])
+    return [...byColour.entries()]
+  }, [options])
 
   return (
     <>
       <button
         type="button"
         onClick={start}
-        disabled={soldOut || busy !== null}
-        aria-expanded={open}
-        aria-controls={panelId}
+        disabled={soldOut || busy === "load"}
+        aria-haspopup="dialog"
         aria-label={soldOut ? t("soldOutName", { name: product.name }) : t("addToCart", { name: product.name })}
         className="pointer-events-auto relative z-10 ms-auto grid size-10 shrink-0 place-items-center rounded-full bg-king-white text-king-black transition-[background-color,transform] duration-300 hover:scale-105 hover:bg-king-bright-red hover:text-king-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-king-bright-red focus-visible:ring-offset-2 focus-visible:ring-offset-black disabled:scale-100 disabled:bg-white/15 disabled:text-king-gray md:size-14"
       >
-        {busy ? <LoaderCircle className="size-5 animate-spin" aria-hidden /> : <Plus className={cn("size-5 transition-transform duration-300", open && "rotate-45")} aria-hidden />}
+        {busy === "load" ? <LoaderCircle className="size-5 animate-spin" aria-hidden /> : <Plus className="size-5" aria-hidden />}
       </button>
 
-      {open && options && (
-        <div
-          id={panelId}
-          role="group"
-          aria-label={t("chooseSize", { name: product.name })}
-          className="pointer-events-auto absolute inset-x-0 bottom-0 z-20 space-y-2.5 border-t border-white/10 bg-king-black/85 p-3 backdrop-blur-xl md:p-4"
+      <Sheet open={open} onOpenChange={setOpen}>
+        <SheetContent
+          side="bottom"
+          showCloseButton={false}
+          className="max-h-[82svh] gap-0 rounded-t-[22px] border-white/10 bg-king-near-black p-0 text-king-white"
         >
-          <div className="flex items-center justify-between gap-2">
-            <p className="king-label text-[0.625rem] text-king-muted">{t("sizeTitle")}</p>
-            <button
-              type="button"
-              onClick={() => setOpen(false)}
-              aria-label={t("close")}
-              className="grid size-8 place-items-center rounded-full text-king-white/80 hover:bg-white/10 hover:text-king-white"
-            >
-              <X className="size-4" aria-hidden />
-            </button>
+          <div className="mx-auto flex max-h-[82svh] w-full max-w-xl flex-col px-5 pt-5 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <SheetTitle className="king-display text-xl leading-tight text-king-white [overflow-wrap:anywhere]">{product.name}</SheetTitle>
+                <SheetDescription className="king-label mt-1 text-[0.625rem] text-king-muted">{t("sizeTitle")}</SheetDescription>
+              </div>
+              <SheetClose
+                aria-label={t("close")}
+                className="grid size-11 shrink-0 place-items-center rounded-full bg-white/10 text-king-white hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-king-bright-red"
+              >
+                <X className="size-5" aria-hidden />
+              </SheetClose>
+            </div>
+
+            <div data-lenis-prevent className="mt-4 space-y-4 overflow-y-auto overscroll-contain">
+              {groups.map(([colour, variants]) => (
+                <div key={colour}>
+                  {groups.length > 1 && <p className="mb-2 text-xs font-medium text-king-muted">{colour}</p>}
+                  <ul className="flex flex-wrap gap-2">
+                    {variants.map((v) => (
+                      <li key={v.id}>
+                        <button
+                          type="button"
+                          onClick={() => add(v.id)}
+                          disabled={busy !== null}
+                          className="inline-flex h-11 min-w-12 items-center justify-center gap-1.5 rounded-full border border-white/20 px-4 text-sm font-semibold text-king-white transition-colors hover:border-king-bright-red hover:bg-king-bright-red active:bg-king-bright-red disabled:opacity-60"
+                        >
+                          {busy === v.id && <LoaderCircle className="size-3.5 animate-spin" aria-hidden />}
+                          {v.size}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
           </div>
-          <ul className="flex flex-wrap gap-1.5">
-            {options.map((v) => (
-              <li key={v.id}>
-                <button
-                  type="button"
-                  onClick={() => add(v.id)}
-                  disabled={busy !== null}
-                  className="inline-flex h-9 min-w-10 items-center justify-center gap-1.5 rounded-full border border-white/20 px-3 text-xs font-semibold text-king-white transition-colors hover:border-king-bright-red hover:bg-king-bright-red disabled:opacity-60"
-                >
-                  {busy === v.id && <LoaderCircle className="size-3 animate-spin" aria-hidden />}
-                  {oneColour ? v.size : `${v.size} · ${v.color}`}
-                </button>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
+        </SheetContent>
+      </Sheet>
     </>
   )
 }

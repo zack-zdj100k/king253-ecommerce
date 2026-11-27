@@ -6,6 +6,7 @@ import { cache } from "react"
 import Link from "next/link"
 import { notFound } from "next/navigation"
 
+import { cleanMarkdown } from "@/lib/plain-text"
 import { db } from "@/server/db"
 import { getProductPage, getRelatedProducts, productDetails } from "@/server/catalog"
 import { offerOf } from "@/server/pricing"
@@ -83,6 +84,7 @@ export default async function ProductPage({ params, searchParams }: PageProps<"/
   const colourImages = Object.fromEntries([...new Set(variants.map((v) => v.color))].map((c) => [c, crops.find((i) => i.color === c) ?? null]))
 
   const details = productDetails(product, settings.brandName, (k) => t(k))
+  const shortDescription = cleanMarkdown(product.shortDescription)
 
   // Product structured data — only facts that exist in the database.
   const jsonLd = {
@@ -155,10 +157,16 @@ export default async function ProductPage({ params, searchParams }: PageProps<"/
           </nav>
 
           <ProductSelectionProvider variants={variants} initialColour={initialColour}>
-            <div className="grid gap-10 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] lg:gap-16">
-              <ProductGallery images={crops} name={product.name} />
+            {/*
+              Desktop: photos and the written details (description, material, care…) share the left column; the
+              title, price and buy box stay in view on the right while the left scrolls. Phone: photos, buy box, details.
+            */}
+            <div className="grid gap-10 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] lg:gap-x-16 lg:gap-y-14">
+              <div className="min-w-0 lg:col-start-1 lg:row-start-1">
+                <ProductGallery images={crops} name={product.name} />
+              </div>
 
-              <div>
+              <div className="lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:max-h-[calc(100svh-7.5rem)] lg:self-start lg:overflow-y-auto lg:sticky lg:top-24 lg:pe-1 lg:[scrollbar-width:none] lg:[&::-webkit-scrollbar]:hidden">
                 {category && <p className="king-label text-[0.7rem] text-king-bright-red">{category.name}</p>}
                 <h1 className="king-display mt-4 text-[clamp(2.5rem,4.5vw,4.75rem)] text-king-white">{product.name}</h1>
                 {rating.total > 0 && (
@@ -166,7 +174,7 @@ export default async function ProductPage({ params, searchParams }: PageProps<"/
                     <Stars value={rating.average ?? 0} /> {rating.average?.toFixed(1)} · {t("reviewsCount", { count: rating.total })}
                   </a>
                 )}
-                {product.shortDescription && <p className="mt-5 max-w-md text-lg leading-relaxed text-king-muted">{product.shortDescription}</p>}
+                {shortDescription && <p className="mt-5 max-w-md text-lg leading-relaxed whitespace-pre-line text-king-muted">{shortDescription}</p>}
 
                 <div className="mt-8">
                   <BuyBox
@@ -181,22 +189,6 @@ export default async function ProductPage({ params, searchParams }: PageProps<"/
                     colourImages={colourImages}
                   />
                 </div>
-
-                {details.length > 0 && (
-                  <div className="mt-10 divide-y divide-white/10 border-y border-white/10">
-                    {details.map((d, i) => (
-                      <details key={d.title} open={i === 0} className="group py-4">
-                        <summary className="king-label flex cursor-pointer list-none items-center justify-between text-[0.75rem] text-king-white">
-                          {d.title}
-                          <span aria-hidden className="text-king-bright-red transition-transform group-open:rotate-45">
-                            +
-                          </span>
-                        </summary>
-                        <p className="mt-3 text-base leading-relaxed whitespace-pre-line text-king-muted">{d.body}</p>
-                      </details>
-                    ))}
-                  </div>
-                )}
 
                 {product.tags.length > 0 && (
                   <ul className="mt-6 flex flex-wrap gap-2" aria-label={t("tags")}>
@@ -213,6 +205,22 @@ export default async function ProductPage({ params, searchParams }: PageProps<"/
                   </ul>
                 )}
               </div>
+
+              {details.length > 0 && (
+                <div className="divide-y divide-white/10 border-y border-white/10 lg:col-start-1 lg:row-start-2">
+                  {details.map((d, i) => (
+                    <details key={d.title} open={i === 0} className="group py-4">
+                      <summary className="king-label flex cursor-pointer list-none items-center justify-between text-[0.75rem] text-king-white">
+                        {d.title}
+                        <span aria-hidden className="text-king-bright-red transition-transform group-open:rotate-45">
+                          +
+                        </span>
+                      </summary>
+                      <p className="mt-3 text-base leading-relaxed whitespace-pre-line text-king-muted">{d.body}</p>
+                    </details>
+                  ))}
+                </div>
+              )}
             </div>
           </ProductSelectionProvider>
 

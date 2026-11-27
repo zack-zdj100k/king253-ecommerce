@@ -39,7 +39,7 @@ function Gallery({ images, name }: { images: Crop[]; name: string }) {
   }
 
   return (
-    <div className="animate-in duration-300 fade-in-0 motion-reduce:animate-none lg:sticky lg:top-24">
+    <div className="animate-in duration-300 fade-in-0 motion-reduce:animate-none">
       {/* Mobile: swipeable strip */}
       <div
         ref={stripRef}

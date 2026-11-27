@@ -6,6 +6,7 @@ import { CATEGORY_FIELDS, localizeFields, localizeProduct } from "./translate"
 import { categories, productImages, productVariants, products, reviews } from "./db/schema"
 import { availableOf, SELLABLE_V, storefrontStock } from "./inventory"
 import { effectivePriceSql, offerOf } from "./pricing"
+import { cleanMarkdown } from "@/lib/plain-text"
 import { sortSizes } from "@/lib/sizes"
 
 export type CardImage = { url: string; focusX: number; focusY: number; zoom: number; alt?: string | null }
@@ -334,7 +335,9 @@ export function productDetails(product: typeof products.$inferSelect, brandName:
     { title: label("d_care"), body: product.care },
     { title: label("d_story"), body: join([product.story, product.inspiration], "\n\n") },
     { title: brandName, body: product.brandNote },
-  ].filter((d): d is { title: string; body: string } => !!d.body)
+  ]
+    .map((d) => ({ ...d, body: cleanMarkdown(d.body) }))
+    .filter((d): d is { title: string; body: string } => !!d.body)
 }
 
 export type ProductPageData = NonNullable<Awaited<ReturnType<typeof getProductPage>>>
